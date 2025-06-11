@@ -625,7 +625,7 @@ dependencias_projeto_team_manager() {
     fi
     
     # Instalar todas as dependências (incluindo Supabase que agora está em dependencies)
-    npm ci --include=dev
+    npm install --include=dev
     
     # Verificar se Supabase foi instalado corretamente
     if [ -d "node_modules/@supabase/supabase-js" ]; then
