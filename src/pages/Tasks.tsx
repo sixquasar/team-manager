@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, Calendar, User } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, User, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { useTasks, Task } from '@/hooks/use-tasks';
 
 const statusColumns = [
@@ -21,21 +20,10 @@ const priorityColors = {
 };
 
 export function Tasks() {
-  const { tasks, loading, updateTask, getTasksByStatus } = useTasks();
+  const { tasks, loading, updateTask, getTasksByStatus, getTasksByPriority } = useTasks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
-
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
-
-    const { source, destination, draggableId } = result;
-    
-    if (source.droppableId !== destination.droppableId) {
-      updateTask(draggableId, { 
-        status: destination.droppableId as Task['status'] 
-      });
-    }
-  };
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,19 +32,37 @@ export function Tasks() {
     return matchesSearch && matchesPriority;
   });
 
-  const TaskCard = ({ task, index }: { task: Task; index: number }) => (
-    <Draggable draggableId={task.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className={`
-            bg-white rounded-lg border shadow-sm p-4 mb-3 cursor-pointer
-            ${snapshot.isDragging ? 'shadow-lg rotate-2' : 'hover:shadow-md'}
-            transition-all duration-200
-          `}
-        >
+  const handleDragStart = (e: React.DragEvent, task: Task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
+    e.currentTarget.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.currentTarget.style.opacity = '1';
+    setDraggedTask(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, newStatus: Task['status']) => {
+    e.preventDefault();
+    if (draggedTask && draggedTask.status !== newStatus) {
+      updateTask(draggedTask.id, { status: newStatus });
+    }
+  };
+
+  const TaskCard = ({ task }: { task: Task }) => (
+    <div
+      draggable
+      onDragStart={(e) => handleDragStart(e, task)}
+      onDragEnd={handleDragEnd}
+      className="bg-white rounded-lg border shadow-sm p-4 mb-3 cursor-move hover:shadow-md transition-all duration-200"
+    >
           <div className="flex items-start justify-between mb-2">
             <h3 className="font-medium text-gray-900 text-sm">{task.titulo}</h3>
             <div className={`w-2 h-2 rounded-full ${priorityColors[task.prioridade]}`} />
@@ -155,48 +161,37 @@ export function Tasks() {
       </div>
 
       {/* Kanban Board */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statusColumns.map(column => {
-            const columnTasks = filteredTasks.filter(task => task.status === column.id);
-            
-            return (
-              <div key={column.id} className="flex flex-col">
-                <div className={`${column.color} rounded-lg p-3 mb-4`}>
-                  <h2 className="font-semibold text-gray-800 text-sm">
-                    {column.title} ({columnTasks.length})
-                  </h2>
-                </div>
-
-                <Droppable droppableId={column.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`
-                        flex-1 min-h-[400px] rounded-lg p-2
-                        ${snapshot.isDraggingOver ? 'bg-gray-50' : 'bg-transparent'}
-                        transition-colors duration-200
-                      `}
-                    >
-                      {columnTasks.map((task, index) => (
-                        <TaskCard key={task.id} task={task} index={index} />
-                      ))}
-                      {provided.placeholder}
-                      
-                      {columnTasks.length === 0 && (
-                        <div className="text-center text-gray-400 text-sm py-8">
-                          Nenhuma tarefa
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statusColumns.map(column => {
+          const columnTasks = filteredTasks.filter(task => task.status === column.id);
+          
+          return (
+            <div key={column.id} className="flex flex-col">
+              <div className={`${column.color} rounded-lg p-3 mb-4`}>
+                <h2 className="font-semibold text-gray-800 text-sm">
+                  {column.title} ({columnTasks.length})
+                </h2>
               </div>
-            );
-          })}
-        </div>
-      </DragDropContext>
+
+              <div
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, column.id as Task['status'])}
+                className="flex-1 min-h-[400px] rounded-lg p-2 border-2 border-dashed border-transparent transition-colors duration-200 data-[drag-over=true]:border-team-primary data-[drag-over=true]:bg-team-primary/5"
+              >
+                {columnTasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+                
+                {columnTasks.length === 0 && (
+                  <div className="text-center text-gray-400 text-sm py-8">
+                    Nenhuma tarefa
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
