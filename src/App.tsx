@@ -7,6 +7,10 @@ import { Layout } from '@/components/layout/Layout';
 import { Dashboard } from '@/pages/Dashboard';
 import { Login } from '@/pages/Login';
 import { Tasks } from '@/pages/Tasks';
+import { Timeline } from '@/pages/Timeline';
+import { Messages } from '@/pages/Messages';
+import { Reports } from '@/pages/Reports';
+import { Team } from '@/pages/Team';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -104,7 +108,7 @@ function AppRoutes() {
         path="/timeline" 
         element={
           <ProtectedRoute>
-            <ComingSoon title="Timeline" />
+            <Timeline />
           </ProtectedRoute>
         } 
       />
@@ -113,7 +117,7 @@ function AppRoutes() {
         path="/messages" 
         element={
           <ProtectedRoute>
-            <ComingSoon title="Mensagens" />
+            <Messages />
           </ProtectedRoute>
         } 
       />
@@ -122,7 +126,7 @@ function AppRoutes() {
         path="/reports" 
         element={
           <ProtectedRoute>
-            <ComingSoon title="Relatórios" />
+            <Reports />
           </ProtectedRoute>
         } 
       />
@@ -131,7 +135,7 @@ function AppRoutes() {
         path="/team" 
         element={
           <ProtectedRoute>
-            <ComingSoon title="Equipe" />
+            <Team />
           </ProtectedRoute>
         } 
       />
