@@ -1,0 +1,214 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 43 100% 95%;
+    --foreground: 34 100% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 34 100% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 34 100% 12%;
+
+    --primary: 38 92% 50%;
+    --primary-foreground: 34 100% 12%;
+
+    --secondary: 39 100% 94%;
+    --secondary-foreground: 34 100% 12%;
+
+    --muted: 39 100% 94%;
+    --muted-foreground: 39 30% 40%;
+
+    --accent: 39 100% 94%;
+    --accent-foreground: 34 100% 12%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 39 100% 97%;
+
+    --border: 39 70% 86%;
+    --input: 39 70% 86%;
+    --ring: 38 92% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 34 100% 12%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 34 100% 12%;
+    --sidebar-accent: 39 100% 94%;
+    --sidebar-accent-foreground: 34 100% 12%;
+    --sidebar-border: 39 70% 86%;
+    --sidebar-ring: 38 92% 50%;
+  }
+
+  .dark {
+    --background: 34 20% 10%;
+    --foreground: 39 100% 97%;
+
+    --card: 34 20% 10%;
+    --card-foreground: 39 100% 97%;
+
+    --popover: 34 20% 10%;
+    --popover-foreground: 39 100% 97%;
+
+    --primary: 38 92% 50%;
+    --primary-foreground: 34 20% 10%;
+
+    --secondary: 39 30% 15%;
+    --secondary-foreground: 39 100% 97%;
+
+    --muted: 39 30% 15%;
+    --muted-foreground: 39 40% 70%;
+
+    --accent: 39 30% 15%;
+    --accent-foreground: 39 100% 97%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 39 100% 97%;
+
+    --border: 39 30% 15%;
+    --input: 39 30% 15%;
+    --ring: 38 92% 50%;
+
+    --sidebar-background: 34 20% 10%;
+    --sidebar-foreground: 39 100% 97%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 34 20% 10%;
+    --sidebar-accent: 39 30% 15%;
+    --sidebar-accent-foreground: 39 100% 97%;
+    --sidebar-border: 39 30% 15%;
+    --sidebar-ring: 38 92% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .glassmorphism {
+    @apply bg-white/90 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Apple-style components */
+  .apple-card {
+    @apply rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md shadow-sm hover:shadow-md transition-all duration-300;
+  }
+  
+  .apple-button {
+    @apply rounded-lg bg-primary/90 text-white px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-2 hover:bg-primary/100 hover:shadow-sm active:scale-[0.98];
+  }
+  
+  .apple-sidebar-item {
+    @apply flex items-center gap-x-3 py-2.5 px-3 rounded-xl text-sm font-normal transition-all duration-200 relative;
+  }
+  
+  .apple-input {
+    @apply rounded-lg border-0 bg-secondary/80 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 transition-all duration-200;
+  }
+  
+  .apple-status-dot {
+    @apply h-2.5 w-2.5 rounded-full transition-all duration-300;
+  }
+  
+  .apple-notification {
+    @apply flex items-center gap-3 p-3 rounded-xl border border-amber-100/50 hover:bg-amber-50/50 transition-all duration-200 cursor-pointer;
+  }
+}
+
+@layer utilities {
+  .font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+  
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
