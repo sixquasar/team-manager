@@ -63,48 +63,46 @@ export function Tasks() {
       onDragEnd={handleDragEnd}
       className="bg-white rounded-lg border shadow-sm p-4 mb-3 cursor-move hover:shadow-md transition-all duration-200"
     >
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-medium text-gray-900 text-sm">{task.titulo}</h3>
-            <div className={`w-2 h-2 rounded-full ${priorityColors[task.prioridade]}`} />
-          </div>
-          
-          {task.descricao && (
-            <p className="text-xs text-gray-600 mb-3 line-clamp-2">
-              {task.descricao}
-            </p>
-          )}
+      <div className="flex items-start justify-between mb-2">
+        <h3 className="font-medium text-gray-900 text-sm">{task.titulo}</h3>
+        <div className={`w-2 h-2 rounded-full ${priorityColors[task.prioridade]}`} />
+      </div>
+      
+      {task.descricao && (
+        <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+          {task.descricao}
+        </p>
+      )}
 
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center">
-              <User className="h-3 w-3 mr-1" />
-              {task.responsavel_nome}
-            </div>
-            {task.data_vencimento && (
-              <div className="flex items-center">
-                <Calendar className="h-3 w-3 mr-1" />
-                {new Date(task.data_vencimento).toLocaleDateString('pt-BR')}
-              </div>
-            )}
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center">
+          <User className="h-3 w-3 mr-1" />
+          {task.responsavel_nome}
+        </div>
+        {task.data_vencimento && (
+          <div className="flex items-center">
+            <Calendar className="h-3 w-3 mr-1" />
+            {new Date(task.data_vencimento).toLocaleDateString('pt-BR')}
           </div>
+        )}
+      </div>
 
-          {task.tags && task.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {task.tags.slice(0, 2).map((tag, idx) => (
-                <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
-                  {tag}
-                </Badge>
-              ))}
-              {task.tags.length > 2 && (
-                <Badge variant="secondary" className="text-xs px-1 py-0">
-                  +{task.tags.length - 2}
-                </Badge>
-              )}
-            </div>
+      {task.tags && task.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {task.tags.slice(0, 2).map((tag, idx) => (
+            <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+              {tag}
+            </Badge>
+          ))}
+          {task.tags.length > 2 && (
+            <Badge variant="secondary" className="text-xs px-1 py-0">
+              +{task.tags.length - 2}
+            </Badge>
           )}
         </div>
-      </div>
-    );
-  };
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
