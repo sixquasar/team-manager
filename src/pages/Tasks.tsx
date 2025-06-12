@@ -102,9 +102,9 @@ export function Tasks() {
             </div>
           )}
         </div>
-      )}
-    </Draggable>
-  );
+      </div>
+    );
+  };
 
   if (loading) {
     return (
