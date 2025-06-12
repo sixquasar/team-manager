@@ -6,6 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 // Pages
 import { Dashboard } from '@/pages/Dashboard';
 import { Login } from '@/pages/Login';
+import { Tasks } from '@/pages/Tasks';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -94,7 +95,7 @@ function AppRoutes() {
         path="/tasks" 
         element={
           <ProtectedRoute>
-            <ComingSoon title="Tarefas (Kanban)" />
+            <Tasks />
           </ProtectedRoute>
         } 
       />
