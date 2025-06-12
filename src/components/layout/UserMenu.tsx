@@ -12,12 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/contexts/AuthContextProprio';
+import { useAuth } from '@/contexts/AuthContextTeam';
 import { User, Settings, LogOut, UserCircle } from 'lucide-react';
 
 export function UserMenu() {
   const [open, setOpen] = useState(false);
-  const { usuario, signOut } = useAuth();
+  const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
   if (!usuario) {
@@ -79,7 +79,7 @@ export function UserMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => {
-          signOut();
+          logout();
           setOpen(false);
           navigate('/');
         }}>

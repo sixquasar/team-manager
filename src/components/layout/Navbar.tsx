@@ -1,109 +1,59 @@
-
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Search, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { UserMenu } from './UserMenu';
-import { CompanySelector } from './CompanySelector';
-import { useAuth } from '@/contexts/AuthContextProprio';
+import { useAuth } from '@/contexts/AuthContextTeam';
 
-interface NavbarProps {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-}
-
-const Navbar = ({ sidebarOpen, setSidebarOpen }: NavbarProps) => {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const { usuario } = useAuth();
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024 && searchOpen) {
-        setSearchOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [searchOpen]);
+export function Navbar() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const { equipe } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 z-20 border-b border-amber-100 dark:border-amber-800 bg-white/70 dark:bg-amber-950/70 backdrop-blur-md">
-      <div className="flex items-center justify-between h-full px-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-          
-          {!searchOpen && (
-            <>
-              <Link to="/" className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-white font-bold">
-                  H
-                </div>
-                <span className="font-semibold hidden md:block">HelioGen</span>
-              </Link>
-            </>
-          )}
-          
-          {searchOpen ? (
-            <div className="w-full mx-4 flex items-center gap-2">
-              <Input
-                placeholder="Pesquisar..."
-                className="h-9"
-                autoFocus
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSearchOpen(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
+    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <div className="text-xl font-bold text-team-primary">
+              Team Manager
             </div>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {!searchOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          )}
-          
-          <div className="hidden lg:flex items-center bg-gray-100 dark:bg-amber-900/40 rounded-md px-3 py-1.5">
-            <Search className="h-4 w-4 text-muted-foreground mr-2" />
-            <input
-              placeholder="Pesquisar..."
-              className="bg-transparent border-none outline-none text-sm w-40 placeholder:text-muted-foreground"
-            />
+            {equipe && (
+              <div className="ml-4 text-sm text-gray-600">
+                {equipe.nome}
+              </div>
+            )}
           </div>
 
-          {usuario && (
-            <>
-              <CompanySelector />
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-              </Button>
-            </>
-          )}
-          
-          <UserMenu />
+          {/* Center - Search */}
+          <div className="flex-1 flex items-center justify-center px-8">
+            <div className="w-full max-w-lg">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Buscar tarefas, projetos, mensagens..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-team-primary focus:border-team-primary"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center space-x-4">
+            {/* Notifications */}
+            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <Bell className="h-5 w-5" />
+            </button>
+
+            {/* User Menu */}
+            <UserMenu />
+          </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
-};
-
-export default Navbar;
+}
