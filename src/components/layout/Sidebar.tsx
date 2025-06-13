@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Home,
   CheckSquare,
-  Timeline,
+  Clock,
   MessageSquare,
   BarChart3,
   Users,
@@ -14,7 +14,7 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Tarefas', href: '/tasks', icon: CheckSquare },
-  { name: 'Timeline', href: '/timeline', icon: Timeline },
+  { name: 'Timeline', href: '/timeline', icon: Clock },
   { name: 'Mensagens', href: '/messages', icon: MessageSquare },
   { name: 'Relatórios', href: '/reports', icon: BarChart3 },
   { name: 'Equipe', href: '/team', icon: Users },
