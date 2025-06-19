@@ -18,31 +18,32 @@ import {
   Activity
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
-
-interface TeamMember {
-  id: string;
-  nome: string;
-  email: string;
-  cargo: string;
-  tipo: 'owner' | 'admin' | 'member';
-  avatar_url?: string;
-  telefone?: string;
-  localizacao?: string;
-  data_entrada: string;
-  status: 'ativo' | 'inativo' | 'ferias';
-  especialidades: string[];
-  projetos_ativos: number;
-  tarefas_concluidas: number;
-  rating: number;
-}
+import { useTeam, TeamMember } from '@/hooks/use-team';
 
 export function Team() {
   const { equipe, usuario } = useAuth();
+  const { members: teamMembers, loading } = useTeam();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
 
-  // Mock data - em produção viria do hook useTeam
-  const teamMembers: TeamMember[] = [
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+      </div>
+    );
+  }
+
+  const filteredMembers = teamMembers.filter(member => {
+    const matchesSearch = member.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         member.cargo.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = selectedRole === 'all' || member.tipo === selectedRole;
+    return matchesSearch && matchesRole;
+  });
+
+  // Dados dos membros agora vêm do hook useTeam conectado ao Supabase
+  const memberData = filteredMembers.length > 0 ? filteredMembers : [
     {
       id: '1',
       nome: 'Ricardo Landim',

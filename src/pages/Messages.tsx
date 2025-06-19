@@ -15,125 +15,36 @@ import {
   Pin
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
-
-interface Channel {
-  id: string;
-  name: string;
-  type: 'public' | 'private' | 'direct';
-  description?: string;
-  memberCount?: number;
-  unreadCount?: number;
-  lastActivity: string;
-}
-
-interface Message {
-  id: string;
-  channelId: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar?: string;
-  content: string;
-  timestamp: string;
-  edited?: boolean;
-  pinned?: boolean;
-  reactions?: Array<{
-    emoji: string;
-    count: number;
-    users: string[];
-  }>;
-  attachments?: Array<{
-    name: string;
-    type: string;
-    url: string;
-  }>;
-}
+import { useMessages, Channel, Message } from '@/hooks/use-messages';
 
 export function Messages() {
   const { equipe, usuario } = useAuth();
-  const [selectedChannel, setSelectedChannel] = useState<string>('geral');
+  const { channels, messages, loading, activeChannel, setActiveChannel, sendMessage, getChannelMessages } = useMessages();
+  const [selectedChannel, setSelectedChannel] = useState<string>('general');
   const [messageText, setMessageText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock data
-  const channels: Channel[] = [
-    {
-      id: 'geral',
-      name: 'geral',
-      type: 'public',
-      description: 'Discussões gerais da equipe',
-      memberCount: 3,
-      unreadCount: 2,
-      lastActivity: '2024-11-06T14:30:00Z'
-    },
-    {
-      id: 'dev',
-      name: 'desenvolvimento',
-      type: 'public',
-      description: 'Discussões técnicas e desenvolvimento',
-      memberCount: 3,
-      unreadCount: 0,
-      lastActivity: '2024-11-06T12:15:00Z'
-    },
-    {
-      id: 'design',
-      name: 'interface',
-      type: 'public',
-      description: 'UI/UX e discussões de design',
-      memberCount: 2,
-      unreadCount: 1,
-      lastActivity: '2024-11-06T11:00:00Z'
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+      </div>
+    );
+  }
 
-  const messages: Message[] = [
-    {
-      id: '1',
-      channelId: 'geral',
-      authorId: '1',
-      authorName: 'Ricardo Landim',
-      content: 'Bom dia pessoal! Como estão os projetos da sprint atual?',
-      timestamp: '2024-11-06T09:00:00Z'
-    },
-    {
-      id: '2',
-      channelId: 'geral',
-      authorId: '2',
-      authorName: 'Leonardo Candiani',
-      content: 'Oi Ricardo! O backend está progredindo bem. APIs principais já funcionando.',
-      timestamp: '2024-11-06T09:15:00Z'
-    },
-    {
-      id: '3',
-      channelId: 'geral',
-      authorId: '3',
-      authorName: 'Rodrigo Marochi',
-      content: 'Trabalhando na interface. UX está ficando muito boa!',
-      timestamp: '2024-11-06T09:30:00Z'
-    },
-    {
-      id: '4',
-      channelId: 'geral',
-      authorId: '1',
-      authorName: 'Ricardo Landim',
-      content: 'Excelente pessoal! 🎉 Estamos no caminho certo para atingir nossas metas.',
-      timestamp: '2024-11-06T09:45:00Z',
-      reactions: [
-        { emoji: '🎉', count: 2, users: ['Leonardo Candiani', 'Rodrigo Marochi'] },
-        { emoji: '👍', count: 1, users: ['Leonardo Candiani'] }
-      ]
-    }
-  ];
-
-  const filteredMessages = messages.filter(msg => 
-    msg.channelId === selectedChannel &&
-    (msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     msg.authorName.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Usar dados do hook useMessages conectado ao Supabase
+  const filteredMessages = getChannelMessages(selectedChannel).filter(msg => 
+    msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    msg.authorName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageText.trim()) return;
-    console.log('Enviando mensagem:', messageText);
-    setMessageText('');
+    
+    const result = await sendMessage(selectedChannel, messageText);
+    if (result.success) {
+      setMessageText('');
+    }
   };
 
   const formatTimestamp = (timestamp: string) => {
