@@ -385,14 +385,16 @@ configurar_nginx() {
     # Parar Nginx
     systemctl stop nginx 2>/dev/null || true
     
-    # Limpar configurações antigas
+    # Limpar configurações antigas completamente (erro must-revalidate)
     log "Limpando configurações antigas..." "info"
-    rm -f /etc/nginx/sites-enabled/team-manager* 
-    rm -f /etc/nginx/sites-enabled/admin.sixquasar.pro
+    rm -f /etc/nginx/sites-enabled/team-manager*
+    rm -f /etc/nginx/sites-enabled/admin.sixquasar.pro*
+    rm -f /etc/nginx/sites-enabled/sixquasar*
     rm -f /etc/nginx/sites-available/team-manager*
-    rm -f /etc/nginx/sites-available/admin.sixquasar.pro
+    rm -f /etc/nginx/sites-available/admin.sixquasar.pro*
+    rm -f /etc/nginx/sites-available/sixquasar*
     
-    # Criar configuração
+    # Criar configuração limpa
     log "Criando configuração do Nginx..." "info"
     
     cat > /etc/nginx/sites-available/team-manager << 'NGINX_CONF'
