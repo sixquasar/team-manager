@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home,
+  Folder,
   CheckSquare,
   Clock,
   MessageSquare,
@@ -13,6 +14,7 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Projetos', href: '/projects', icon: Folder },
   { name: 'Tarefas', href: '/tasks', icon: CheckSquare },
   { name: 'Timeline', href: '/timeline', icon: Clock },
   { name: 'Mensagens', href: '/messages', icon: MessageSquare },

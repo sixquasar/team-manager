@@ -6,6 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 // Pages
 import { Dashboard } from '@/pages/Dashboard';
 import { Login } from '@/pages/Login';
+import { Projects } from '@/pages/Projects';
 import { Tasks } from '@/pages/Tasks';
 import { Timeline } from '@/pages/Timeline';
 import { Messages } from '@/pages/Messages';
@@ -65,6 +66,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/projects" 
+            element={
+              <ProtectedRoute>
+                <Projects />
               </ProtectedRoute>
             } 
           />

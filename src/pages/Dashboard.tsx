@@ -119,27 +119,27 @@ export function Dashboard() {
                 // Fallback data
                 <>
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-team-primary text-white rounded-full flex items-center justify-center text-sm">R</div>
+                    <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm">R</div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Ricardo completou tarefa</p>
-                      <p className="text-sm text-gray-500">Sistema de autenticação finalizado</p>
-                      <p className="text-xs text-gray-400 mt-1">2h atrás</p>
+                      <p className="text-sm font-medium text-gray-900">Ricardo finalizou planejamento Palmas</p>
+                      <p className="text-sm text-gray-500">Cenário Híbrido aprovado: R$ 450k + R$ 45k/mês</p>
+                      <p className="text-xs text-gray-400 mt-1">1h atrás</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-team-primary text-white rounded-full flex items-center justify-center text-sm">L</div>
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">L</div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Leonardo iniciou nova tarefa</p>
-                      <p className="text-sm text-gray-500">Implementação da API de dados</p>
-                      <p className="text-xs text-gray-400 mt-1">4h atrás</p>
+                      <p className="text-sm font-medium text-gray-900">Leonardo iniciou POC Jocum</p>
+                      <p className="text-sm text-gray-500">SDK multi-LLM: OpenAI + Anthropic + Gemini</p>
+                      <p className="text-xs text-gray-400 mt-1">3h atrás</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-team-primary text-white rounded-full flex items-center justify-center text-sm">R</div>
+                    <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm">R</div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Rodrigo atualizou design</p>
-                      <p className="text-sm text-gray-500">Nova interface do dashboard</p>
-                      <p className="text-xs text-gray-400 mt-1">6h atrás</p>
+                      <p className="text-sm font-medium text-gray-900">Rodrigo mapeou bases Jocum</p>
+                      <p className="text-sm text-gray-500">80+ bases identificadas para integração</p>
+                      <p className="text-xs text-gray-400 mt-1">5h atrás</p>
                     </div>
                   </div>
                 </>
@@ -157,25 +157,25 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
+              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                <Clock className="h-5 w-5 text-blue-500" />
                 <div>
-                  <p className="text-sm font-medium">Daily Standup</p>
-                  <p className="text-xs text-gray-500">Hoje às 09:00</p>
+                  <p className="text-sm font-medium">POC Palmas - Entrega</p>
+                  <p className="text-xs text-gray-500">31 Jan 2025 - 5.000 cidadãos</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-purple-500" />
                 <div>
-                  <p className="text-sm font-medium">Sprint Review</p>
-                  <p className="text-xs text-gray-500">Sexta às 14:00</p>
+                  <p className="text-sm font-medium">POC Jocum - SDK Integration</p>
+                  <p className="text-xs text-gray-500">31 Jan 2025 - Multi-LLM</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-500" />
                 <div>
-                  <p className="text-sm font-medium">Entrega do Projeto</p>
-                  <p className="text-xs text-gray-500">Próxima semana</p>
+                  <p className="text-sm font-medium">Milestone: Go-live Palmas</p>
+                  <p className="text-xs text-gray-500">Set 2025 - 350k habitantes</p>
                 </div>
               </div>
             </div>
