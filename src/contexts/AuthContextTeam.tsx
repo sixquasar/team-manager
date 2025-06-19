@@ -49,10 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Mock login - em produção conectaria com Supabase
+      // Mock login - IDs EXATOS do Supabase
       const usuarios = [
         {
-          id: '1',
+          id: '550e8400-e29b-41d4-a716-446655440001',
           email: 'ricardo@sixquasar.pro',
           nome: 'Ricardo Landim',
           cargo: 'Tech Lead',
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password: 'senha123'
         },
         {
-          id: '2',
+          id: '550e8400-e29b-41d4-a716-446655440002',
           email: 'leonardo@sixquasar.pro',
           nome: 'Leonardo Candiani',
           cargo: 'Developer',
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password: 'senha123'
         },
         {
-          id: '3',
+          id: '550e8400-e29b-41d4-a716-446655440003',
           email: 'rodrigo@sixquasar.pro',
           nome: 'Rodrigo Marochi',
           cargo: 'Developer',
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { password: _, ...usuarioData } = user;
       const equipeData = {
-        id: '1',
+        id: '650e8400-e29b-41d4-a716-446655440001',
         nome: 'SixQuasar',
         descricao: 'Equipe de desenvolvimento',
         created_at: new Date().toISOString()

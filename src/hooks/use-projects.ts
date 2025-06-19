@@ -14,8 +14,7 @@ export function useProjects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      console.log('🔍 PROJECTS: Iniciando busca na tabela projetos...');
-      console.log('🏢 EQUIPE ID:', equipe?.id);
+      console.log('✅ PROJECTS: Buscando dados REAIS do Supabase');
 
       // Query direta da tabela projetos REAL
       const { data, error } = await supabase
@@ -24,27 +23,15 @@ export function useProjects() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ ERRO SUPABASE ao buscar projetos:', error);
-        console.error('❌ Código do erro:', error.code);
-        console.error('❌ Mensagem:', error.message);
-        console.error('❌ Detalhes:', error.details);
+        console.error('❌ Erro ao buscar projetos:', error);
         setProjects([]);
       } else {
-        console.log('✅ PROJECTS: Query executada com sucesso!');
-        console.log('📊 PROJECTS: Dados retornados:', data);
-        console.log('📝 PROJECTS: Total de projetos:', data?.length || 0);
-        
-        if (data && data.length > 0) {
-          console.log('🎯 PROJECTS: Primeiro projeto:', data[0]);
-        } else {
-          console.log('⚠️ PROJECTS: Nenhum projeto encontrado na tabela');
-        }
-        
+        console.log('✅ PROJECTS: Dados encontrados:', data?.length || 0);
         setProjects(data || []);
       }
       
     } catch (error) {
-      console.error('❌ PROJECTS: Erro JavaScript na busca:', error);
+      console.error('❌ PROJECTS: Erro na busca:', error);
       setProjects([]);
     } finally {
       setLoading(false);
@@ -53,38 +40,24 @@ export function useProjects() {
 
   const createProject = async (projectData: Omit<Projeto, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      console.log('📝 PROJECTS: Criando novo projeto...');
-      console.log('📊 PROJECTS: Dados do projeto:', projectData);
-      console.log('🏢 PROJECTS: Equipe ID:', equipe?.id);
-
-      const insertData = {
-        ...projectData,
-        equipe_id: equipe?.id
-      };
-      
-      console.log('📤 PROJECTS: Dados para inserção:', insertData);
-
       const { data, error } = await supabase
         .from('projetos')
-        .insert(insertData)
+        .insert({
+          ...projectData,
+          equipe_id: equipe?.id
+        })
         .select()
         .single();
 
       if (error) {
-        console.error('❌ ERRO SUPABASE ao criar projeto:', error);
-        console.error('❌ Código do erro:', error.code);
-        console.error('❌ Mensagem:', error.message);
-        console.error('❌ Detalhes:', error.details);
+        console.error('Erro ao criar projeto:', error);
         throw error;
       }
-
-      console.log('✅ PROJECTS: Projeto criado com sucesso!');
-      console.log('🎯 PROJECTS: Dados do projeto criado:', data);
 
       setProjects(prev => [data, ...prev]);
       return data;
     } catch (error) {
-      console.error('❌ PROJECTS: Erro JavaScript ao criar projeto:', error);
+      console.error('Erro ao criar projeto:', error);
       throw error;
     }
   };
