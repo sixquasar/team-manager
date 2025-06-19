@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Clock,
   CheckCircle2,
@@ -9,7 +11,11 @@ import {
   User,
   Calendar,
   Filter,
-  Plus
+  Plus,
+  Target,
+  TrendingUp,
+  Code,
+  Database
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 
@@ -20,6 +26,7 @@ interface TimelineEvent {
   description: string;
   author: string;
   timestamp: string;
+  project?: string;
   metadata?: {
     taskStatus?: 'completed' | 'started' | 'delayed';
     priority?: 'low' | 'medium' | 'high' | 'urgent';
@@ -41,7 +48,7 @@ const eventTypeConfig = {
     label: 'Mensagem'
   },
   milestone: {
-    icon: AlertTriangle,
+    icon: Target,
     color: 'text-purple-500',
     bgColor: 'bg-purple-100',
     label: 'Marco'
@@ -53,7 +60,7 @@ const eventTypeConfig = {
     label: 'Reunião'
   },
   deadline: {
-    icon: Clock,
+    icon: AlertTriangle,
     color: 'text-red-500',
     bgColor: 'bg-red-100',
     label: 'Prazo'
@@ -61,80 +68,177 @@ const eventTypeConfig = {
 };
 
 export function Timeline() {
-  const { equipe } = useAuth();
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'task' | 'message' | 'milestone' | 'meeting' | 'deadline'>('all');
-  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('week');
+  const { equipe, usuario } = useAuth();
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  // Mock data - em produção viria do hook useTimeline
+  // Timeline baseada nos projetos reais da SixQuasar
   const timelineEvents: TimelineEvent[] = [
     {
       id: '1',
-      type: 'task',
-      title: 'Sistema de login implementado',
-      description: 'Ricardo Landim finalizou a implementação do sistema de autenticação.',
+      type: 'milestone',
+      title: 'Início do Projeto Palmas',
+      description: 'Sistema de Atendimento ao Cidadão com IA - R$ 2.4M aprovado pela Prefeitura',
       author: 'Ricardo Landim',
-      timestamp: '2024-11-06T14:30:00Z',
-      metadata: { taskStatus: 'completed', priority: 'high' }
+      timestamp: '2024-11-01T09:00:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        priority: 'high'
+      }
     },
     {
       id: '2',
-      type: 'message',
-      title: 'Discussão sobre arquitetura do sistema',
-      description: 'Leonardo iniciou uma discussão sobre a melhor arquitetura para o backend.',
-      author: 'Leonardo Candiani',
-      timestamp: '2024-11-06T12:15:00Z'
+      type: 'task',
+      title: 'Arquitetura do sistema aprovada',
+      description: 'Definida infraestrutura para atender 350k habitantes com 99.9% disponibilidade',
+      author: 'Ricardo Landim',
+      timestamp: '2024-11-15T14:30:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        taskStatus: 'completed',
+        priority: 'high'
+      }
     },
     {
       id: '3',
-      type: 'milestone',
-      title: 'Sprint 2 - Meta de 75% atingida',
-      description: 'A equipe atingiu 75% das metas estabelecidas para a Sprint 2.',
-      author: 'Sistema',
-      timestamp: '2024-11-06T10:00:00Z'
+      type: 'meeting',
+      title: 'Reunião de planejamento Palmas',
+      description: 'Alinhamento sobre metas: 1M mensagens/mês e 30% economia operacional',
+      author: 'Equipe SixQuasar',
+      timestamp: '2024-11-20T10:00:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        participants: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi']
+      }
     },
     {
       id: '4',
-      type: 'meeting',
-      title: 'Daily Standup Meeting',
-      description: 'Reunião diária da equipe para alinhamento das atividades.',
-      author: 'Ricardo Landim',
-      timestamp: '2024-11-06T09:00:00Z',
-      metadata: { participants: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'] }
+      type: 'milestone',
+      title: 'Início do Projeto Jocum',
+      description: 'Automação com SDK Multi-LLM - R$ 625K para 50k atendimentos/dia',
+      author: 'Leonardo Candiani',
+      timestamp: '2024-12-01T08:00:00Z',
+      project: 'Automação Jocum',
+      metadata: {
+        priority: 'high'
+      }
     },
     {
       id: '5',
       type: 'task',
-      title: 'Interface do usuário melhorada',
-      description: 'Rodrigo Marochi implementou melhorias na interface e experiência do usuário.',
+      title: 'Integração SDK OpenAI + Anthropic',
+      description: 'Implementação da integração com múltiplos LLMs para máxima flexibilidade',
+      author: 'Leonardo Candiani',
+      timestamp: '2024-12-10T16:45:00Z',
+      project: 'Automação Jocum',
+      metadata: {
+        taskStatus: 'completed',
+        priority: 'medium'
+      }
+    },
+    {
+      id: '6',
+      type: 'task',
+      title: 'Mapeamento de bases Jocum',
+      description: 'Identificadas 80+ bases para integração com WhatsApp e VoIP',
       author: 'Rodrigo Marochi',
-      timestamp: '2024-11-05T16:45:00Z',
-      metadata: { taskStatus: 'started', priority: 'medium' }
+      timestamp: '2024-12-15T11:20:00Z',
+      project: 'Automação Jocum',
+      metadata: {
+        taskStatus: 'completed',
+        priority: 'medium'
+      }
+    },
+    {
+      id: '7',
+      type: 'task',
+      title: 'Desenvolvimento POC Palmas',
+      description: 'Protótipo para 5.000 cidadãos em funcionamento',
+      author: 'Ricardo Landim',
+      timestamp: '2024-12-20T13:15:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        taskStatus: 'started',
+        priority: 'high'
+      }
+    },
+    {
+      id: '8',
+      type: 'deadline',
+      title: 'Entrega POC Palmas',
+      description: 'Demonstração para 5.000 cidadãos - validação do sistema IA',
+      author: 'Sistema',
+      timestamp: '2025-01-31T23:59:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        priority: 'urgent'
+      }
+    },
+    {
+      id: '9',
+      type: 'deadline',
+      title: 'Entrega POC Jocum',
+      description: 'SDK Multi-LLM funcional com integração completa',
+      author: 'Sistema',
+      timestamp: '2025-01-31T23:59:00Z',
+      project: 'Automação Jocum',
+      metadata: {
+        priority: 'urgent'
+      }
+    },
+    {
+      id: '10',
+      type: 'milestone',
+      title: 'Go-live Sistema Palmas',
+      description: 'Lançamento oficial para 350k habitantes de Palmas-TO',
+      author: 'Sistema',
+      timestamp: '2025-09-01T00:00:00Z',
+      project: 'Sistema Palmas IA',
+      metadata: {
+        priority: 'urgent'
+      }
     }
   ];
 
-  const filteredEvents = timelineEvents.filter(event => {
-    if (selectedFilter === 'all') return true;
-    return event.type === selectedFilter;
-  });
+  const filteredEvents = selectedFilter === 'all' 
+    ? timelineEvents 
+    : timelineEvents.filter(event => event.type === selectedFilter);
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return 'Agora há pouco';
-    if (diffHours < 24) return `${diffHours}h atrás`;
-    if (diffDays < 7) return `${diffDays}d atrás`;
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (diffInHours < 24) {
+      return `${diffInHours}h atrás`;
+    } else if (diffInHours < 168) {
+      const days = Math.floor(diffInHours / 24);
+      return `${days}d atrás`;
+    } else {
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+  };
+
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-500';
+      case 'started': return 'bg-blue-500';
+      case 'delayed': return 'bg-red-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-500 text-white';
+      case 'high': return 'bg-orange-500 text-white';
+      case 'medium': return 'bg-yellow-500 text-white';
+      case 'low': return 'bg-gray-500 text-white';
+      default: return 'bg-gray-200 text-gray-800';
+    }
   };
 
   return (
@@ -144,73 +248,50 @@ export function Timeline() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Timeline</h1>
           <p className="text-gray-600 mt-2">
-            Acompanhe todas as atividades da {equipe?.nome || 'equipe'}
+            Histórico completo das atividades da {equipe?.nome || 'SixQuasar'}
           </p>
         </div>
         
-        <button className="flex items-center px-4 py-2 bg-team-primary text-white rounded-lg hover:bg-team-primary/90 transition-colors">
+        <Button className="bg-team-primary hover:bg-team-primary/90">
           <Plus className="h-4 w-4 mr-2" />
-          Adicionar Evento
-        </button>
+          Novo Evento
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center space-x-4">
-        <select
-          value={selectedFilter}
-          onChange={(e) => setSelectedFilter(e.target.value as any)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
-        >
-          <option value="all">Todos os eventos</option>
-          <option value="task">Tarefas</option>
-          <option value="message">Mensagens</option>
-          <option value="milestone">Marcos</option>
-          <option value="meeting">Reuniões</option>
-          <option value="deadline">Prazos</option>
-        </select>
-
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value as any)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
-        >
-          <option value="today">Hoje</option>
-          <option value="week">Esta semana</option>
-          <option value="month">Este mês</option>
-        </select>
-
-        <button className="flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-          <Filter className="h-4 w-4 mr-2" />
-          Mais filtros
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {Object.entries(eventTypeConfig).map(([type, config]) => {
-          const count = timelineEvents.filter(e => e.type === type).length;
-          return (
-            <Card key={type}>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <config.icon className={`h-8 w-8 ${config.color}`} />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">{config.label}</p>
-                    <p className="text-2xl font-bold text-gray-900">{count}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-4">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <div className="flex space-x-2">
+              {[
+                { value: 'all', label: 'Todos' },
+                { value: 'task', label: 'Tarefas' },
+                { value: 'milestone', label: 'Marcos' },
+                { value: 'meeting', label: 'Reuniões' },
+                { value: 'deadline', label: 'Prazos' }
+              ].map(filter => (
+                <Button
+                  key={filter.value}
+                  variant={selectedFilter === filter.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedFilter(filter.value)}
+                  className={selectedFilter === filter.value ? 'bg-team-primary' : ''}
+                >
+                  {filter.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Timeline */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Calendar className="mr-2 h-5 w-5" />
-            Linha do Tempo
+            <Clock className="mr-2 h-5 w-5" />
+            Histórico de Atividades ({filteredEvents.length} eventos)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -218,78 +299,84 @@ export function Timeline() {
             {filteredEvents.map((event, index) => {
               const config = eventTypeConfig[event.type];
               const IconComponent = config.icon;
-
+              
               return (
                 <div key={event.id} className="relative flex items-start space-x-4">
                   {/* Timeline line */}
-                  {index !== filteredEvents.length - 1 && (
-                    <div className="absolute left-6 top-10 bottom-0 w-0.5 bg-gray-200"></div>
+                  {index < filteredEvents.length - 1 && (
+                    <div className="absolute left-6 top-12 w-0.5 h-16 bg-gray-200"></div>
                   )}
                   
-                  {/* Icon */}
-                  <div className={`flex-shrink-0 w-12 h-12 ${config.bgColor} rounded-full flex items-center justify-center z-10`}>
+                  {/* Event icon */}
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-full ${config.bgColor} flex items-center justify-center`}>
                     <IconComponent className={`h-6 w-6 ${config.color}`} />
                   </div>
-
-                  {/* Content */}
+                  
+                  {/* Event content */}
                   <div className="flex-1 min-w-0">
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.bgColor} ${config.color}`}>
-                              {config.label}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
+                        <Badge variant="secondary" className="text-xs">
+                          {config.label}
+                        </Badge>
+                        {event.metadata?.priority && (
+                          <Badge className={`text-xs ${getPriorityColor(event.metadata.priority)}`}>
+                            {event.metadata.priority}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-sm text-gray-500">{formatDate(event.timestamp)}</span>
+                    </div>
+                    
+                    <p className="text-gray-600 mt-1">{event.description}</p>
+                    
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center space-x-4">
+                        <span className="text-sm text-gray-500">
+                          <User className="h-3 w-3 inline mr-1" />
+                          {event.author}
+                        </span>
+                        {event.project && (
+                          <span className="text-sm text-blue-600">
+                            <Target className="h-3 w-3 inline mr-1" />
+                            {event.project}
+                          </span>
+                        )}
+                        {event.metadata?.taskStatus && (
+                          <div className="flex items-center space-x-1">
+                            <div className={`w-2 h-2 rounded-full ${getStatusColor(event.metadata.taskStatus)}`}></div>
+                            <span className="text-xs text-gray-500 capitalize">
+                              {event.metadata.taskStatus === 'completed' ? 'Concluído' : 
+                               event.metadata.taskStatus === 'started' ? 'Em andamento' : 'Atrasado'}
                             </span>
-                            {event.metadata?.priority && (
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                event.metadata.priority === 'urgent' 
-                                  ? 'bg-red-100 text-red-800'
-                                  : event.metadata.priority === 'high'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {event.metadata.priority === 'urgent' ? 'Urgente' : 
-                                 event.metadata.priority === 'high' ? 'Alta' : 
-                                 event.metadata.priority === 'medium' ? 'Média' : 'Baixa'}
-                              </span>
-                            )}
                           </div>
-                          
-                          <h3 className="font-semibold text-gray-900 mb-1">{event.title}</h3>
-                          <p className="text-sm text-gray-600 mb-3">{event.description}</p>
-                          
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span className="flex items-center">
-                              <User className="h-3 w-3 mr-1" />
-                              {event.author}
-                            </span>
-                            <span className="flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {formatTimestamp(event.timestamp)}
-                            </span>
-                          </div>
-
-                          {event.metadata?.participants && (
-                            <div className="mt-2 flex items-center text-xs text-gray-500">
-                              <User className="h-3 w-3 mr-1" />
-                              Participantes: {event.metadata.participants.join(', ')}
+                        )}
+                      </div>
+                      
+                      {event.metadata?.participants && (
+                        <div className="flex -space-x-2">
+                          {event.metadata.participants.slice(0, 3).map((participant, idx) => (
+                            <div
+                              key={idx}
+                              className="w-6 h-6 bg-team-primary text-white rounded-full flex items-center justify-center text-xs border-2 border-white"
+                              title={participant}
+                            >
+                              {participant.charAt(0)}
+                            </div>
+                          ))}
+                          {event.metadata.participants.length > 3 && (
+                            <div className="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-xs border-2 border-white">
+                              +{event.metadata.participants.length - 3}
                             </div>
                           )}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
               );
             })}
-            
-            {filteredEvents.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum evento encontrado</p>
-                <p className="text-sm">Tente ajustar os filtros ou adicionar novos eventos</p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
