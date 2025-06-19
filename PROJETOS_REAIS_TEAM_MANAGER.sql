@@ -116,7 +116,43 @@ ALTER TABLE public.metricas DISABLE ROW LEVEL SECURITY;
 -- Conceder permissões
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
 
--- Inserir equipe se não existir
+-- =====================================================
+-- INSERIR USUÁRIOS SE NÃO EXISTIREM
+-- =====================================================
+
+-- Verificar se tabela usuarios existe, se não, criar
+CREATE TABLE IF NOT EXISTS public.usuarios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    cargo VARCHAR(255),
+    tipo VARCHAR(50) DEFAULT 'member' CHECK (tipo IN ('owner', 'admin', 'member')),
+    avatar_url TEXT,
+    telefone VARCHAR(20),
+    localizacao VARCHAR(255),
+    senha_hash VARCHAR(255) NOT NULL,
+    ativo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Desabilitar RLS na tabela usuarios
+ALTER TABLE public.usuarios DISABLE ROW LEVEL SECURITY;
+
+-- Inserir usuários SixQuasar se não existirem
+INSERT INTO public.usuarios (id, email, nome, cargo, tipo, senha_hash) 
+SELECT '550e8400-e29b-41d4-a716-446655440001', 'ricardo@sixquasar.pro', 'Ricardo Landim', 'Tech Lead', 'owner', '$2b$10$hashedpassword123'
+WHERE NOT EXISTS (SELECT 1 FROM public.usuarios WHERE id = '550e8400-e29b-41d4-a716-446655440001');
+
+INSERT INTO public.usuarios (id, email, nome, cargo, tipo, senha_hash) 
+SELECT '550e8400-e29b-41d4-a716-446655440002', 'leonardo@sixquasar.pro', 'Leonardo Candiani', 'Developer', 'admin', '$2b$10$hashedpassword123'
+WHERE NOT EXISTS (SELECT 1 FROM public.usuarios WHERE id = '550e8400-e29b-41d4-a716-446655440002');
+
+INSERT INTO public.usuarios (id, email, nome, cargo, tipo, senha_hash) 
+SELECT '550e8400-e29b-41d4-a716-446655440003', 'rodrigo@sixquasar.pro', 'Rodrigo Marochi', 'Developer', 'member', '$2b$10$hashedpassword123'
+WHERE NOT EXISTS (SELECT 1 FROM public.usuarios WHERE id = '550e8400-e29b-41d4-a716-446655440003');
+
+-- Inserir equipe se não existir (agora que os usuários existem)
 INSERT INTO public.equipes (id, nome, descricao, owner_id) 
 SELECT '650e8400-e29b-41d4-a716-446655440001', 'TechSquad', 'Equipe de desenvolvimento SixQuasar', '550e8400-e29b-41d4-a716-446655440001'
 WHERE NOT EXISTS (SELECT 1 FROM public.equipes WHERE id = '650e8400-e29b-41d4-a716-446655440001');

@@ -23,6 +23,7 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { useProjects } from '@/hooks/use-projects';
 
 interface Project {
   id: string;
@@ -48,51 +49,31 @@ interface Project {
 
 export function Projects() {
   const { equipe, usuario } = useAuth();
+  const { loading, projects } = useProjects();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
-  // Dados dos projetos reais baseados nos .docx
-  const projects: Project[] = [
-    {
-      id: '1',
-      nome: 'Sistema de Atendimento ao Cidadão de Palmas com IA',
-      descricao: 'Sistema Integrado de Atendimento ao Cidadão com Inteligência Artificial para a Prefeitura Municipal de Palmas - TO. Automatizar 60% dos atendimentos municipais.',
-      status: 'em_progresso',
-      responsavel: 'Ricardo Landim',
-      data_inicio: '2024-11-01',
-      data_fim_prevista: '2025-09-01',
-      progresso: 25,
-      orcamento: 2400000,
-      tecnologias: ['Python', 'LangChain', 'OpenAI GPT-4o', 'WhatsApp API', 'PostgreSQL', 'Kubernetes', 'AWS', 'Redis', 'N8N'],
-      equipe: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'],
-      kpis: {
-        usuarios_meta: '350.000 habitantes',
-        volume_meta: '1M mensagens/mês',
-        economia: '30% custos operacionais',
-        roi: '30% no primeiro ano',
-        disponibilidade: '99.9%',
-        satisfacao: '85% satisfação cidadã'
-      }
-    },
-    {
-      id: '2',
-      nome: 'Automação Jocum com SDK e LLM',
-      descricao: 'Agente automatizado para atendimento aos usuários da Jocum, utilizando diretamente SDKs dos principais LLMs (OpenAI, Anthropic Claude, Google Gemini).',
-      status: 'em_progresso',
-      responsavel: 'Leonardo Candiani',
-      data_inicio: '2024-12-01',
-      data_fim_prevista: '2025-06-01',
-      progresso: 15,
-      orcamento: 625000,
-      tecnologias: ['Python', 'LangChain', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'WhatsApp API', 'VoIP', 'PostgreSQL', 'React', 'AWS/GCP'],
-      equipe: ['Leonardo Candiani', 'Ricardo Landim', 'Rodrigo Marochi'],
-      kpis: {
-        volume_meta: '50.000 atendimentos/dia',
-        disponibilidade: '99.9%',
-        satisfacao: '85% satisfação',
-        economia: '30% redução atendimentos manuais'
-      }
+  // Transformar dados do banco para interface local
+  const projectsFormatted = projects.map(project => ({
+    id: project.id,
+    nome: project.nome,
+    descricao: project.descricao || '',
+    status: project.status,
+    responsavel: project.usuarios?.nome || 'Não atribuído',
+    data_inicio: project.data_inicio || '',
+    data_fim_prevista: project.data_fim_prevista || '',
+    progresso: project.progresso || 0,
+    orcamento: project.orcamento || 0,
+    tecnologias: project.tecnologias || [],
+    equipe: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'], // Dados da equipe SixQuasar
+    kpis: {
+      usuarios_meta: project.nome.includes('Palmas') ? '350.000 habitantes' : '50.000 usuários/dia',
+      volume_meta: project.nome.includes('Palmas') ? '1M mensagens/mês' : '50.000 atendimentos/dia',
+      economia: '30% custos operacionais',
+      roi: project.nome.includes('Palmas') ? '30% no primeiro ano' : '25% no primeiro ano',
+      disponibilidade: '99.9%',
+      satisfacao: '85% satisfação'
     }
-  ];
+  }));
 
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -158,52 +139,59 @@ export function Projects() {
         </Button>
       </div>
 
-      {/* Projects Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <Folder className="h-8 w-8 text-blue-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total de Projetos</p>
-                <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+        </div>
+      ) : (
+        <>
+          {/* Projects Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <Folder className="h-8 w-8 text-blue-500" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total de Projetos</p>
+                    <p className="text-2xl font-bold text-gray-900">{projectsFormatted.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Em Progresso</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {projects.filter(p => p.status === 'em_progresso').length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <TrendingUp className="h-8 w-8 text-green-500" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Em Progresso</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {projectsFormatted.filter(p => p.status === 'em_progresso').length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-purple-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Orçamento Total</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(projects.reduce((sum, p) => sum + p.orcamento, 0))}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <DollarSign className="h-8 w-8 text-purple-500" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Orçamento Total</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {formatCurrency(projectsFormatted.reduce((sum, p) => sum + p.orcamento, 0))}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Projects List */}
-      <div className="grid grid-cols-1 gap-6">
-        {projects.map(project => (
+          {/* Projects List */}
+          <div className="grid grid-cols-1 gap-6">
+            {projectsFormatted.map(project => (
           <Card key={project.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -340,7 +328,9 @@ export function Projects() {
             </CardContent>
           </Card>
         ))}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

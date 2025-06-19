@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { supabase } from '@/lib/supabase';
 
 export interface Task {
   id: string;
@@ -82,15 +83,61 @@ export function useTasks() {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        // Em produção, faria requisição para Supabase
-        // const { data } = await supabase.from('tarefas').select('*').eq('equipe_id', equipe?.id);
         
-        // Por enquanto, usar dados mock
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay da API
-        setTasks(mockTasks);
+        if (!equipe?.id) {
+          console.log('Sem equipe selecionada, usando dados mock');
+          setTasks(mockTasks);
+          return;
+        }
+
+        // Buscar tarefas reais do Supabase
+        const { data, error } = await supabase
+          .from('tarefas')
+          .select(`
+            id,
+            titulo,
+            descricao,
+            status,
+            prioridade,
+            responsavel_id,
+            data_vencimento,
+            data_conclusao,
+            tags,
+            created_at,
+            usuarios!tarefas_responsavel_id_fkey(nome)
+          `)
+          .eq('equipe_id', equipe.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erro ao buscar tarefas:', error);
+          // Fallback para dados mock
+          setTasks(mockTasks);
+          return;
+        }
+
+        // Transformar dados do banco para interface local
+        const tasksFormatted = data?.map(task => ({
+          id: task.id,
+          titulo: task.titulo,
+          descricao: task.descricao || '',
+          status: task.status,
+          prioridade: task.prioridade,
+          responsavel_id: task.responsavel_id || '',
+          responsavel_nome: (task.usuarios as any)?.nome || 'Não atribuído',
+          equipe_id: equipe.id,
+          data_criacao: task.created_at,
+          data_vencimento: task.data_vencimento,
+          data_conclusao: task.data_conclusao,
+          tags: task.tags || []
+        })) || [];
+
+        setTasks(tasksFormatted);
+        
       } catch (error) {
         console.error('Erro ao carregar tarefas:', error);
-        setTasks(mockTasks); // Fallback para dados mock
+        // Fallback para dados mock em caso de erro
+        setTasks(mockTasks);
       } finally {
         setLoading(false);
       }
@@ -103,21 +150,54 @@ export function useTasks() {
 
   const createTask = async (taskData: Partial<Task>): Promise<{ success: boolean; error?: string }> => {
     try {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        titulo: taskData.titulo || '',
-        descricao: taskData.descricao || '',
-        status: 'pendente',
-        prioridade: taskData.prioridade || 'media',
-        responsavel_id: taskData.responsavel_id || '',
-        responsavel_nome: taskData.responsavel_nome || '',
+      const { data, error } = await supabase
+        .from('tarefas')
+        .insert({
+          titulo: taskData.titulo || '',
+          descricao: taskData.descricao || '',
+          status: 'pendente',
+          prioridade: taskData.prioridade || 'media',
+          responsavel_id: taskData.responsavel_id,
+          equipe_id: equipe?.id,
+          data_vencimento: taskData.data_vencimento,
+          tags: taskData.tags || []
+        })
+        .select(`
+          id,
+          titulo,
+          descricao,
+          status,
+          prioridade,
+          responsavel_id,
+          data_vencimento,
+          data_conclusao,
+          tags,
+          created_at,
+          usuarios!tarefas_responsavel_id_fkey(nome)
+        `)
+        .single();
+
+      if (error) {
+        console.error('Erro ao criar tarefa:', error);
+        return { success: false, error: 'Erro ao criar tarefa' };
+      }
+
+      // Atualizar lista local
+      const newTask = {
+        id: data.id,
+        titulo: data.titulo,
+        descricao: data.descricao || '',
+        status: data.status,
+        prioridade: data.prioridade,
+        responsavel_id: data.responsavel_id || '',
+        responsavel_nome: (data.usuarios as any)?.nome || 'Não atribuído',
         equipe_id: equipe?.id || '',
-        data_criacao: new Date().toISOString(),
-        data_vencimento: taskData.data_vencimento,
-        tags: taskData.tags || []
+        data_criacao: data.created_at,
+        data_vencimento: data.data_vencimento,
+        data_conclusao: data.data_conclusao,
+        tags: data.tags || []
       };
 
-      // Em produção, faria insert no Supabase
       setTasks(prev => [newTask, ...prev]);
       return { success: true };
     } catch (error) {
@@ -128,7 +208,31 @@ export function useTasks() {
 
   const updateTask = async (taskId: string, updates: Partial<Task>): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Em produção, faria update no Supabase
+      const updateData: any = {};
+      if (updates.titulo) updateData.titulo = updates.titulo;
+      if (updates.descricao) updateData.descricao = updates.descricao;
+      if (updates.status) updateData.status = updates.status;
+      if (updates.prioridade) updateData.prioridade = updates.prioridade;
+      if (updates.responsavel_id) updateData.responsavel_id = updates.responsavel_id;
+      if (updates.data_vencimento) updateData.data_vencimento = updates.data_vencimento;
+      if (updates.tags) updateData.tags = updates.tags;
+      
+      // Se marcando como concluída, adicionar data de conclusão
+      if (updates.status === 'concluida') {
+        updateData.data_conclusao = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('tarefas')
+        .update(updateData)
+        .eq('id', taskId);
+
+      if (error) {
+        console.error('Erro ao atualizar tarefa:', error);
+        return { success: false, error: 'Erro ao atualizar tarefa' };
+      }
+
+      // Atualizar lista local
       setTasks(prev => prev.map(task => 
         task.id === taskId 
           ? { 
@@ -138,6 +242,7 @@ export function useTasks() {
             }
           : task
       ));
+      
       return { success: true };
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
@@ -147,7 +252,17 @@ export function useTasks() {
 
   const deleteTask = async (taskId: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Em produção, faria delete no Supabase
+      const { error } = await supabase
+        .from('tarefas')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) {
+        console.error('Erro ao deletar tarefa:', error);
+        return { success: false, error: 'Erro ao deletar tarefa' };
+      }
+
+      // Atualizar lista local
       setTasks(prev => prev.filter(task => task.id !== taskId));
       return { success: true };
     } catch (error) {
