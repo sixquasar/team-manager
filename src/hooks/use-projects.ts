@@ -28,13 +28,13 @@ export function useProjects() {
             responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
             equipe_id: '650e8400-e29b-41d4-a716-446655440001',
             data_inicio: '2024-11-01',
-            data_fim_prevista: '2025-09-01',
+            data_fim_prevista: '2025-09-30',
             data_fim_real: null,
             progresso: 25,
             orcamento: 2400000.00,
             tecnologias: ['Python', 'LangChain', 'OpenAI GPT-4o', 'WhatsApp API', 'PostgreSQL', 'Kubernetes', 'AWS', 'Redis', 'N8N'],
             created_at: '2024-11-01T00:00:00Z',
-            updated_at: '2024-12-20T00:00:00Z'
+            updated_at: '2025-06-19T00:00:00Z'
           },
           {
             id: '750e8400-e29b-41d4-a716-446655440002',
@@ -44,13 +44,13 @@ export function useProjects() {
             responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
             equipe_id: '650e8400-e29b-41d4-a716-446655440001',
             data_inicio: '2024-12-01',
-            data_fim_prevista: '2025-06-01',
+            data_fim_prevista: '2025-06-30',
             data_fim_real: null,
             progresso: 15,
             orcamento: 625000.00,
             tecnologias: ['Python', 'LangChain', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'WhatsApp API', 'VoIP', 'PostgreSQL', 'React', 'AWS/GCP'],
             created_at: '2024-12-01T00:00:00Z',
-            updated_at: '2024-12-20T00:00:00Z'
+            updated_at: '2025-06-19T00:00:00Z'
           }
         ]);
         
@@ -80,13 +80,13 @@ export function useProjects() {
             responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
             equipe_id: '650e8400-e29b-41d4-a716-446655440001',
             data_inicio: '2024-11-01',
-            data_fim_prevista: '2025-09-01',
+            data_fim_prevista: '2025-09-30',
             data_fim_real: null,
             progresso: 25,
             orcamento: 2400000.00,
             tecnologias: ['Python', 'LangChain', 'OpenAI GPT-4o', 'WhatsApp API', 'PostgreSQL'],
             created_at: '2024-11-01T00:00:00Z',
-            updated_at: '2024-12-20T00:00:00Z'
+            updated_at: '2025-06-19T00:00:00Z'
           },
           {
             id: '750e8400-e29b-41d4-a716-446655440002',
@@ -96,13 +96,13 @@ export function useProjects() {
             responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
             equipe_id: '650e8400-e29b-41d4-a716-446655440001',
             data_inicio: '2024-12-01',
-            data_fim_prevista: '2025-06-01',
+            data_fim_prevista: '2025-06-30',
             data_fim_real: null,
             progresso: 15,
             orcamento: 625000.00,
             tecnologias: ['Python', 'LangChain', 'OpenAI', 'Anthropic Claude', 'Google Gemini'],
             created_at: '2024-12-01T00:00:00Z',
-            updated_at: '2024-12-20T00:00:00Z'
+            updated_at: '2025-06-19T00:00:00Z'
           }
         ]);
         return;

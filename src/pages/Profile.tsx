@@ -19,12 +19,16 @@ import {
   Clock,
   Target,
   Award,
-  Users
+  Users,
+  TrendingUp,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { useProfile } from '@/hooks/use-profile';
 
 export function Profile() {
   const { usuario, equipe } = useAuth();
+  const { stats, loading } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     nome: usuario?.nome || '',
@@ -58,15 +62,13 @@ export function Profile() {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  // Stats mockados baseados nos projetos
-  const userStats = {
-    projectsCompleted: 2,
-    tasksCompleted: 47,
-    teamCollaboration: 98,
-    averageRating: 4.8,
-    hoursLogged: 320,
-    achievements: ['Arquiteto de Sistemas', 'Expert em IA', 'Líder de Projetos']
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -136,11 +138,11 @@ export function Profile() {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{userStats.projectsCompleted}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.projectsActive || 0}</p>
                     <p className="text-xs text-gray-600">Projetos</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{userStats.tasksCompleted}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.tasksCompleted || 0}</p>
                     <p className="text-xs text-gray-600">Tarefas</p>
                   </div>
                 </div>
@@ -158,7 +160,7 @@ export function Profile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {userStats.achievements.map((achievement, index) => (
+                {(stats?.achievements || []).map((achievement, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                       <Star className="h-4 w-4 text-yellow-600" />

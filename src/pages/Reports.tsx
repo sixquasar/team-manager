@@ -10,9 +10,12 @@ import {
   Users,
   Clock,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  DollarSign,
+  Target
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { useReports } from '@/hooks/use-reports';
 
 interface Report {
   id: string;
@@ -24,24 +27,37 @@ interface Report {
 
 export function Reports() {
   const { equipe } = useAuth();
+  const { metrics, loading } = useReports();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'quarter'>('month');
   const [selectedReport, setSelectedReport] = useState<string>('productivity');
 
-  // Mock data - em produção viria do hook useReports
-  const teamMetrics = {
-    tasksCompleted: 47,
-    tasksInProgress: 12,
-    averageCompletionTime: 2.3,
-    productivityScore: 85,
-    teamUtilization: 78
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+      </div>
+    );
+  }
 
-  const chartData = [
-    { period: 'Sem 1', completed: 12, started: 8, delayed: 2 },
-    { period: 'Sem 2', completed: 15, started: 6, delayed: 1 },
-    { period: 'Sem 3', completed: 10, started: 9, delayed: 3 },
-    { period: 'Sem 4', completed: 10, started: 7, delayed: 1 }
-  ];
+  if (!metrics) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600">Erro ao carregar relatórios</p>
+        </div>
+      </div>
+    );
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
 
   const reports = [
     {
@@ -108,14 +124,14 @@ export function Reports() {
       </div>
 
       {/* Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
               <CheckCircle2 className="h-8 w-8 text-green-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Concluídas</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMetrics.tasksCompleted}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.tasksCompleted}</p>
               </div>
             </div>
           </CardContent>
@@ -127,7 +143,7 @@ export function Reports() {
               <Clock className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Em Progresso</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMetrics.tasksInProgress}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.tasksInProgress}</p>
               </div>
             </div>
           </CardContent>
@@ -139,7 +155,7 @@ export function Reports() {
               <TrendingUp className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Tempo Médio</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMetrics.averageCompletionTime}d</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.averageCompletionTime}d</p>
               </div>
             </div>
           </CardContent>
@@ -151,7 +167,7 @@ export function Reports() {
               <BarChart3 className="h-8 w-8 text-orange-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Produtividade</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMetrics.productivityScore}%</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.productivityScore}%</p>
               </div>
             </div>
           </CardContent>
@@ -163,7 +179,19 @@ export function Reports() {
               <Users className="h-8 w-8 text-red-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Utilização</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMetrics.teamUtilization}%</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.teamUtilization}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <DollarSign className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Orçamento</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(metrics.totalBudget)}</p>
               </div>
             </div>
           </CardContent>
@@ -229,7 +257,7 @@ export function Reports() {
                                    selectedPeriod === 'month' ? 'Este mês' : 'Este trimestre'}
               </p>
               <div className="mt-4 grid grid-cols-4 gap-4 max-w-md mx-auto text-sm">
-                {chartData.map((item, index) => (
+                {metrics.monthlyProgress.map((item, index) => (
                   <div key={index} className="text-center">
                     <div className="text-xs text-gray-500">{item.period}</div>
                     <div className="font-semibold text-green-600">{item.completed}</div>
@@ -260,7 +288,7 @@ export function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {chartData.map((item, index) => (
+                {metrics.monthlyProgress.map((item, index) => (
                   <tr key={index} className="border-b hover:bg-gray-50">
                     <td className="py-2">{item.period}</td>
                     <td className="py-2">
@@ -274,7 +302,9 @@ export function Reports() {
                     </td>
                     <td className="py-2">
                       <span className="text-gray-900 font-medium">
-                        {Math.round((item.completed / (item.completed + item.started + item.delayed)) * 100)}%
+                        {item.completed + item.started + item.delayed > 0 
+                          ? Math.round((item.completed / (item.completed + item.started + item.delayed)) * 100)
+                          : 0}%
                       </span>
                     </td>
                   </tr>
