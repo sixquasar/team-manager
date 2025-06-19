@@ -200,7 +200,7 @@ CREATE TRIGGER update_projetos_updated_at BEFORE UPDATE ON public.projetos FOR E
 CREATE TRIGGER update_mensagens_updated_at BEFORE UPDATE ON public.mensagens FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================================
--- DADOS INICIAIS - TECHSQUAD
+-- DADOS INICIAIS - SIXQUASAR
 -- =====================================================
 
 -- 1. Inserir usuários
