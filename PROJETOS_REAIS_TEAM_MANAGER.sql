@@ -154,7 +154,7 @@ WHERE NOT EXISTS (SELECT 1 FROM public.usuarios WHERE id = '550e8400-e29b-41d4-a
 
 -- Inserir equipe se não existir (agora que os usuários existem)
 INSERT INTO public.equipes (id, nome, descricao, owner_id) 
-SELECT '650e8400-e29b-41d4-a716-446655440001', 'TechSquad', 'Equipe de desenvolvimento SixQuasar', '550e8400-e29b-41d4-a716-446655440001'
+SELECT '650e8400-e29b-41d4-a716-446655440001', 'SixQuasar', 'Equipe de desenvolvimento SixQuasar', '550e8400-e29b-41d4-a716-446655440001'
 WHERE NOT EXISTS (SELECT 1 FROM public.equipes WHERE id = '650e8400-e29b-41d4-a716-446655440001');
 
 -- =====================================================

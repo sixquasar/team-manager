@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { password: _, ...usuarioData } = user;
       const equipeData = {
         id: '1',
-        nome: 'TechSquad',
+        nome: 'SixQuasar',
         descricao: 'Equipe de desenvolvimento',
         created_at: new Date().toISOString()
       };

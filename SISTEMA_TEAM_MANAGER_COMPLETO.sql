@@ -2,7 +2,7 @@
 -- TEAM MANAGER - SISTEMA COMPLETO DE GESTÃO DE EQUIPE
 -- =====================================================
 -- Criado para: admin.sixquasar.pro
--- Equipe: TechSquad (3 pessoas)
+-- Equipe: SixQuasar (3 pessoas)
 -- =====================================================
 
 -- Limpeza inicial
@@ -211,7 +211,7 @@ INSERT INTO public.usuarios (id, email, nome, cargo, tipo, senha_hash) VALUES
 
 -- 2. Criar equipe
 INSERT INTO public.equipes (id, nome, descricao, owner_id) VALUES
-('650e8400-e29b-41d4-a716-446655440001', 'TechSquad', 'Equipe de desenvolvimento de software', '550e8400-e29b-41d4-a716-446655440001');
+('650e8400-e29b-41d4-a716-446655440001', 'SixQuasar', 'Equipe de desenvolvimento de software', '550e8400-e29b-41d4-a716-446655440001');
 
 -- 3. Associar usuários à equipe
 INSERT INTO public.usuario_equipes (usuario_id, equipe_id, role) VALUES
