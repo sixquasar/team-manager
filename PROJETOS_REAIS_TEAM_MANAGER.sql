@@ -6,12 +6,120 @@
 -- 2. SDK Jocum com LLM
 -- =====================================================
 
--- Limpar projetos e tarefas mockadas
-DELETE FROM public.tarefas WHERE projeto_id IN (
-    SELECT id FROM public.projetos WHERE nome IN ('Team Manager', 'Mobile App')
+-- Limpar projetos e tarefas mockadas (só se as tabelas existirem)
+DO $$
+BEGIN
+    -- Verificar se tabela tarefas existe antes de deletar
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'tarefas') THEN
+        DELETE FROM public.tarefas WHERE projeto_id IN (
+            SELECT id FROM public.projetos WHERE nome IN ('Team Manager', 'Mobile App')
+        );
+    END IF;
+    
+    -- Verificar se tabela projetos existe antes de deletar
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'projetos') THEN
+        DELETE FROM public.projetos WHERE nome IN ('Team Manager', 'Mobile App');
+    END IF;
+    
+    -- Verificar se tabela eventos_timeline existe antes de deletar
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'eventos_timeline') THEN
+        DELETE FROM public.eventos_timeline WHERE tipo = 'task' OR tipo = 'milestone';
+    END IF;
+END
+$$;
+
+-- =====================================================
+-- VERIFICAR E CRIAR ESTRUTURA SE NECESSÁRIO
+-- =====================================================
+
+-- Criar tabela equipes se não existir
+CREATE TABLE IF NOT EXISTS public.equipes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    owner_id UUID REFERENCES public.usuarios(id) ON DELETE CASCADE,
+    ativa BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-DELETE FROM public.projetos WHERE nome IN ('Team Manager', 'Mobile App');
-DELETE FROM public.eventos_timeline WHERE tipo = 'task' OR tipo = 'milestone';
+
+-- Criar tabela projetos se não existir
+CREATE TABLE IF NOT EXISTS public.projetos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    status VARCHAR(50) DEFAULT 'planejamento' CHECK (status IN ('planejamento', 'em_progresso', 'finalizado', 'cancelado')),
+    responsavel_id UUID REFERENCES public.usuarios(id),
+    equipe_id UUID REFERENCES public.equipes(id) ON DELETE CASCADE,
+    data_inicio DATE,
+    data_fim_prevista DATE,
+    data_fim_real DATE,
+    progresso INTEGER DEFAULT 0 CHECK (progresso >= 0 AND progresso <= 100),
+    orcamento DECIMAL(10,2),
+    tecnologias TEXT[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela tarefas se não existir
+CREATE TABLE IF NOT EXISTS public.tarefas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    status VARCHAR(50) DEFAULT 'pendente' CHECK (status IN ('pendente', 'em_progresso', 'concluida', 'cancelada')),
+    prioridade VARCHAR(50) DEFAULT 'media' CHECK (prioridade IN ('baixa', 'media', 'alta', 'urgente')),
+    responsavel_id UUID REFERENCES public.usuarios(id),
+    equipe_id UUID REFERENCES public.equipes(id) ON DELETE CASCADE,
+    projeto_id UUID REFERENCES public.projetos(id) ON DELETE CASCADE,
+    data_vencimento TIMESTAMP WITH TIME ZONE,
+    data_conclusao TIMESTAMP WITH TIME ZONE,
+    tags TEXT[],
+    anexos JSONB DEFAULT '[]',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela eventos_timeline se não existir
+CREATE TABLE IF NOT EXISTS public.eventos_timeline (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tipo VARCHAR(50) NOT NULL CHECK (tipo IN ('task', 'message', 'milestone', 'meeting', 'deadline')),
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    autor_id UUID REFERENCES public.usuarios(id),
+    equipe_id UUID REFERENCES public.equipes(id) ON DELETE CASCADE,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Criar tabela metricas se não existir
+CREATE TABLE IF NOT EXISTS public.metricas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    equipe_id UUID REFERENCES public.equipes(id) ON DELETE CASCADE,
+    usuario_id UUID REFERENCES public.usuarios(id),
+    tipo VARCHAR(50) NOT NULL,
+    data_referencia DATE NOT NULL,
+    tarefas_concluidas INTEGER DEFAULT 0,
+    horas_trabalhadas DECIMAL(5,2) DEFAULT 0,
+    eficiencia INTEGER DEFAULT 0 CHECK (eficiencia >= 0 AND eficiencia <= 100),
+    projetos_ativos INTEGER DEFAULT 0,
+    dados_extras JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Desabilitar RLS para desenvolvimento
+ALTER TABLE public.equipes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.projetos DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tarefas DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.eventos_timeline DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.metricas DISABLE ROW LEVEL SECURITY;
+
+-- Conceder permissões
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+
+-- Inserir equipe se não existir
+INSERT INTO public.equipes (id, nome, descricao, owner_id) 
+SELECT '650e8400-e29b-41d4-a716-446655440001', 'TechSquad', 'Equipe de desenvolvimento SixQuasar', '550e8400-e29b-41d4-a716-446655440001'
+WHERE NOT EXISTS (SELECT 1 FROM public.equipes WHERE id = '650e8400-e29b-41d4-a716-446655440001');
 
 -- =====================================================
 -- PROJETO 1: SISTEMA DE ATENDIMENTO AO CIDADÃO DE PALMAS COM IA
