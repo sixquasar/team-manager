@@ -41,11 +41,11 @@ export function Team() {
       nome: 'Ricardo Landim',
       email: 'ricardo@sixquasar.pro',
       cargo: 'Tech Lead',
-      tipo: 'owner',
+      tipo: 'owner' as const,
       telefone: '+55 11 99999-9999',
       localizacao: 'São Paulo, SP',
       data_entrada: '2024-01-15',
-      status: 'ativo',
+      status: 'ativo' as const,
       especialidades: ['React', 'TypeScript', 'Node.js', 'DevOps'],
       projetos_ativos: 3,
       tarefas_concluidas: 47,
@@ -56,11 +56,11 @@ export function Team() {
       nome: 'Leonardo Candiani',
       email: 'leonardo@sixquasar.pro',
       cargo: 'Full Stack Developer',
-      tipo: 'admin',
+      tipo: 'admin' as const,
       telefone: '+55 11 88888-8888',
       localizacao: 'São Paulo, SP',
       data_entrada: '2024-02-01',
-      status: 'ativo',
+      status: 'ativo' as const,
       especialidades: ['Python', 'Django', 'PostgreSQL', 'AWS'],
       projetos_ativos: 2,
       tarefas_concluidas: 38,
@@ -71,11 +71,11 @@ export function Team() {
       nome: 'Rodrigo Marochi',
       email: 'rodrigo@sixquasar.pro',
       cargo: 'UI/UX Designer',
-      tipo: 'member',
+      tipo: 'member' as const,
       telefone: '+55 11 77777-7777',
       localizacao: 'Rio de Janeiro, RJ',
       data_entrada: '2024-02-15',
-      status: 'ativo',
+      status: 'ativo' as const,
       especialidades: ['Figma', 'Adobe XD', 'Photoshop', 'Prototyping'],
       projetos_ativos: 2,
       tarefas_concluidas: 31,
@@ -182,7 +182,7 @@ export function Team() {
               <Users className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total de Membros</p>
-                <p className="text-2xl font-bold text-gray-900">{teamMembers.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{memberData.length}</p>
               </div>
             </div>
           </CardContent>
@@ -195,7 +195,7 @@ export function Team() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Membros Ativos</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {teamMembers.filter(m => m.status === 'ativo').length}
+                  {memberData.filter(m => m.status === 'ativo').length}
                 </p>
               </div>
             </div>
@@ -209,7 +209,7 @@ export function Team() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Rating Médio</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {(teamMembers.reduce((acc, m) => acc + m.rating, 0) / teamMembers.length).toFixed(1)}
+                  {(memberData.reduce((acc, m) => acc + m.rating, 0) / memberData.length).toFixed(1)}
                 </p>
               </div>
             </div>
@@ -223,7 +223,7 @@ export function Team() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Projetos Ativos</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {teamMembers.reduce((acc, m) => acc + m.projetos_ativos, 0)}
+                  {memberData.reduce((acc, m) => acc + m.projetos_ativos, 0)}
                 </p>
               </div>
             </div>
