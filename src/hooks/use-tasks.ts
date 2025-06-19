@@ -336,6 +336,72 @@ export function useTasks() {
     return tasks.filter(task => task.prioridade === prioridade);
   };
 
+  const refetch = async () => {
+    try {
+      setLoading(true);
+      
+      if (!equipe?.id) {
+        console.log('🔄 Sem equipe selecionada, usando dados mock');
+        setTasks(mockTasks);
+        return;
+      }
+
+      console.log('🔄 Recarregando tarefas do Supabase...');
+      
+      // Buscar tarefas reais do Supabase
+      const { data, error } = await supabase
+        .from('tarefas')
+        .select(`
+          id,
+          titulo,
+          descricao,
+          status,
+          prioridade,
+          responsavel_id,
+          data_vencimento,
+          data_conclusao,
+          tags,
+          created_at,
+          usuarios!tarefas_responsavel_id_fkey(nome)
+        `)
+        .eq('equipe_id', equipe.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Erro ao recarregar tarefas:', error);
+        // Fallback para dados mock
+        setTasks(mockTasks);
+        return;
+      }
+
+      // Transformar dados do banco para interface local
+      const tasksFormatted = data?.map(task => ({
+        id: task.id,
+        titulo: task.titulo,
+        descricao: task.descricao || '',
+        status: task.status,
+        prioridade: task.prioridade,
+        responsavel_id: task.responsavel_id || '',
+        responsavel_nome: (task.usuarios as any)?.nome || 'Não atribuído',
+        equipe_id: equipe.id,
+        data_criacao: task.created_at,
+        data_vencimento: task.data_vencimento,
+        data_conclusao: task.data_conclusao,
+        tags: task.tags || []
+      })) || [];
+
+      setTasks(tasksFormatted);
+      console.log(`✅ ${tasksFormatted.length} tarefas recarregadas com sucesso`);
+      
+    } catch (error) {
+      console.error('❌ Erro ao recarregar tarefas:', error);
+      // Fallback para dados mock em caso de erro
+      setTasks(mockTasks);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     tasks,
     loading,
@@ -343,6 +409,7 @@ export function useTasks() {
     updateTask,
     deleteTask,
     getTasksByStatus,
-    getTasksByPriority
+    getTasksByPriority,
+    refetch
   };
 }

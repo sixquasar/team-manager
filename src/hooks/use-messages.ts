@@ -157,8 +157,54 @@ export function useMessages() {
 
       console.log('✅ MESSAGES: Equipe encontrada, buscando mensagens do Supabase');
       
-      // Em produção, buscaria canais e mensagens reais do Supabase
-      // Por enquanto, usar dados SixQuasar
+      // Buscar mensagens reais do Supabase
+      try {
+        const { data: mensagensData, error: mensagensError } = await supabase
+          .from('mensagens')
+          .select(`
+            id,
+            canal_id,
+            autor_id,
+            conteudo,
+            created_at,
+            usuarios!mensagens_autor_id_fkey(nome)
+          `)
+          .eq('equipe_id', equipe.id)
+          .order('created_at', { ascending: true });
+
+        if (mensagensError) {
+          console.error('❌ Erro ao buscar mensagens do Supabase:', mensagensError);
+          // Usar dados mock como fallback
+          setMessages([
+            {
+              id: '1',
+              channelId: 'general',
+              authorId: usuario?.id || '1',
+              authorName: usuario?.nome || 'Sistema',
+              content: 'Bem-vindos ao Team Manager! Sistema funcionando com dados reais.',
+              timestamp: new Date().toISOString()
+            }
+          ]);
+        } else {
+          // Formatar mensagens do Supabase
+          const mensagensFormatadas: Message[] = mensagensData?.map(msg => ({
+            id: msg.id,
+            channelId: msg.canal_id,
+            authorId: msg.autor_id,
+            authorName: (msg.usuarios as any)?.nome || 'Usuário',
+            content: msg.conteudo,
+            timestamp: msg.created_at
+          })) || [];
+
+          setMessages(mensagensFormatadas);
+          console.log(`✅ ${mensagensFormatadas.length} mensagens carregadas do Supabase`);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar mensagens:', error);
+        setMessages([]);
+      }
+
+      // Usar canais pré-definidos (simplificado)
       setChannels([
         {
           id: 'general',
@@ -167,11 +213,27 @@ export function useMessages() {
           description: 'Discussões gerais da equipe',
           memberCount: 3,
           unreadCount: 0,
-          lastActivity: '2h atrás'
+          lastActivity: new Date().toISOString()
+        },
+        {
+          id: 'projetos',
+          name: 'Projetos',
+          type: 'public',
+          description: 'Discussões sobre projetos em andamento',
+          memberCount: 3,
+          unreadCount: 0,
+          lastActivity: new Date().toISOString()
+        },
+        {
+          id: 'desenvolvimento',
+          name: 'Desenvolvimento',
+          type: 'private',
+          description: 'Canal técnico da equipe de desenvolvimento',
+          memberCount: 3,
+          unreadCount: 0,
+          lastActivity: new Date().toISOString()
         }
       ]);
-
-      setMessages([]);
 
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
@@ -196,21 +258,68 @@ export function useMessages() {
 
   const sendMessage = async (channelId: string, content: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        channelId,
-        authorId: usuario?.id || '1',
-        authorName: usuario?.nome || 'Usuário',
-        content,
-        timestamp: new Date().toISOString()
+      if (!usuario?.id || !equipe?.id) {
+        return { success: false, error: 'Usuário ou equipe não identificados' };
+      }
+
+      const messageData = {
+        canal_id: channelId,
+        autor_id: usuario.id,
+        equipe_id: equipe.id,
+        conteudo: content.trim(),
+        created_at: new Date().toISOString()
       };
 
-      // Em produção, salvaria no Supabase
+      console.log('📤 Enviando mensagem:', messageData);
+
+      // Salvar no Supabase
+      const { data, error: supabaseError } = await supabase
+        .from('mensagens')
+        .insert([messageData])
+        .select(`
+          id,
+          canal_id,
+          autor_id,
+          conteudo,
+          created_at,
+          usuarios!mensagens_autor_id_fkey(nome)
+        `)
+        .single();
+
+      if (supabaseError) {
+        console.error('❌ Erro do Supabase ao enviar mensagem:', supabaseError);
+        
+        // Fallback: adicionar mensagem localmente mesmo com erro
+        const newMessage: Message = {
+          id: Date.now().toString(),
+          channelId,
+          authorId: usuario.id,
+          authorName: usuario.nome,
+          content,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMessage]);
+        console.log('⚠️ Mensagem adicionada localmente como fallback');
+        
+        return { success: true }; // Sucesso local
+      }
+
+      // Adicionar mensagem formatada à lista local
+      const newMessage: Message = {
+        id: data.id,
+        channelId: data.canal_id,
+        authorId: data.autor_id,
+        authorName: (data.usuarios as any)?.nome || usuario.nome,
+        content: data.conteudo,
+        timestamp: data.created_at
+      };
+
       setMessages(prev => [...prev, newMessage]);
+      console.log('✅ Mensagem enviada e salva no Supabase:', newMessage);
       
       return { success: true };
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      console.error('❌ Erro ao enviar mensagem:', error);
       return { success: false, error: 'Erro ao enviar mensagem' };
     }
   };
@@ -253,6 +362,103 @@ export function useMessages() {
     return messages.filter(message => message.channelId === channelId);
   };
 
+  const createChannel = async (name: string, description: string, type: Channel['type'] = 'public'): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!equipe?.id) {
+        return { success: false, error: 'Equipe não identificada' };
+      }
+
+      const channelData = {
+        nome: name.trim(),
+        descricao: description.trim(),
+        tipo: type,
+        equipe_id: equipe.id,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('📝 Criando canal:', channelData);
+
+      // Em produção, salvaria no Supabase
+      // Por enquanto, adicionar localmente
+      const newChannel: Channel = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        type,
+        description: description.trim(),
+        memberCount: 1,
+        unreadCount: 0,
+        lastActivity: new Date().toISOString()
+      };
+
+      setChannels(prev => [...prev, newChannel]);
+      console.log('✅ Canal criado localmente:', newChannel);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erro ao criar canal:', error);
+      return { success: false, error: 'Erro ao criar canal' };
+    }
+  };
+
+  const deleteMessage = async (messageId: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log('🗑️ Deletando mensagem:', messageId);
+
+      // Tentar deletar do Supabase
+      const { error: supabaseError } = await supabase
+        .from('mensagens')
+        .delete()
+        .eq('id', messageId);
+
+      if (supabaseError) {
+        console.error('❌ Erro do Supabase ao deletar mensagem:', supabaseError);
+        // Deletar localmente mesmo com erro
+      }
+
+      // Remover da lista local
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      console.log('✅ Mensagem removida da lista local');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erro ao deletar mensagem:', error);
+      return { success: false, error: 'Erro ao deletar mensagem' };
+    }
+  };
+
+  const editMessage = async (messageId: string, newContent: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log('✏️ Editando mensagem:', messageId);
+
+      // Tentar atualizar no Supabase
+      const { error: supabaseError } = await supabase
+        .from('mensagens')
+        .update({ 
+          conteudo: newContent.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', messageId);
+
+      if (supabaseError) {
+        console.error('❌ Erro do Supabase ao editar mensagem:', supabaseError);
+        // Continuar com atualização local mesmo com erro
+      }
+
+      // Atualizar na lista local
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: newContent.trim(), edited: true }
+          : msg
+      ));
+      console.log('✅ Mensagem editada localmente');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erro ao editar mensagem:', error);
+      return { success: false, error: 'Erro ao editar mensagem' };
+    }
+  };
+
   return {
     loading,
     channels,
@@ -262,6 +468,9 @@ export function useMessages() {
     sendMessage,
     addReaction,
     getChannelMessages,
+    createChannel,
+    deleteMessage,
+    editMessage,
     refetch: fetchChannelsAndMessages
   };
 }

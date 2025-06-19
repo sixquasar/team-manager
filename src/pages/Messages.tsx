@@ -16,13 +16,30 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useMessages, Channel, Message } from '@/hooks/use-messages';
+import { NewChannelModal } from '@/components/messages/NewChannelModal';
+import { MessageActionsModal } from '@/components/messages/MessageActionsModal';
 
 export function Messages() {
   const { equipe, usuario } = useAuth();
-  const { channels, messages, loading, activeChannel, setActiveChannel, sendMessage, getChannelMessages } = useMessages();
+  const { 
+    channels, 
+    messages, 
+    loading, 
+    activeChannel, 
+    setActiveChannel, 
+    sendMessage, 
+    getChannelMessages,
+    createChannel,
+    deleteMessage,
+    editMessage,
+    refetch
+  } = useMessages();
   const [selectedChannel, setSelectedChannel] = useState<string>('general');
   const [messageText, setMessageText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewChannel, setShowNewChannel] = useState(false);
+  const [showMessageActions, setShowMessageActions] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
   if (loading) {
     return (
@@ -41,10 +58,49 @@ export function Messages() {
   const handleSendMessage = async () => {
     if (!messageText.trim()) return;
     
+    console.log('📤 Enviando mensagem para canal:', selectedChannel);
     const result = await sendMessage(selectedChannel, messageText);
     if (result.success) {
       setMessageText('');
+      console.log('✅ Mensagem enviada com sucesso');
+    } else {
+      console.error('❌ Erro ao enviar mensagem:', result.error);
+      alert('Erro ao enviar mensagem: ' + result.error);
     }
+  };
+
+  const handleCreateChannel = async (name: string, description: string, type: 'public' | 'private') => {
+    console.log('📝 Criando novo canal:', { name, description, type });
+    const result = await createChannel(name, description, type);
+    if (result.success) {
+      console.log('✅ Canal criado com sucesso');
+      refetch(); // Recarregar canais
+    }
+    return result;
+  };
+
+  const handleMessageAction = (message: Message) => {
+    console.log('⚙️ Ações para mensagem:', message.id);
+    setSelectedMessage(message);
+    setShowMessageActions(true);
+  };
+
+  const handleEditMessage = async (messageId: string, newContent: string) => {
+    console.log('✏️ Editando mensagem:', messageId);
+    const result = await editMessage(messageId, newContent);
+    if (result.success) {
+      console.log('✅ Mensagem editada com sucesso');
+    }
+    return result;
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    console.log('🗑️ Deletando mensagem:', messageId);
+    const result = await deleteMessage(messageId);
+    if (result.success) {
+      console.log('✅ Mensagem deletada com sucesso');
+    }
+    return result;
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -83,7 +139,11 @@ export function Messages() {
             <h2 className="text-lg font-semibold text-gray-900">
               {equipe?.nome || 'Mensagens'}
             </h2>
-            <button className="text-gray-500 hover:text-gray-700">
+            <button 
+              className="text-gray-500 hover:text-gray-700"
+              onClick={() => setShowNewChannel(true)}
+              title="Criar novo canal"
+            >
               <Plus className="h-5 w-5" />
             </button>
           </div>
@@ -226,7 +286,11 @@ export function Messages() {
 
                   {/* Message Actions */}
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => handleMessageAction(message)}
+                      title="Ações da mensagem"
+                    >
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </div>
@@ -283,6 +347,25 @@ export function Messages() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <NewChannelModal
+        isOpen={showNewChannel}
+        onClose={() => setShowNewChannel(false)}
+        onChannelCreated={handleCreateChannel}
+      />
+
+      <MessageActionsModal
+        isOpen={showMessageActions}
+        onClose={() => {
+          setShowMessageActions(false);
+          setSelectedMessage(null);
+        }}
+        message={selectedMessage}
+        onEditMessage={handleEditMessage}
+        onDeleteMessage={handleDeleteMessage}
+        currentUserId={usuario?.id || ''}
+      />
     </div>
   );
 }

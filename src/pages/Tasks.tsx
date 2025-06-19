@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, Calendar, User, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, User, CheckCircle2, Clock, AlertTriangle, Edit, Eye } from 'lucide-react';
 import { useTasks, Task } from '@/hooks/use-tasks';
+import { NewTaskModal } from '@/components/tasks/NewTaskModal';
+import { TaskDetailsModal } from '@/components/tasks/TaskDetailsModal';
 
 const statusColumns = [
   { id: 'pendente', title: 'Pendentes', color: 'bg-gray-100' },
@@ -20,10 +22,14 @@ const priorityColors = {
 };
 
 export function Tasks() {
-  const { tasks, loading, updateTask, getTasksByStatus, getTasksByPriority } = useTasks();
+  const { tasks, loading, updateTask, getTasksByStatus, getTasksByPriority, refetch } = useTasks();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showNewTask, setShowNewTask] = useState(false);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<Task['status']>('pendente');
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,11 +55,32 @@ export function Tasks() {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, newStatus: Task['status']) => {
+  const handleDrop = async (e: React.DragEvent, newStatus: Task['status']) => {
     e.preventDefault();
     if (draggedTask && draggedTask.status !== newStatus) {
-      updateTask(draggedTask.id, { status: newStatus });
+      console.log(`🔄 Movendo tarefa "${draggedTask.titulo}" de ${draggedTask.status} para ${newStatus}`);
+      const result = await updateTask(draggedTask.id, { status: newStatus });
+      if (result.success) {
+        console.log('✅ Status da tarefa atualizado com sucesso');
+      } else {
+        console.error('❌ Erro ao atualizar status:', result.error);
+      }
     }
+  };
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskDetails(true);
+  };
+
+  const handleNewTask = (status?: Task['status']) => {
+    setCurrentStatus(status || 'pendente');
+    setShowNewTask(true);
+  };
+
+  const refetchTasks = () => {
+    console.log('🔄 Recarregando tarefas...');
+    refetch();
   };
 
   const TaskCard = ({ task }: { task: Task }) => (
@@ -61,11 +88,35 @@ export function Tasks() {
       draggable
       onDragStart={(e) => handleDragStart(e, task)}
       onDragEnd={handleDragEnd}
-      className="bg-white rounded-lg border shadow-sm p-4 mb-3 cursor-move hover:shadow-md transition-all duration-200"
+      className="bg-white rounded-lg border shadow-sm p-4 mb-3 cursor-move hover:shadow-md transition-all duration-200 group"
     >
       <div className="flex items-start justify-between mb-2">
-        <h3 className="font-medium text-gray-900 text-sm">{task.titulo}</h3>
-        <div className={`w-2 h-2 rounded-full ${priorityColors[task.prioridade]}`} />
+        <h3 className="font-medium text-gray-900 text-sm flex-1 mr-2">{task.titulo}</h3>
+        <div className="flex items-center space-x-1">
+          <div className={`w-2 h-2 rounded-full ${priorityColors[task.prioridade]}`} title={task.prioridade} />
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTaskClick(task);
+              }}
+              className="p-1 hover:bg-gray-100 rounded"
+              title="Ver detalhes"
+            >
+              <Eye className="h-3 w-3 text-gray-500" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTaskClick(task);
+              }}
+              className="p-1 hover:bg-gray-100 rounded"
+              title="Editar tarefa"
+            >
+              <Edit className="h-3 w-3 text-gray-500" />
+            </button>
+          </div>
+        </div>
       </div>
       
       {task.descricao && (
@@ -121,7 +172,10 @@ export function Tasks() {
           <p className="text-gray-600 mt-2">Gerencie as tarefas da equipe</p>
         </div>
         
-        <Button className="bg-team-primary hover:bg-team-primary/90">
+        <Button 
+          className="bg-team-primary hover:bg-team-primary/90"
+          onClick={() => handleNewTask()}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nova Tarefa
         </Button>
@@ -165,10 +219,19 @@ export function Tasks() {
           
           return (
             <div key={column.id} className="flex flex-col">
-              <div className={`${column.color} rounded-lg p-3 mb-4`}>
+              <div className={`${column.color} rounded-lg p-3 mb-4 flex items-center justify-between`}>
                 <h2 className="font-semibold text-gray-800 text-sm">
                   {column.title} ({columnTasks.length})
                 </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleNewTask(column.id as Task['status'])}
+                  className="h-6 w-6 p-0 hover:bg-white/50"
+                  title={`Adicionar tarefa em ${column.title}`}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
               </div>
 
               <div
@@ -177,7 +240,9 @@ export function Tasks() {
                 className="flex-1 min-h-[400px] rounded-lg p-2 border-2 border-dashed border-transparent transition-colors duration-200 data-[drag-over=true]:border-team-primary data-[drag-over=true]:bg-team-primary/5"
               >
                 {columnTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <div key={task.id} onClick={() => handleTaskClick(task)}>
+                    <TaskCard task={task} />
+                  </div>
                 ))}
                 
                 {columnTasks.length === 0 && (
@@ -255,6 +320,34 @@ export function Tasks() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      <NewTaskModal
+        isOpen={showNewTask}
+        onClose={() => setShowNewTask(false)}
+        onTaskCreated={() => {
+          refetchTasks();
+          setShowNewTask(false);
+        }}
+        initialStatus={currentStatus}
+      />
+
+      <TaskDetailsModal
+        isOpen={showTaskDetails}
+        onClose={() => {
+          setShowTaskDetails(false);
+          setSelectedTask(null);
+        }}
+        task={selectedTask}
+        onTaskUpdated={() => {
+          refetchTasks();
+        }}
+        onTaskDeleted={() => {
+          refetchTasks();
+          setShowTaskDetails(false);
+          setSelectedTask(null);
+        }}
+      />
     </div>
   );
 }
