@@ -14,7 +14,24 @@ export function useProjects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      console.log('✅ PROJECTS: Buscando dados REAIS do Supabase');
+      console.log('🔍 PROJECTS: Iniciando busca...');
+      console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+      console.log('🏢 EQUIPE:', equipe);
+
+      // Teste de conexão básica
+      const { data: testData, error: testError } = await supabase
+        .from('usuarios')
+        .select('count')
+        .limit(1);
+
+      if (testError) {
+        console.error('❌ ERRO DE CONEXÃO:', testError);
+        setProjects([]);
+        return;
+      }
+
+      console.log('✅ CONEXÃO OK, buscando projetos...');
 
       // Query direta da tabela projetos REAL
       const { data, error } = await supabase
@@ -23,15 +40,19 @@ export function useProjects() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Erro ao buscar projetos:', error);
+        console.error('❌ ERRO PROJETOS:', error);
+        console.error('❌ Código:', error.code);
+        console.error('❌ Mensagem:', error.message);
+        console.error('❌ Detalhes:', error.details);
         setProjects([]);
       } else {
-        console.log('✅ PROJECTS: Dados encontrados:', data?.length || 0);
+        console.log('✅ PROJETOS ENCONTRADOS:', data?.length || 0);
+        console.log('📊 DADOS:', data);
         setProjects(data || []);
       }
       
     } catch (error) {
-      console.error('❌ PROJECTS: Erro na busca:', error);
+      console.error('❌ ERRO JAVASCRIPT:', error);
       setProjects([]);
     } finally {
       setLoading(false);
