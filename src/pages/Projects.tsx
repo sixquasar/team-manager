@@ -60,6 +60,15 @@ export function Projects() {
   const [showNewProject, setShowNewProject] = useState(false);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
 
+  // Debug: verificar dados do hook
+  React.useEffect(() => {
+    console.log('🔍 PROJECTS PAGE: Estado do hook');
+    console.log('📊 Loading:', loading);
+    console.log('📝 Projects array:', projects);
+    console.log('🏢 Equipe:', equipe);
+    console.log('👤 Usuario:', usuario);
+  }, [loading, projects, equipe, usuario]);
+
   // Transformar dados do banco para interface local
   const projectsFormatted = projects.map(project => {
     // Mapear responsável baseado no responsavel_id
