@@ -34,16 +34,8 @@ export function Team() {
     );
   }
 
-  const filteredMembers = teamMembers.filter(member => {
-    const matchesSearch = member.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.cargo.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'all' || member.tipo === selectedRole;
-    return matchesSearch && matchesRole;
-  });
-
   // Dados dos membros agora vêm do hook useTeam conectado ao Supabase
-  const memberData = filteredMembers.length > 0 ? filteredMembers : [
+  const memberData = teamMembers.length > 0 ? teamMembers : [
     {
       id: '1',
       nome: 'Ricardo Landim',
@@ -91,7 +83,7 @@ export function Team() {
     }
   ];
 
-  const filteredMembers = teamMembers.filter(member => {
+  const filteredMembers = memberData.filter(member => {
     const matchesSearch = member.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.cargo.toLowerCase().includes(searchTerm.toLowerCase());
