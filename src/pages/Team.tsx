@@ -46,7 +46,7 @@ export function Team() {
     {
       id: '1',
       nome: 'Ricardo Landim',
-      email: 'ricardo@techsquad.com',
+      email: 'ricardo@sixquasar.pro',
       cargo: 'Tech Lead',
       tipo: 'owner',
       telefone: '+55 11 99999-9999',
@@ -61,7 +61,7 @@ export function Team() {
     {
       id: '2',
       nome: 'Leonardo Candiani',
-      email: 'leonardo@techsquad.com',
+      email: 'leonardo@sixquasar.pro',
       cargo: 'Full Stack Developer',
       tipo: 'admin',
       telefone: '+55 11 88888-8888',
@@ -76,7 +76,7 @@ export function Team() {
     {
       id: '3',
       nome: 'Rodrigo Marochi',
-      email: 'rodrigo@techsquad.com',
+      email: 'rodrigo@sixquasar.pro',
       cargo: 'UI/UX Designer',
       tipo: 'member',
       telefone: '+55 11 77777-7777',

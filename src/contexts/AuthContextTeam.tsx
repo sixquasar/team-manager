@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const usuarios = [
         {
           id: '1',
-          email: 'ricardo@techsquad.com',
+          email: 'ricardo@sixquasar.pro',
           nome: 'Ricardo Landim',
           cargo: 'Tech Lead',
           tipo: 'owner',
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '2',
-          email: 'leonardo@techsquad.com',
+          email: 'leonardo@sixquasar.pro',
           nome: 'Leonardo Candiani',
           cargo: 'Developer',
           tipo: 'admin',
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           id: '3',
-          email: 'rodrigo@techsquad.com',
+          email: 'rodrigo@sixquasar.pro',
           nome: 'Rodrigo Marochi',
           cargo: 'Developer',
           tipo: 'member',

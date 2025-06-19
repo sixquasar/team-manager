@@ -205,9 +205,9 @@ CREATE TRIGGER update_mensagens_updated_at BEFORE UPDATE ON public.mensagens FOR
 
 -- 1. Inserir usuários
 INSERT INTO public.usuarios (id, email, nome, cargo, tipo, senha_hash) VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'ricardo@techsquad.com', 'Ricardo Landim', 'Tech Lead', 'owner', '$2b$10$hashedpassword123'),
-('550e8400-e29b-41d4-a716-446655440002', 'leonardo@techsquad.com', 'Leonardo Candiani', 'Developer', 'admin', '$2b$10$hashedpassword123'),
-('550e8400-e29b-41d4-a716-446655440003', 'rodrigo@techsquad.com', 'Rodrigo Marochi', 'Developer', 'member', '$2b$10$hashedpassword123');
+('550e8400-e29b-41d4-a716-446655440001', 'ricardo@sixquasar.pro', 'Ricardo Landim', 'Tech Lead', 'owner', '$2b$10$hashedpassword123'),
+('550e8400-e29b-41d4-a716-446655440002', 'leonardo@sixquasar.pro', 'Leonardo Candiani', 'Developer', 'admin', '$2b$10$hashedpassword123'),
+('550e8400-e29b-41d4-a716-446655440003', 'rodrigo@sixquasar.pro', 'Rodrigo Marochi', 'Developer', 'member', '$2b$10$hashedpassword123');
 
 -- 2. Criar equipe
 INSERT INTO public.equipes (id, nome, descricao, owner_id) VALUES

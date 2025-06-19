@@ -117,9 +117,9 @@ export function Login() {
             <div className="text-sm text-gray-600 text-center">
               <p className="font-semibold mb-2">Usuários de teste:</p>
               <div className="space-y-1 text-xs">
-                <p>ricardo@techsquad.com / senha123 (Ricardo Landim)</p>
-                <p>leonardo@techsquad.com / senha123 (Leonardo Candiani)</p>
-                <p>rodrigo@techsquad.com / senha123 (Rodrigo Marochi)</p>
+                <p>ricardo@sixquasar.pro / senha123 (Ricardo Landim)</p>
+                <p>leonardo@sixquasar.pro / senha123 (Leonardo Candiani)</p>
+                <p>rodrigo@sixquasar.pro / senha123 (Rodrigo Marochi)</p>
               </div>
             </div>
           </div>

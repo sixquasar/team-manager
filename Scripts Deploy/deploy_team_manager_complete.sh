@@ -575,7 +575,7 @@ status_final() {
     echo -e "  3. Teste o login com os usuários padrão"
     echo ""
     echo -e "${AMARELO}⚠️  IMPORTANTE:${RESET}"
-    echo -e "  - Usuários padrão: ricardo/ana/carlos@techsquad.com (senha: senha123)"
+    echo -e "  - Usuários padrão: ricardo/leonardo/rodrigo@sixquasar.pro (senha: senha123)"
     echo -e "  - Logs do Nginx: /var/log/nginx/team-manager.*.log"
     echo ""
     
