@@ -12,6 +12,8 @@ import { Timeline } from '@/pages/Timeline';
 import { Messages } from '@/pages/Messages';
 import { Reports } from '@/pages/Reports';
 import { Team } from '@/pages/Team';
+import { Profile } from '@/pages/Profile';
+import { Settings } from '@/pages/Settings';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -128,7 +130,7 @@ function App() {
             path="/profile" 
             element={
               <ProtectedRoute>
-                <ComingSoon title="Perfil" />
+                <Profile />
               </ProtectedRoute>
             } 
           />
@@ -137,7 +139,7 @@ function App() {
             path="/settings" 
             element={
               <ProtectedRoute>
-                <ComingSoon title="Configurações" />
+                <Settings />
               </ProtectedRoute>
             } 
           />

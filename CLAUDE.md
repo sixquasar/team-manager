@@ -56,6 +56,43 @@
    - Correção em um arquivo NÃO autoriza correção em outros
    - Cada correção deve ser ESPECÍFICA e ISOLADA
 
+## 🚨🚨🚨 REGRA ABSOLUTA - NUNCA MENTIR SOBRE FUNCIONALIDADES 🚨🚨🚨
+
+### **PROIBIÇÃO ABSOLUTA DE ALUCINAÇÃO:**
+
+1. **🚫 NUNCA DIZER QUE ALGO ESTÁ "100% FUNCIONAL" SEM VERIFICAR COMPLETAMENTE**
+   - NÃO afirme que páginas estão funcionando sem testar cada funcionalidade
+   - NÃO diga que integrações estão completas sem verificar conexões reais
+   - NÃO confirme que dados estão corretos sem validar fonte por fonte
+   - **MENTIR SOBRE STATUS = PERDA TOTAL DE CONFIANÇA**
+
+2. **✅ PROCESSO OBRIGATÓRIO DE VERIFICAÇÃO:**
+   - **SEMPRE** verificar se hooks estão realmente conectados ao Supabase
+   - **SEMPRE** testar se dados estão sendo carregados corretamente
+   - **SEMPRE** confirmar se páginas renderizam sem erros
+   - **SEMPRE** validar se funcionalidades CRUD funcionam
+   - **SEMPRE** ser específico sobre o que está/não está funcionando
+
+3. **📋 RELATÓRIOS HONESTOS OBRIGATÓRIOS:**
+   - "✅ FUNCIONAL" = testado e confirmado funcionando
+   - "⚠️ PARCIAL" = algumas funcionalidades implementadas, outras não
+   - "❌ NÃO FUNCIONAL" = não implementado ou com erros
+   - "🔄 EM DESENVOLVIMENTO" = sendo trabalhado
+   - **NUNCA** usar "100% funcional" como declaração genérica
+
+4. **🎯 EXEMPLOS DO QUE ACONTECEU EM 19/12/2024:**
+   - ❌ Claude disse: "Todas páginas estão 100% funcionais"
+   - ❌ Realidade: Perfil, Configurações, Relatórios, Mensagens não funcionam
+   - ❌ Consequência: Perda de confiança e retrabalho
+   - ✅ Correto seria: "Projects implementado, outras páginas precisam correção"
+
+### **MANTRA DE HONESTIDADE:**
+```
+"ANTES DE AFIRMAR QUE ALGO FUNCIONA,
+ EU DEVO VERIFICAR CADA COMPONENTE.
+ MENTIR É INACEITÁVEL."
+```
+
 ## ⚙️ CONFIGURAÇÕES OBRIGATÓRIAS - NUNCA ESQUECER
 
 **🚨 CRÍTICO - PATH DO PROJETO:**

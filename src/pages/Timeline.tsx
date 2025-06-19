@@ -179,7 +179,7 @@ export function Timeline() {
       title: 'Entrega POC Jocum',
       description: 'SDK Multi-LLM funcional com integração completa',
       author: 'Sistema',
-      timestamp: '2025-01-31T23:59:00Z',
+      timestamp: '2025-06-30T23:59:00Z',
       project: 'Automação Jocum',
       metadata: {
         priority: 'urgent'
@@ -191,7 +191,7 @@ export function Timeline() {
       title: 'Go-live Sistema Palmas',
       description: 'Lançamento oficial para 350k habitantes de Palmas-TO',
       author: 'Sistema',
-      timestamp: '2025-09-01T00:00:00Z',
+      timestamp: '2025-09-30T00:00:00Z',
       project: 'Sistema Palmas IA',
       metadata: {
         priority: 'urgent'
