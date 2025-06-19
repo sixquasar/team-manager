@@ -15,16 +15,30 @@ import {
   Edit2,
   UserPlus,
   Filter,
-  Activity
+  Activity,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useTeam, TeamMember } from '@/hooks/use-team';
+import { InviteMemberModal } from '@/components/team/InviteMemberModal';
+import { EditMemberModal } from '@/components/team/EditMemberModal';
 
 export function Team() {
   const { equipe, usuario } = useAuth();
-  const { members: teamMembers, loading } = useTeam();
+  const { 
+    members: teamMembers, 
+    loading, 
+    addMember, 
+    updateMember, 
+    removeMember, 
+    inviteMember,
+    refetch 
+  } = useTeam();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   if (loading) {
     return (
@@ -127,6 +141,55 @@ export function Team() {
     }
   };
 
+  const handleInviteMember = async (email: string, role: TeamMember['tipo']) => {
+    console.log('📧 Convidando membro:', { email, role });
+    const result = await inviteMember(email, role);
+    if (result.success) {
+      console.log('✅ Convite enviado com sucesso');
+      refetch(); // Recarregar lista
+    }
+    return result;
+  };
+
+  const handleAddMember = async (memberData: Partial<TeamMember>) => {
+    console.log('👥 Adicionando membro diretamente:', memberData);
+    const result = await addMember(memberData);
+    if (result.success) {
+      console.log('✅ Membro adicionado com sucesso');
+    }
+    return result;
+  };
+
+  const handleUpdateMember = async (memberId: string, updates: Partial<TeamMember>) => {
+    console.log('✏️ Atualizando membro:', memberId, updates);
+    const result = await updateMember(memberId, updates);
+    if (result.success) {
+      console.log('✅ Membro atualizado com sucesso');
+    }
+    return result;
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    console.log('🗑️ Removendo membro:', memberId);
+    const result = await removeMember(memberId);
+    if (result.success) {
+      console.log('✅ Membro removido com sucesso');
+    }
+    return result;
+  };
+
+  const handleMemberAction = (member: TeamMember) => {
+    console.log('⚙️ Ações para membro:', member.id);
+    setSelectedMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleSendMessage = (member: TeamMember) => {
+    console.log('💬 Enviar mensagem para:', member.nome);
+    // Em produção, redirecionaria para o sistema de mensagens
+    alert(`Funcionalidade de mensagem para ${member.nome} será implementada em breve!`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -138,7 +201,10 @@ export function Team() {
           </p>
         </div>
         
-        <Button className="bg-team-primary hover:bg-team-primary/90">
+        <Button 
+          className="bg-team-primary hover:bg-team-primary/90"
+          onClick={() => setShowInviteModal(true)}
+        >
           <UserPlus className="h-4 w-4 mr-2" />
           Convidar Membro
         </Button>
@@ -247,7 +313,11 @@ export function Team() {
                   </div>
                 </div>
                 
-                <button className="text-gray-400 hover:text-gray-600">
+                <button 
+                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => handleMemberAction(member)}
+                  title="Ações do membro"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
               </div>
@@ -317,12 +387,22 @@ export function Team() {
               </div>
 
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Mail className="h-3 w-3 mr-1" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleSendMessage(member)}
+                >
+                  <MessageSquare className="h-3 w-3 mr-1" />
                   Mensagem
                 </Button>
                 {(usuario?.tipo === 'owner' || usuario?.tipo === 'admin') && (
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleMemberAction(member)}
+                    title="Editar membro"
+                  >
                     <Edit2 className="h-3 w-3" />
                   </Button>
                 )}
@@ -339,6 +419,26 @@ export function Team() {
           <p className="text-sm">Tente ajustar os filtros ou convide novos membros</p>
         </div>
       )}
+
+      {/* Modals */}
+      <InviteMemberModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onInviteMember={handleInviteMember}
+        onAddMember={handleAddMember}
+      />
+
+      <EditMemberModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedMember(null);
+        }}
+        member={selectedMember}
+        onUpdateMember={handleUpdateMember}
+        onRemoveMember={handleRemoveMember}
+        currentUserType={usuario?.tipo || 'member'}
+      />
     </div>
   );
 }

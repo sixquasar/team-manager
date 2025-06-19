@@ -25,11 +25,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useProfile } from '@/hooks/use-profile';
+import { supabase } from '@/lib/supabase';
 
 export function Profile() {
   const { usuario, equipe } = useAuth();
-  const { stats, loading } = useProfile();
+  const { stats, loading, refetch } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     nome: usuario?.nome || '',
     email: usuario?.email || '',
@@ -39,10 +43,65 @@ export function Profile() {
     localizacao: usuario?.localizacao || 'São Paulo, Brasil'
   });
 
-  const handleSave = () => {
-    // TODO: Implementar atualização no Supabase
-    setIsEditing(false);
-    console.log('Salvando perfil:', formData);
+  const handleSave = async () => {
+    if (!usuario?.id) {
+      setError('Usuário não identificado');
+      return;
+    }
+
+    // Validação básica
+    if (!formData.nome.trim()) {
+      setError('Nome é obrigatório');
+      return;
+    }
+
+    if (!formData.cargo.trim()) {
+      setError('Cargo é obrigatório');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      console.log('💾 Salvando perfil do usuário:', usuario.id);
+
+      const updateData = {
+        nome: formData.nome.trim(),
+        cargo: formData.cargo.trim(),
+        telefone: formData.telefone.trim() || null,
+        localizacao: formData.localizacao.trim() || null,
+        bio: formData.bio.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: supabaseError } = await supabase
+        .from('usuarios')
+        .update(updateData)
+        .eq('id', usuario.id);
+
+      if (supabaseError) {
+        console.error('❌ Erro do Supabase:', supabaseError);
+        throw new Error(`Erro ao atualizar perfil: ${supabaseError.message}`);
+      }
+
+      console.log('✅ Perfil atualizado com sucesso');
+      setSuccess(true);
+      setIsEditing(false);
+      
+      // Recarregar dados
+      refetch();
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+
+    } catch (err: any) {
+      console.error('❌ Erro ao salvar perfil:', err);
+      setError(err.message || 'Erro desconhecido ao salvar perfil');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -54,7 +113,16 @@ export function Profile() {
       bio: usuario?.bio || '',
       localizacao: usuario?.localizacao || 'São Paulo, Brasil'
     });
+    setError(null);
     setIsEditing(false);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setError(null); // Limpar erro ao digitar
   };
 
   const formatDate = (dateString: string) => {
@@ -84,23 +152,58 @@ export function Profile() {
         <div className="flex space-x-3">
           {isEditing ? (
             <>
-              <Button variant="outline" onClick={handleCancel}>
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                disabled={saving}
+              >
                 <X className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={handleSave} className="bg-team-primary hover:bg-team-primary/90">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar
+              <Button 
+                onClick={handleSave} 
+                className="bg-team-primary hover:bg-team-primary/90"
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Salvar
+                  </>
+                )}
               </Button>
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)} className="bg-team-primary hover:bg-team-primary/90">
+            <Button 
+              onClick={() => setIsEditing(true)} 
+              className="bg-team-primary hover:bg-team-primary/90"
+            >
               <Edit className="h-4 w-4 mr-2" />
               Editar Perfil
             </Button>
           )}
         </div>
       </div>
+
+      {/* Mensagens de Feedback */}
+      {success && (
+        <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg mb-6">
+          <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+          <span className="text-sm text-green-700">Perfil atualizado com sucesso!</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg mb-6">
+          <X className="h-4 w-4 text-red-500 mr-2" />
+          <span className="text-sm text-red-700">{error}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
@@ -193,8 +296,9 @@ export function Profile() {
                     <input
                       type="text"
                       value={formData.nome}
-                      onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                      onChange={(e) => handleInputChange('nome', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
+                      disabled={saving}
                     />
                   ) : (
                     <p className="text-gray-900">{usuario?.nome}</p>
@@ -219,8 +323,9 @@ export function Profile() {
                     <input
                       type="text"
                       value={formData.cargo}
-                      onChange={(e) => setFormData({...formData, cargo: e.target.value})}
+                      onChange={(e) => handleInputChange('cargo', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
+                      disabled={saving}
                     />
                   ) : (
                     <p className="text-gray-900">{usuario?.cargo}</p>
@@ -252,9 +357,10 @@ export function Profile() {
                     <input
                       type="tel"
                       value={formData.telefone}
-                      onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                      onChange={(e) => handleInputChange('telefone', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
                       placeholder="(11) 99999-9999"
+                      disabled={saving}
                     />
                   ) : (
                     <div className="flex items-center">
@@ -272,8 +378,9 @@ export function Profile() {
                     <input
                       type="text"
                       value={formData.localizacao}
-                      onChange={(e) => setFormData({...formData, localizacao: e.target.value})}
+                      onChange={(e) => handleInputChange('localizacao', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
+                      disabled={saving}
                     />
                   ) : (
                     <div className="flex items-center">
@@ -291,10 +398,11 @@ export function Profile() {
                 {isEditing ? (
                   <textarea
                     value={formData.bio}
-                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
                     placeholder="Conte um pouco sobre você..."
+                    disabled={saving}
                   />
                 ) : (
                   <p className="text-gray-900">{formData.bio || 'Nenhuma biografia adicionada.'}</p>
@@ -317,7 +425,7 @@ export function Profile() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Target className="h-8 w-8 text-blue-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.teamCollaboration}%</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.teamCollaboration || 0}%</p>
                   <p className="text-sm text-gray-600">Colaboração</p>
                 </div>
 
@@ -325,7 +433,7 @@ export function Profile() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Star className="h-8 w-8 text-green-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.averageRating}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.averageRating || 0}</p>
                   <p className="text-sm text-gray-600">Avaliação Média</p>
                 </div>
 
@@ -333,7 +441,7 @@ export function Profile() {
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Clock className="h-8 w-8 text-purple-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.hoursLogged}h</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.hoursLogged || 0}h</p>
                   <p className="text-sm text-gray-600">Horas Trabalhadas</p>
                 </div>
 
@@ -341,7 +449,7 @@ export function Profile() {
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Users className="h-8 w-8 text-orange-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.projectsActive || 0}</p>
                   <p className="text-sm text-gray-600">Projetos Ativos</p>
                 </div>
               </div>

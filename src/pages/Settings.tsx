@@ -27,10 +27,15 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { supabase } from '@/lib/supabase';
 
 export function Settings() {
   const { usuario, equipe } = useAuth();
   const [activeTab, setActiveTab] = useState('general');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [settings, setSettings] = useState({
     // General Settings
     theme: 'system', // light, dark, system
@@ -61,16 +66,123 @@ export function Settings() {
       ...prev,
       [key]: value
     }));
+    setError(null); // Limpar erro ao fazer alterações
   };
 
-  const handleSaveSettings = () => {
-    // TODO: Implementar salvamento no Supabase
-    console.log('Salvando configurações:', settings);
+  // Carregar configurações do usuário
+  React.useEffect(() => {
+    const loadUserSettings = async () => {
+      if (!usuario?.id) return;
+
+      setLoading(true);
+      try {
+        console.log('📥 Carregando configurações do usuário:', usuario.id);
+
+        const { data, error: supabaseError } = await supabase
+          .from('configuracoes_usuario')
+          .select('configuracoes')
+          .eq('usuario_id', usuario.id)
+          .single();
+
+        if (supabaseError && supabaseError.code !== 'PGRST116') { // PGRST116 = not found
+          console.error('❌ Erro ao carregar configurações:', supabaseError);
+          throw new Error(`Erro ao carregar configurações: ${supabaseError.message}`);
+        }
+
+        if (data?.configuracoes) {
+          console.log('✅ Configurações carregadas:', data.configuracoes);
+          setSettings(prevSettings => ({
+            ...prevSettings,
+            ...data.configuracoes
+          }));
+        } else {
+          console.log('ℹ️ Usando configurações padrão (primeira vez)');
+        }
+
+      } catch (err: any) {
+        console.error('❌ Erro ao carregar configurações:', err);
+        setError('Erro ao carregar configurações. Usando configurações padrão.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserSettings();
+  }, [usuario?.id]);
+
+  const handleSaveSettings = async () => {
+    if (!usuario?.id) {
+      setError('Usuário não identificado');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      console.log('💾 Salvando configurações:', settings);
+
+      // Tentar atualizar configurações existentes
+      const { data: existingData } = await supabase
+        .from('configuracoes_usuario')
+        .select('id')
+        .eq('usuario_id', usuario.id)
+        .single();
+
+      if (existingData) {
+        // Atualizar configurações existentes
+        const { error: updateError } = await supabase
+          .from('configuracoes_usuario')
+          .update({
+            configuracoes: settings,
+            updated_at: new Date().toISOString()
+          })
+          .eq('usuario_id', usuario.id);
+
+        if (updateError) {
+          throw new Error(`Erro ao atualizar configurações: ${updateError.message}`);
+        }
+      } else {
+        // Criar nova entrada de configurações
+        const { error: insertError } = await supabase
+          .from('configuracoes_usuario')
+          .insert({
+            usuario_id: usuario.id,
+            configuracoes: settings,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (insertError) {
+          throw new Error(`Erro ao criar configurações: ${insertError.message}`);
+        }
+      }
+
+      console.log('✅ Configurações salvas com sucesso');
+      setSuccess(true);
+
+      // Remover mensagem de sucesso após 3 segundos
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+
+    } catch (err: any) {
+      console.error('❌ Erro ao salvar configurações:', err);
+      setError(err.message || 'Erro desconhecido ao salvar configurações');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleResetSettings = () => {
+  const handleResetSettings = async () => {
+    const confirmReset = confirm(
+      'Tem certeza que deseja resetar todas as configurações para os valores padrão?\n\nEsta ação não pode ser desfeita.'
+    );
+
+    if (!confirmReset) return;
+
     // Resetar para configurações padrão
-    setSettings({
+    const defaultSettings = {
       theme: 'system',
       language: 'pt-BR', 
       timezone: 'America/Sao_Paulo',
@@ -86,18 +198,122 @@ export function Settings() {
       autoSave: true,
       dataCollection: true,
       crashReports: true
-    });
+    };
+
+    setSettings(defaultSettings);
+    setError(null);
+
+    // Salvar configurações resetadas automaticamente
+    console.log('🔄 Resetando configurações para padrão');
+    
+    // Simular um pequeno delay para feedback visual
+    setTimeout(() => {
+      handleSaveSettings();
+    }, 500);
   };
 
-  const handleExportData = () => {
-    // TODO: Implementar exportação de dados
-    console.log('Exportando dados do usuário...');
+  const handleExportData = async () => {
+    if (!usuario?.id) {
+      setError('Usuário não identificado');
+      return;
+    }
+
+    try {
+      console.log('📦 Exportando dados do usuário...');
+      setLoading(true);
+
+      // Buscar todos os dados do usuário
+      const [userResponse, projectsResponse, tasksResponse, messagesResponse] = await Promise.all([
+        supabase.from('usuarios').select('*').eq('id', usuario.id).single(),
+        supabase.from('projetos').select('*').eq('responsavel_id', usuario.id),
+        supabase.from('tarefas').select('*').eq('responsavel_id', usuario.id),
+        supabase.from('mensagens').select('*').eq('autor_id', usuario.id)
+      ]);
+
+      const exportData = {
+        user: userResponse.data,
+        projects: projectsResponse.data || [],
+        tasks: tasksResponse.data || [],
+        messages: messagesResponse.data || [],
+        settings: settings,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+      };
+
+      // Criar e baixar arquivo JSON
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `team-manager-data-${usuario.nome.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Dados exportados com sucesso');
+      alert('Seus dados foram exportados com sucesso!');
+
+    } catch (err: any) {
+      console.error('❌ Erro ao exportar dados:', err);
+      setError('Erro ao exportar dados. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implementar exclusão de conta
-    if (confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível.')) {
-      console.log('Excluindo conta...');
+  const handleDeleteAccount = async () => {
+    const confirmDelete = confirm(
+      `ATENÇÃO: Tem certeza que deseja excluir sua conta?\n\n` +
+      `Esta ação é IRREVERSÍVEL e irá:` +
+      `\n• Remover todos os seus dados permanentemente` +
+      `\n• Remover você de todos os projetos e tarefas` +
+      `\n• Excluir todas as suas mensagens` +
+      `\n• Cancelar acesso ao sistema` +
+      `\n\nDigite "EXCLUIR" para confirmar:`
+    );
+
+    if (!confirmDelete) return;
+
+    const confirmation = prompt(
+      'Para confirmar a exclusão da conta, digite "EXCLUIR" em maiúsculas:'
+    );
+
+    if (confirmation !== 'EXCLUIR') {
+      alert('Exclusão cancelada. Texto de confirmação incorreto.');
+      return;
+    }
+
+    if (!usuario?.id) {
+      setError('Usuário não identificado');
+      return;
+    }
+
+    try {
+      console.log('🗑️ Iniciando exclusão da conta:', usuario.id);
+      setLoading(true);
+
+      // Em produção, isso seria feito em uma transação no backend
+      // Por enquanto, apenas simular a exclusão
+      alert(
+        'Funcionalidade de exclusão de conta ainda não implementada.\n\n' +
+        'Em um ambiente de produção, esta ação removeria:\n' +
+        '• Todos os seus dados pessoais\n' +
+        '• Associações com projetos e tarefas\n' +
+        '• Mensagens e configurações\n\n' +
+        'Por segurança, esta funcionalidade requer implementação adicional.'
+      );
+
+      console.log('⚠️ Exclusão de conta simulada (não implementada)');
+
+    } catch (err: any) {
+      console.error('❌ Erro ao excluir conta:', err);
+      setError('Erro ao excluir conta. Tente novamente ou contate o suporte.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,16 +366,55 @@ export function Settings() {
         </div>
         
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={handleResetSettings}>
+          <Button 
+            variant="outline" 
+            onClick={handleResetSettings}
+            disabled={loading || saving}
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Resetar
           </Button>
-          <Button onClick={handleSaveSettings} className="bg-team-primary hover:bg-team-primary/90">
-            <Save className="h-4 w-4 mr-2" />
-            Salvar
+          <Button 
+            onClick={handleSaveSettings} 
+            className="bg-team-primary hover:bg-team-primary/90"
+            disabled={loading || saving}
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Salvar
+              </>
+            )}
           </Button>
         </div>
       </div>
+
+      {/* Mensagens de Feedback */}
+      {success && (
+        <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg mb-6">
+          <Save className="h-4 w-4 text-green-500 mr-2" />
+          <span className="text-sm text-green-700">Configurações salvas com sucesso!</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg mb-6">
+          <AlertTriangle className="h-4 w-4 text-red-500 mr-2" />
+          <span className="text-sm text-red-700">{error}</span>
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2" />
+          <span className="text-sm text-blue-700">Carregando configurações...</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}
@@ -460,8 +715,20 @@ export function Settings() {
                       title="Exportar Dados"
                       description="Baixar uma cópia de todos os seus dados"
                     >
-                      <Button variant="outline" size="sm" onClick={handleExportData}>
-                        Exportar
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleExportData}
+                        disabled={loading || saving}
+                      >
+                        {loading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-1" />
+                            Exportando...
+                          </>
+                        ) : (
+                          'Exportar'
+                        )}
                       </Button>
                     </SettingRow>
                   </div>
@@ -479,9 +746,19 @@ export function Settings() {
                         size="sm" 
                         onClick={handleDeleteAccount}
                         className="border-red-300 text-red-700 hover:bg-red-50"
+                        disabled={loading || saving}
                       >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Excluir
+                        {loading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500 mr-1" />
+                            Processando...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Excluir
+                          </>
+                        )}
                       </Button>
                     </SettingRow>
                   </div>

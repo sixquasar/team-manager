@@ -270,35 +270,238 @@ export function useTeam() {
 
   const addMember = async (memberData: Partial<TeamMember>): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Em produção, criaria usuário e associaria à equipe
-      console.log('Adicionando membro:', memberData);
+      if (!equipe?.id) {
+        return { success: false, error: 'Equipe não identificada' };
+      }
+
+      console.log('👥 Adicionando novo membro:', memberData);
+
+      // Primeiro, criar o usuário na tabela usuarios
+      const userData = {
+        nome: memberData.nome?.trim() || '',
+        email: memberData.email?.trim() || '',
+        cargo: memberData.cargo?.trim() || 'Developer',
+        tipo: memberData.tipo || 'member',
+        telefone: memberData.telefone?.trim() || null,
+        localizacao: memberData.localizacao?.trim() || null,
+        ativo: true,
+        created_at: new Date().toISOString()
+      };
+
+      const { data: novoUsuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .insert([userData])
+        .select()
+        .single();
+
+      if (usuarioError) {
+        console.error('❌ Erro ao criar usuário:', usuarioError);
+        throw new Error(`Erro ao criar usuário: ${usuarioError.message}`);
+      }
+
+      // Depois, associar o usuário à equipe
+      const equipeData = {
+        usuario_id: novoUsuario.id,
+        equipe_id: equipe.id,
+        role: memberData.tipo || 'member',
+        data_entrada: new Date().toISOString(),
+        ativo: true
+      };
+
+      const { error: equipeError } = await supabase
+        .from('usuario_equipes')
+        .insert([equipeData]);
+
+      if (equipeError) {
+        console.error('❌ Erro ao associar à equipe:', equipeError);
+        // Tentar remover usuário criado
+        await supabase.from('usuarios').delete().eq('id', novoUsuario.id);
+        throw new Error(`Erro ao associar à equipe: ${equipeError.message}`);
+      }
+
+      // Adicionar à lista local
+      const novoMembro: TeamMember = {
+        id: novoUsuario.id,
+        nome: novoUsuario.nome,
+        email: novoUsuario.email,
+        cargo: novoUsuario.cargo,
+        tipo: novoUsuario.tipo,
+        telefone: novoUsuario.telefone,
+        localizacao: novoUsuario.localizacao,
+        data_entrada: equipeData.data_entrada,
+        status: 'ativo',
+        especialidades: getEspecialidadesByRole(novoUsuario.cargo),
+        projetos_ativos: 0,
+        tarefas_concluidas: 0,
+        rating: 4.0
+      };
+
+      setMembers(prev => [...prev, novoMembro]);
+      console.log('✅ Membro adicionado com sucesso:', novoMembro);
+      
       return { success: true };
-    } catch (error) {
-      console.error('Erro ao adicionar membro:', error);
-      return { success: false, error: 'Erro ao adicionar membro' };
+    } catch (error: any) {
+      console.error('❌ Erro ao adicionar membro:', error);
+      return { success: false, error: error.message || 'Erro ao adicionar membro' };
     }
   };
 
   const updateMember = async (memberId: string, updates: Partial<TeamMember>): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Em produção, atualizaria dados do usuário
-      console.log('Atualizando membro:', memberId, updates);
+      if (!equipe?.id) {
+        return { success: false, error: 'Equipe não identificada' };
+      }
+
+      console.log('✏️ Atualizando membro:', memberId, updates);
+
+      // Atualizar dados do usuário na tabela usuarios
+      const usuarioUpdates: any = {};
+      if (updates.nome) usuarioUpdates.nome = updates.nome.trim();
+      if (updates.email) usuarioUpdates.email = updates.email.trim();
+      if (updates.cargo) usuarioUpdates.cargo = updates.cargo.trim();
+      if (updates.telefone !== undefined) usuarioUpdates.telefone = updates.telefone?.trim() || null;
+      if (updates.localizacao !== undefined) usuarioUpdates.localizacao = updates.localizacao?.trim() || null;
+      if (updates.status !== undefined) usuarioUpdates.ativo = updates.status === 'ativo';
+      
+      usuarioUpdates.updated_at = new Date().toISOString();
+
+      if (Object.keys(usuarioUpdates).length > 1) { // Mais que apenas updated_at
+        const { error: usuarioError } = await supabase
+          .from('usuarios')
+          .update(usuarioUpdates)
+          .eq('id', memberId);
+
+        if (usuarioError) {
+          console.error('❌ Erro ao atualizar usuário:', usuarioError);
+          throw new Error(`Erro ao atualizar usuário: ${usuarioError.message}`);
+        }
+      }
+
+      // Atualizar role na tabela usuario_equipes se necessário
+      if (updates.tipo) {
+        const { error: equipeError } = await supabase
+          .from('usuario_equipes')
+          .update({ role: updates.tipo })
+          .eq('usuario_id', memberId)
+          .eq('equipe_id', equipe.id);
+
+        if (equipeError) {
+          console.error('❌ Erro ao atualizar role na equipe:', equipeError);
+          throw new Error(`Erro ao atualizar permissões: ${equipeError.message}`);
+        }
+      }
+
+      // Atualizar lista local
+      setMembers(prev => prev.map(member => 
+        member.id === memberId 
+          ? { 
+              ...member, 
+              ...updates,
+              especialidades: updates.cargo ? getEspecialidadesByRole(updates.cargo) : member.especialidades
+            }
+          : member
+      ));
+
+      console.log('✅ Membro atualizado com sucesso');
       return { success: true };
-    } catch (error) {
-      console.error('Erro ao atualizar membro:', error);
-      return { success: false, error: 'Erro ao atualizar membro' };
+    } catch (error: any) {
+      console.error('❌ Erro ao atualizar membro:', error);
+      return { success: false, error: error.message || 'Erro ao atualizar membro' };
     }
   };
 
   const removeMember = async (memberId: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Em produção, removeria associação da equipe
-      console.log('Removendo membro:', memberId);
+      if (!equipe?.id) {
+        return { success: false, error: 'Equipe não identificada' };
+      }
+
+      console.log('🗑️ Removendo membro da equipe:', memberId);
+
+      // Remover associação da equipe (soft delete)
+      const { error: equipeError } = await supabase
+        .from('usuario_equipes')
+        .update({ ativo: false })
+        .eq('usuario_id', memberId)
+        .eq('equipe_id', equipe.id);
+
+      if (equipeError) {
+        console.error('❌ Erro ao remover da equipe:', equipeError);
+        throw new Error(`Erro ao remover da equipe: ${equipeError.message}`);
+      }
+
+      // Remover da lista local
       setMembers(prev => prev.filter(member => member.id !== memberId));
+      console.log('✅ Membro removido da equipe com sucesso');
+      
       return { success: true };
-    } catch (error) {
-      console.error('Erro ao remover membro:', error);
-      return { success: false, error: 'Erro ao remover membro' };
+    } catch (error: any) {
+      console.error('❌ Erro ao remover membro:', error);
+      return { success: false, error: error.message || 'Erro ao remover membro' };
+    }
+  };
+
+  const inviteMember = async (email: string, role: TeamMember['tipo'] = 'member'): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!equipe?.id) {
+        return { success: false, error: 'Equipe não identificada' };
+      }
+
+      console.log('📧 Enviando convite para:', email);
+
+      // Verificar se o email já existe
+      const { data: existingUser, error: checkError } = await supabase
+        .from('usuarios')
+        .select('id, nome')
+        .eq('email', email.trim())
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = not found
+        throw new Error(`Erro ao verificar usuário: ${checkError.message}`);
+      }
+
+      if (existingUser) {
+        // Verificar se já é membro da equipe
+        const { data: membership } = await supabase
+          .from('usuario_equipes')
+          .select('id')
+          .eq('usuario_id', existingUser.id)
+          .eq('equipe_id', equipe.id)
+          .eq('ativo', true)
+          .single();
+
+        if (membership) {
+          return { success: false, error: 'Usuário já é membro da equipe' };
+        }
+
+        // Adicionar à equipe
+        const { error: addError } = await supabase
+          .from('usuario_equipes')
+          .insert({
+            usuario_id: existingUser.id,
+            equipe_id: equipe.id,
+            role,
+            data_entrada: new Date().toISOString(),
+            ativo: true
+          });
+
+        if (addError) {
+          throw new Error(`Erro ao adicionar à equipe: ${addError.message}`);
+        }
+
+        console.log('✅ Usuário existente adicionado à equipe');
+        await fetchTeamMembers(); // Recarregar lista
+        return { success: true };
+      }
+
+      // Em produção, enviaria convite por email
+      // Por enquanto, apenas simular convite
+      console.log('📧 Convite simulado enviado para:', email);
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error('❌ Erro ao enviar convite:', error);
+      return { success: false, error: error.message || 'Erro ao enviar convite' };
     }
   };
 
@@ -308,6 +511,7 @@ export function useTeam() {
     addMember,
     updateMember,
     removeMember,
+    inviteMember,
     refetch: fetchTeamMembers
   };
 }
