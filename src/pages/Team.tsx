@@ -61,7 +61,7 @@ export function Team() {
     {
       id: '2',
       nome: 'Leonardo Candiani',
-      email: 'ana@techsquad.com',
+      email: 'leonardo@techsquad.com',
       cargo: 'Full Stack Developer',
       tipo: 'admin',
       telefone: '+55 11 88888-8888',
@@ -76,7 +76,7 @@ export function Team() {
     {
       id: '3',
       nome: 'Rodrigo Marochi',
-      email: 'carlos@techsquad.com',
+      email: 'rodrigo@techsquad.com',
       cargo: 'UI/UX Designer',
       tipo: 'member',
       telefone: '+55 11 77777-7777',

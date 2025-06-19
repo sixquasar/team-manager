@@ -121,9 +121,9 @@ git branch --show-current  # Deve mostrar: main
 5. Configurar variáveis de ambiente do Supabase
 
 **Usuários Padrão do Sistema:**
-- ricardo@techsquad.com / senha123 (Tech Lead - Owner)
-- ana@techsquad.com / senha123 (Developer)
-- carlos@techsquad.com / senha123 (Designer)
+- ricardo@techsquad.com / senha123 (Ricardo Landim - Tech Lead - Owner)
+- leonardo@techsquad.com / senha123 (Leonardo Candiani - Developer)
+- rodrigo@techsquad.com / senha123 (Rodrigo Marochi - Developer)
 
 ### 📋 ARQUITETURA DO SISTEMA
 
