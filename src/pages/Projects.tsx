@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useProjects } from '@/hooks/use-projects';
+import { NewProjectModal } from '@/components/projects/NewProjectModal';
+import { ProjectDetailsModal } from '@/components/projects/ProjectDetailsModal';
 
 interface Project {
   id: string;
@@ -53,9 +55,10 @@ interface Project {
 
 export function Projects() {
   const { equipe, usuario } = useAuth();
-  const { loading, projects, createProject, updateProject, deleteProject } = useProjects();
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const { loading, projects, refetch } = useProjects();
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const [showNewProject, setShowNewProject] = useState(false);
+  const [showProjectDetails, setShowProjectDetails] = useState(false);
 
   // Transformar dados do banco para interface local
   const projectsFormatted = projects.map(project => {
@@ -252,17 +255,28 @@ export function Projects() {
                       </p>
                     </div>
                     <div className="flex space-x-2 ml-4">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setShowProjectDetails(true);
+                        }}
+                        title="Ver detalhes"
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setShowProjectDetails(true);
+                        }}
+                        title="Editar projeto"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      {(usuario?.tipo === 'owner' || usuario?.tipo === 'admin') && (
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -374,6 +388,33 @@ export function Projects() {
           )}
         </>
       )}
+
+      {/* Modals */}
+      <NewProjectModal
+        isOpen={showNewProject}
+        onClose={() => setShowNewProject(false)}
+        onProjectCreated={() => {
+          refetch();
+          setShowNewProject(false);
+        }}
+      />
+
+      <ProjectDetailsModal
+        isOpen={showProjectDetails}
+        onClose={() => {
+          setShowProjectDetails(false);
+          setSelectedProject(null);
+        }}
+        project={selectedProject}
+        onProjectUpdated={() => {
+          refetch();
+        }}
+        onProjectDeleted={() => {
+          refetch();
+          setShowProjectDetails(false);
+          setSelectedProject(null);
+        }}
+      />
     </div>
   );
 }

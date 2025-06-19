@@ -14,125 +14,25 @@ export function useProjects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      
-      if (!equipe?.id) {
-        console.log('🚨 PROJECTS: Sem equipe selecionada, usando dados SixQuasar');
-        
-        // Dados dos projetos reais da SixQuasar baseados no banco
-        setProjects([
-          {
-            id: '750e8400-e29b-41d4-a716-446655440001',
-            nome: 'Sistema de Atendimento ao Cidadão de Palmas com IA',
-            descricao: 'Sistema Integrado de Atendimento ao Cidadão com Inteligência Artificial para a Prefeitura Municipal de Palmas - TO. Meta: automatizar 60% dos atendimentos municipais para 350.000 habitantes.',
-            status: 'em_progresso',
-            responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-            equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-            data_inicio: '2024-11-01',
-            data_fim_prevista: '2025-09-30',
-            data_fim_real: null,
-            progresso: 25,
-            orcamento: 2400000.00,
-            tecnologias: ['Python', 'LangChain', 'OpenAI GPT-4o', 'WhatsApp API', 'PostgreSQL', 'Kubernetes', 'AWS', 'Redis', 'N8N'],
-            created_at: '2024-11-01T00:00:00Z',
-            updated_at: '2025-06-19T00:00:00Z'
-          },
-          {
-            id: '750e8400-e29b-41d4-a716-446655440002',
-            nome: 'Automação Jocum com SDK e LLM',
-            descricao: 'Agente automatizado para atendimento aos usuários da Jocum, utilizando diretamente SDKs dos principais LLMs (OpenAI, Anthropic Claude, Google Gemini). Meta: 50.000 atendimentos por dia.',
-            status: 'em_progresso',
-            responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
-            equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-            data_inicio: '2024-12-01',
-            data_fim_prevista: '2025-06-30',
-            data_fim_real: null,
-            progresso: 15,
-            orcamento: 625000.00,
-            tecnologias: ['Python', 'LangChain', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'WhatsApp API', 'VoIP', 'PostgreSQL', 'React', 'AWS/GCP'],
-            created_at: '2024-12-01T00:00:00Z',
-            updated_at: '2025-06-19T00:00:00Z'
-          }
-        ]);
-        
-        setLoading(false);
-        return;
-      }
+      console.log('✅ PROJECTS: Buscando dados REAIS do Supabase');
 
-      console.log('✅ PROJECTS: Equipe encontrada, buscando dados do Supabase');
-
-      // Query simples sem JOIN complexo
+      // Query direta da tabela projetos REAL
       const { data, error } = await supabase
         .from('projetos')
         .select('*')
-        .eq('equipe_id', equipe.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erro ao buscar projetos:', error);
-        
-        // Fallback para dados SixQuasar
-        setProjects([
-          {
-            id: '750e8400-e29b-41d4-a716-446655440001',
-            nome: 'Sistema de Atendimento ao Cidadão de Palmas com IA',
-            descricao: 'Sistema Integrado de Atendimento ao Cidadão com Inteligência Artificial para a Prefeitura Municipal de Palmas - TO.',
-            status: 'em_progresso',
-            responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-            equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-            data_inicio: '2024-11-01',
-            data_fim_prevista: '2025-09-30',
-            data_fim_real: null,
-            progresso: 25,
-            orcamento: 2400000.00,
-            tecnologias: ['Python', 'LangChain', 'OpenAI GPT-4o', 'WhatsApp API', 'PostgreSQL'],
-            created_at: '2024-11-01T00:00:00Z',
-            updated_at: '2025-06-19T00:00:00Z'
-          },
-          {
-            id: '750e8400-e29b-41d4-a716-446655440002',
-            nome: 'Automação Jocum com SDK e LLM',
-            descricao: 'Agente automatizado para atendimento aos usuários da Jocum.',
-            status: 'em_progresso',
-            responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
-            equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-            data_inicio: '2024-12-01',
-            data_fim_prevista: '2025-06-30',
-            data_fim_real: null,
-            progresso: 15,
-            orcamento: 625000.00,
-            tecnologias: ['Python', 'LangChain', 'OpenAI', 'Anthropic Claude', 'Google Gemini'],
-            created_at: '2024-12-01T00:00:00Z',
-            updated_at: '2025-06-19T00:00:00Z'
-          }
-        ]);
-        return;
+        setProjects([]);
+      } else {
+        console.log('✅ PROJECTS: Dados encontrados:', data?.length || 0);
+        setProjects(data || []);
       }
-
-      console.log(`✅ PROJECTS: ${data?.length || 0} projetos carregados do Supabase`);
-      setProjects(data || []);
-
-    } catch (error) {
-      console.error('❌ Erro ao carregar projetos:', error);
       
-      // Fallback para dados SixQuasar
-      setProjects([
-        {
-          id: '750e8400-e29b-41d4-a716-446655440001',
-          nome: 'Sistema de Atendimento ao Cidadão de Palmas com IA',
-          descricao: 'Sistema Integrado de Atendimento ao Cidadão com Inteligência Artificial.',
-          status: 'em_progresso',
-          responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-          equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-          data_inicio: '2024-11-01',
-          data_fim_prevista: '2025-09-01',
-          data_fim_real: null,
-          progresso: 25,
-          orcamento: 2400000.00,
-          tecnologias: ['Python', 'OpenAI', 'WhatsApp API'],
-          created_at: '2024-11-01T00:00:00Z',
-          updated_at: '2024-12-20T00:00:00Z'
-        }
-      ]);
+    } catch (error) {
+      console.error('❌ PROJECTS: Erro na busca:', error);
+      setProjects([]);
     } finally {
       setLoading(false);
     }

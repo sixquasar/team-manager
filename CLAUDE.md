@@ -7,6 +7,7 @@
 - **IMPORTANTE**: Sempre que tentar ler, modificar ou atualizar arquivos e ocorrer erro, imediatamente verifique os logs de erro e adote a melhor estratégia para corrigir
 - Sempre analise antes de modificar algo do código
 - Sempre leia o arquivo(read) antes de escrever(write)
+- Nunca use mock data
 
 ## Instruções Especiais
 
