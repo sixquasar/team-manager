@@ -140,12 +140,30 @@ export function useTasks() {
     const fetchTasks = async () => {
       try {
         setLoading(true);
+        console.log('🔍 TASKS: Iniciando busca...');
+        console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+        console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+        console.log('🏢 EQUIPE:', equipe);
         
         if (!equipe?.id) {
-          console.log('Sem equipe selecionada, usando dados mock');
+          console.log('⚠️ TASKS: Sem equipe selecionada, usando dados mock');
           setTasks(mockTasks);
           return;
         }
+
+        // Teste de conectividade
+        const { data: testData, error: testError } = await supabase
+          .from('usuarios')
+          .select('count')
+          .limit(1);
+
+        if (testError) {
+          console.error('❌ TASKS: ERRO DE CONEXÃO:', testError);
+          setTasks(mockTasks);
+          return;
+        }
+
+        console.log('✅ TASKS: Conexão OK, buscando tarefas...');
 
         // Buscar tarefas reais do Supabase
         const { data, error } = await supabase
@@ -167,7 +185,10 @@ export function useTasks() {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Erro ao buscar tarefas:', error);
+          console.error('❌ TASKS: ERRO SUPABASE:', error);
+          console.error('❌ Código:', error.code);
+          console.error('❌ Mensagem:', error.message);
+          console.error('❌ Detalhes:', error.details);
           // Fallback para dados mock
           setTasks(mockTasks);
           return;
@@ -189,11 +210,16 @@ export function useTasks() {
           tags: task.tags || []
         })) || [];
 
+        console.log('✅ TASKS: Tarefas encontradas:', data?.length || 0);
+        console.log('📊 TASKS: Dados brutos:', data);
+        console.log('🎯 TASKS: Tarefas formatadas:', tasksFormatted);
+        
         setTasks(tasksFormatted);
         
       } catch (error) {
-        console.error('Erro ao carregar tarefas:', error);
+        console.error('❌ TASKS: ERRO JAVASCRIPT:', error);
         // Fallback para dados mock em caso de erro
+        console.log('🔄 TASKS: Usando fallback para dados mock');
         setTasks(mockTasks);
       } finally {
         setLoading(false);
