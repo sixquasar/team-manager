@@ -20,7 +20,11 @@ import {
   Mail,
   Database,
   Cloud,
-  Shield
+  Shield,
+  Edit,
+  Trash2,
+  Eye,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useProjects } from '@/hooks/use-projects';
@@ -49,31 +53,44 @@ interface Project {
 
 export function Projects() {
   const { equipe, usuario } = useAuth();
-  const { loading, projects } = useProjects();
+  const { loading, projects, createProject, updateProject, deleteProject } = useProjects();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [showNewProject, setShowNewProject] = useState(false);
 
   // Transformar dados do banco para interface local
-  const projectsFormatted = projects.map(project => ({
-    id: project.id,
-    nome: project.nome,
-    descricao: project.descricao || '',
-    status: project.status,
-    responsavel: project.usuarios?.nome || 'Não atribuído',
-    data_inicio: project.data_inicio || '',
-    data_fim_prevista: project.data_fim_prevista || '',
-    progresso: project.progresso || 0,
-    orcamento: project.orcamento || 0,
-    tecnologias: project.tecnologias || [],
-    equipe: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'], // Dados da equipe SixQuasar
-    kpis: {
-      usuarios_meta: project.nome.includes('Palmas') ? '350.000 habitantes' : '50.000 usuários/dia',
-      volume_meta: project.nome.includes('Palmas') ? '1M mensagens/mês' : '50.000 atendimentos/dia',
-      economia: '30% custos operacionais',
-      roi: project.nome.includes('Palmas') ? '30% no primeiro ano' : '25% no primeiro ano',
-      disponibilidade: '99.9%',
-      satisfacao: '85% satisfação'
+  const projectsFormatted = projects.map(project => {
+    // Mapear responsável baseado no responsavel_id
+    let responsavelNome = 'Não atribuído';
+    if (project.responsavel_id === '550e8400-e29b-41d4-a716-446655440001') {
+      responsavelNome = 'Ricardo Landim';
+    } else if (project.responsavel_id === '550e8400-e29b-41d4-a716-446655440002') {
+      responsavelNome = 'Leonardo Candiani';
+    } else if (project.responsavel_id === '550e8400-e29b-41d4-a716-446655440003') {
+      responsavelNome = 'Rodrigo Marochi';
     }
-  }));
+
+    return {
+      id: project.id,
+      nome: project.nome,
+      descricao: project.descricao || '',
+      status: project.status,
+      responsavel: responsavelNome,
+      data_inicio: project.data_inicio || '',
+      data_fim_prevista: project.data_fim_prevista || '',
+      progresso: project.progresso || 0,
+      orcamento: project.orcamento || 0,
+      tecnologias: project.tecnologias || [],
+      equipe: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'],
+      kpis: {
+        usuarios_meta: project.nome.includes('Palmas') ? '350.000 habitantes' : '50.000 usuários/dia',
+        volume_meta: project.nome.includes('Palmas') ? '1M mensagens/mês' : '50.000 atendimentos/dia',
+        economia: '30% custos operacionais',
+        roi: project.nome.includes('Palmas') ? '30% no primeiro ano' : '25% no primeiro ano',
+        disponibilidade: '99.9%',
+        satisfacao: '85% satisfação'
+      }
+    };
+  });
 
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -122,6 +139,26 @@ export function Projects() {
     return Globe;
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const calculateDaysRemaining = (endDate: string) => {
+    if (!endDate) return 0;
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const totalBudget = projectsFormatted.reduce((acc, project) => acc + project.orcamento, 0);
+  const averageProgress = projectsFormatted.length > 0 
+    ? Math.round(projectsFormatted.reduce((acc, project) => acc + project.progresso, 0) / projectsFormatted.length)
+    : 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -133,8 +170,11 @@ export function Projects() {
           </p>
         </div>
         
-        <Button className="bg-team-primary hover:bg-team-primary/90">
-          <Folder className="h-4 w-4 mr-2" />
+        <Button 
+          className="bg-team-primary hover:bg-team-primary/90"
+          onClick={() => setShowNewProject(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
           Novo Projeto
         </Button>
       </div>
@@ -147,7 +187,7 @@ export function Projects() {
       ) : (
         <>
           {/* Projects Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center">
@@ -165,10 +205,8 @@ export function Projects() {
                 <div className="flex items-center">
                   <TrendingUp className="h-8 w-8 text-green-500" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Em Progresso</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {projectsFormatted.filter(p => p.status === 'em_progresso').length}
-                    </p>
+                    <p className="text-sm font-medium text-gray-600">Progresso Médio</p>
+                    <p className="text-2xl font-bold text-gray-900">{averageProgress}%</p>
                   </div>
                 </div>
               </CardContent>
@@ -177,11 +215,23 @@ export function Projects() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center">
-                  <DollarSign className="h-8 w-8 text-purple-500" />
+                  <DollarSign className="h-8 w-8 text-yellow-500" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Orçamento Total</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalBudget)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <Users className="h-8 w-8 text-purple-500" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Em Progresso</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(projectsFormatted.reduce((sum, p) => sum + p.orcamento, 0))}
+                      {projectsFormatted.filter(p => p.status === 'em_progresso').length}
                     </p>
                   </div>
                 </div>
@@ -189,146 +239,139 @@ export function Projects() {
             </Card>
           </div>
 
-          {/* Projects List */}
-          <div className="grid grid-cols-1 gap-6">
+          {/* Projects Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {projectsFormatted.map(project => (
-          <Card key={project.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-xl text-gray-900 mb-2">
-                    {project.nome}
-                  </CardTitle>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {project.descricao}
-                  </p>
-                </div>
-                <Badge className={getStatusColor(project.status)}>
-                  {getStatusLabel(project.status)}
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-6">
-              {/* Project Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-xs text-gray-500">Responsável</p>
-                    <p className="text-sm font-medium">{project.responsavel}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-xs text-gray-500">Prazo</p>
-                    <p className="text-sm font-medium">
-                      {new Date(project.data_fim_prevista).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-xs text-gray-500">Orçamento</p>
-                    <p className="text-sm font-medium">{formatCurrency(project.orcamento)}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Target className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-xs text-gray-500">Progresso</p>
-                    <p className="text-sm font-medium">{project.progresso}%</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Progresso do Projeto</span>
-                  <span className="text-sm text-gray-500">{project.progresso}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(project.progresso)}`}
-                    style={{ width: `${project.progresso}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* KPIs */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-3">Metas e KPIs</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {Object.entries(project.kpis).map(([key, value]) => (
-                    <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 capitalize">{key.replace('_', ' ')}</p>
-                      <p className="text-sm font-medium text-gray-900">{value}</p>
+              <Card key={project.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{project.nome}</CardTitle>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {project.descricao}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="flex space-x-2 ml-4">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      {(usuario?.tipo === 'owner' || usuario?.tipo === 'admin') && (
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
 
-              {/* Technologies */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-3">Tecnologias</p>
-                <div className="flex flex-wrap gap-2">
-                  {project.tecnologias.slice(0, 8).map((tech, index) => {
-                    const IconComponent = getTechIcon(tech);
-                    return (
-                      <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                        <IconComponent className="h-3 w-3" />
-                        <span>{tech}</span>
-                      </Badge>
-                    );
-                  })}
-                  {project.tecnologias.length > 8 && (
-                    <Badge variant="secondary">
-                      +{project.tecnologias.length - 8} mais
+                <CardContent className="space-y-4">
+                  {/* Status and Progress */}
+                  <div className="flex items-center justify-between">
+                    <Badge className={getStatusColor(project.status)}>
+                      {getStatusLabel(project.status)}
                     </Badge>
-                  )}
-                </div>
-              </div>
+                    <span className="text-sm text-gray-600">
+                      {project.progresso}% concluído
+                    </span>
+                  </div>
 
-              {/* Team */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-3">Equipe</p>
-                <div className="flex space-x-2">
-                  {project.equipe.map((member, index) => (
-                    <div key={index} className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full">
-                      <div className="w-6 h-6 bg-team-primary text-white rounded-full flex items-center justify-center text-xs">
-                        {member.charAt(0)}
-                      </div>
-                      <span className="text-sm text-gray-700">{member.split(' ')[0]}</span>
+                  <Progress value={project.progresso} className="h-2" />
+
+                  {/* Project Details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Responsável:</span>
+                      <p className="font-medium">{project.responsavel}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div>
+                      <span className="text-gray-500">Orçamento:</span>
+                      <p className="font-medium">{formatCurrency(project.orcamento)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Início:</span>
+                      <p className="font-medium">{formatDate(project.data_inicio)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Previsão:</span>
+                      <p className="font-medium">{formatDate(project.data_fim_prevista)}</p>
+                    </div>
+                  </div>
 
-              {/* Actions */}
-              <div className="flex space-x-3 pt-4 border-t">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Ver Timeline
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Target className="h-3 w-3 mr-1" />
-                  Ver Tarefas
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Relatórios
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  {/* Technologies */}
+                  <div>
+                    <span className="text-sm text-gray-500 mb-2 block">Tecnologias:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tecnologias.slice(0, 4).map((tech, index) => {
+                        const IconComponent = getTechIcon(tech);
+                        return (
+                          <div key={index} className="flex items-center bg-gray-100 rounded-full px-2 py-1">
+                            <IconComponent className="h-3 w-3 mr-1" />
+                            <span className="text-xs">{tech}</span>
+                          </div>
+                        );
+                      })}
+                      {project.tecnologias.length > 4 && (
+                        <span className="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-1">
+                          +{project.tecnologias.length - 4} mais
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* KPIs */}
+                  <div className="border-t pt-3">
+                    <span className="text-sm text-gray-500 mb-2 block">KPIs:</span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-500">Meta Usuários:</span>
+                        <p className="font-medium">{project.kpis.usuarios_meta}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Volume:</span>
+                        <p className="font-medium">{project.kpis.volume_meta}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">ROI:</span>
+                        <p className="font-medium">{project.kpis.roi}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Disponibilidade:</span>
+                        <p className="font-medium">{project.kpis.disponibilidade}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Days Remaining */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center text-gray-500">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {calculateDaysRemaining(project.data_fim_prevista)} dias restantes
+                    </div>
+                    <div className="flex items-center text-gray-500">
+                      <Users className="h-4 w-4 mr-1" />
+                      {project.equipe.length} membros
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+
+          {/* Empty State */}
+          {projectsFormatted.length === 0 && (
+            <div className="text-center py-12">
+              <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900">Nenhum projeto encontrado</h3>
+              <p className="text-gray-500 mb-4">Comece criando seu primeiro projeto.</p>
+              <Button onClick={() => setShowNewProject(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Projeto
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
