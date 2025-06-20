@@ -62,15 +62,14 @@ export function useTimeline() {
         .from('eventos_timeline')
         .select(`
           id,
-          tipo,
-          titulo,
-          descricao,
-          autor_id,
+          type,
+          title,
+          description,
+          author,
           timestamp,
-          projeto,
+          project,
           metadata,
-          created_at,
-          usuarios!eventos_timeline_autor_id_fkey(nome)
+          created_at
         `)
         .eq('equipe_id', equipe.id)
         .order('timestamp', { ascending: false });
@@ -91,12 +90,12 @@ export function useTimeline() {
         // Transformar dados do banco para interface local
         const eventsFormatted = data?.map(event => ({
           id: event.id,
-          type: event.tipo,
-          title: event.titulo,
-          description: event.descricao || '',
-          author: (event.usuarios as any)?.nome || 'Sistema',
+          type: event.type,
+          title: event.title,
+          description: event.description || '',
+          author: event.author || 'Sistema',
           timestamp: event.timestamp,
-          project: event.projeto,
+          project: event.project,
           metadata: event.metadata || {}
         })) || [];
 
@@ -137,25 +136,25 @@ export function useTimeline() {
       const { data, error } = await supabase
         .from('eventos_timeline')
         .insert({
-          tipo: eventData.type,
-          titulo: eventData.title,
-          descricao: eventData.description,
-          autor_id: usuario.id,
+          type: eventData.type,
+          title: eventData.title,
+          description: eventData.description,
+          author: usuario.nome,
+          usuario_id: usuario.id,
           equipe_id: equipe.id,
           timestamp: eventData.timestamp,
-          projeto: eventData.project,
+          project: eventData.project,
           metadata: eventData.metadata || {}
         })
         .select(`
           id,
-          tipo,
-          titulo,
-          descricao,
-          autor_id,
+          type,
+          title,
+          description,
+          author,
           timestamp,
-          projeto,
-          metadata,
-          usuarios!eventos_timeline_autor_id_fkey(nome)
+          project,
+          metadata
         `)
         .single();
 
@@ -172,12 +171,12 @@ export function useTimeline() {
       // Adicionar à lista local
       const newEvent: TimelineEvent = {
         id: data.id,
-        type: data.tipo,
-        title: data.titulo,
-        description: data.descricao || '',
-        author: (data.usuarios as any)?.nome || usuario.nome,
+        type: data.type,
+        title: data.title,
+        description: data.description || '',
+        author: data.author || usuario.nome,
         timestamp: data.timestamp,
-        project: data.projeto,
+        project: data.project,
         metadata: data.metadata || {}
       };
 
@@ -215,11 +214,11 @@ export function useTimeline() {
       console.log('✅ TIMELINE UPDATE: Conexão OK, atualizando evento...');
 
       const updateData: any = {};
-      if (updates.type) updateData.tipo = updates.type;
-      if (updates.title) updateData.titulo = updates.title;
-      if (updates.description) updateData.descricao = updates.description;
+      if (updates.type) updateData.type = updates.type;
+      if (updates.title) updateData.title = updates.title;
+      if (updates.description) updateData.description = updates.description;
       if (updates.timestamp) updateData.timestamp = updates.timestamp;
-      if (updates.project) updateData.projeto = updates.project;
+      if (updates.project) updateData.project = updates.project;
       if (updates.metadata) updateData.metadata = updates.metadata;
 
       console.log('📊 TIMELINE UPDATE: Dados para update:', updateData);

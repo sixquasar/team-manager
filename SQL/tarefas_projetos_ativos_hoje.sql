@@ -14,14 +14,12 @@ SELECT
     t.descricao as tarefa_descricao,
     t.status as tarefa_status,
     t.prioridade as tarefa_prioridade,
-    t.data_inicio as tarefa_data_inicio,
-    t.data_fim_prevista as tarefa_data_fim_prevista,
+    t.data_vencimento as tarefa_data_vencimento,
     t.data_conclusao as tarefa_data_conclusao,
-    t.progresso as tarefa_progresso,
-    t.horas_estimadas as tarefa_horas_estimadas,
-    t.horas_trabalhadas as tarefa_horas_trabalhadas,
+    t.tags as tarefa_tags,
+    t.created_at as tarefa_criada_em,
     
-    -- Informações do Projeto
+    -- Informações do Projeto  
     p.id as projeto_id,
     p.nome as projeto_nome,
     p.descricao as projeto_descricao,
@@ -34,47 +32,34 @@ SELECT
     -- Informações do Responsável da Tarefa
     u_tarefa.nome as responsavel_tarefa_nome,
     u_tarefa.email as responsavel_tarefa_email,
-    u_tarefa.cargo as responsavel_tarefa_cargo,
     
     -- Informações do Responsável do Projeto
     u_projeto.nome as responsavel_projeto_nome,
     u_projeto.email as responsavel_projeto_email,
-    u_projeto.cargo as responsavel_projeto_cargo,
-    
-    -- Informações da Equipe
-    e.nome as equipe_nome,
-    e.descricao as equipe_descricao,
     
     -- Métricas e Cálculos
     CASE 
-        WHEN t.data_fim_prevista < CURRENT_DATE THEN 'ATRASADA'
-        WHEN t.data_fim_prevista = CURRENT_DATE THEN 'VENCE_HOJE'
-        WHEN t.data_fim_prevista <= CURRENT_DATE + INTERVAL '7 days' THEN 'PROXIMA_SEMANA'
+        WHEN t.data_vencimento < CURRENT_DATE THEN 'ATRASADA'
+        WHEN t.data_vencimento = CURRENT_DATE THEN 'VENCE_HOJE'
+        WHEN t.data_vencimento <= CURRENT_DATE + INTERVAL '7 days' THEN 'PROXIMA_SEMANA'
         ELSE 'NO_PRAZO'
     END as situacao_prazo,
     
     -- Dias restantes (negativo se atrasado)
-    (t.data_fim_prevista - CURRENT_DATE) as dias_restantes,
+    (t.data_vencimento - CURRENT_DATE) as dias_restantes,
     
     -- Tempo criado
-    DATE_PART('day', CURRENT_TIMESTAMP - t.created_at) as dias_desde_criacao,
-    
-    -- Timestamps
-    t.created_at as tarefa_criada_em,
-    t.updated_at as tarefa_atualizada_em,
-    p.created_at as projeto_criado_em
+    DATE_PART('day', CURRENT_TIMESTAMP - t.created_at) as dias_desde_criacao
 
 FROM tarefas t
 INNER JOIN projetos p ON t.projeto_id = p.id
 INNER JOIN usuarios u_tarefa ON t.responsavel_id = u_tarefa.id
 INNER JOIN usuarios u_projeto ON p.responsavel_id = u_projeto.id
-INNER JOIN equipes e ON p.equipe_id = e.id
 
 WHERE 
     -- Filtros de Data: Tarefas a partir de hoje
     (
-        t.data_inicio >= CURRENT_DATE 
-        OR t.data_fim_prevista >= CURRENT_DATE
+        t.data_vencimento >= CURRENT_DATE 
         OR t.status NOT IN ('concluida', 'cancelada')
     )
     
@@ -97,7 +82,7 @@ ORDER BY
         WHEN 'baixa' THEN 4
         ELSE 5
     END,
-    t.data_fim_prevista ASC,
+    t.data_vencimento ASC,
     p.nome,
     t.titulo;
 
@@ -122,12 +107,11 @@ SELECT
     COUNT(CASE WHEN t.prioridade = 'baixa' THEN 1 END) as tarefas_baixa_prioridade,
     
     -- Contadores por Situação de Prazo
-    COUNT(CASE WHEN t.data_fim_prevista < CURRENT_DATE THEN 1 END) as tarefas_atrasadas,
-    COUNT(CASE WHEN t.data_fim_prevista = CURRENT_DATE THEN 1 END) as tarefas_vencem_hoje,
-    COUNT(CASE WHEN t.data_fim_prevista <= CURRENT_DATE + INTERVAL '7 days' THEN 1 END) as tarefas_proxima_semana,
+    COUNT(CASE WHEN t.data_vencimento < CURRENT_DATE THEN 1 END) as tarefas_atrasadas,
+    COUNT(CASE WHEN t.data_vencimento = CURRENT_DATE THEN 1 END) as tarefas_vencem_hoje,
+    COUNT(CASE WHEN t.data_vencimento <= CURRENT_DATE + INTERVAL '7 days' THEN 1 END) as tarefas_proxima_semana,
     
     -- Métricas de Progresso
-    ROUND(AVG(t.progresso), 2) as progresso_medio_tarefas,
     ROUND(AVG(p.progresso), 2) as progresso_medio_projetos,
     
     -- Contadores por Projeto
@@ -137,8 +121,7 @@ FROM tarefas t
 INNER JOIN projetos p ON t.projeto_id = p.id
 WHERE 
     (
-        t.data_inicio >= CURRENT_DATE 
-        OR t.data_fim_prevista >= CURRENT_DATE
+        t.data_vencimento >= CURRENT_DATE 
         OR t.status NOT IN ('concluida', 'cancelada')
     )
     AND p.status IN ('em_progresso', 'planejamento')
@@ -149,7 +132,7 @@ WHERE
 -- ================================================================
 
 SELECT 
-    e.nome as equipe,
+    p.equipe_id as equipe_id,
     COUNT(*) as total_tarefas_equipe,
     COUNT(DISTINCT p.id) as projetos_ativos_equipe,
     COUNT(DISTINCT u_tarefa.id) as usuarios_com_tarefas,
@@ -161,25 +144,21 @@ SELECT
     COUNT(CASE WHEN t.prioridade = 'baixa' THEN 1 END) as baixas,
     
     -- Métricas
-    ROUND(AVG(t.progresso), 2) as progresso_medio,
-    SUM(t.horas_estimadas) as total_horas_estimadas,
-    SUM(t.horas_trabalhadas) as total_horas_trabalhadas
+    ROUND(AVG(p.progresso), 2) as progresso_medio_projetos
 
 FROM tarefas t
 INNER JOIN projetos p ON t.projeto_id = p.id
 INNER JOIN usuarios u_tarefa ON t.responsavel_id = u_tarefa.id
-INNER JOIN equipes e ON p.equipe_id = e.id
 
 WHERE 
     (
-        t.data_inicio >= CURRENT_DATE 
-        OR t.data_fim_prevista >= CURRENT_DATE
+        t.data_vencimento >= CURRENT_DATE 
         OR t.status NOT IN ('concluida', 'cancelada')
     )
     AND p.status IN ('em_progresso', 'planejamento')
     AND t.status NOT IN ('concluida', 'cancelada')
 
-GROUP BY e.id, e.nome
+GROUP BY p.equipe_id
 ORDER BY total_tarefas_equipe DESC;
 
 -- ================================================================
@@ -191,16 +170,16 @@ SELECT
     t.titulo as tarefa,
     p.nome as projeto,
     u_tarefa.nome as responsavel,
-    t.data_fim_prevista as prazo,
-    (t.data_fim_prevista - CURRENT_DATE) as dias_restantes,
+    t.data_vencimento as prazo,
+    (t.data_vencimento - CURRENT_DATE) as dias_restantes,
     t.prioridade,
-    t.progresso,
+    p.progresso,
     
     CASE 
-        WHEN t.data_fim_prevista < CURRENT_DATE THEN '🚨 ATRASADA'
-        WHEN t.data_fim_prevista = CURRENT_DATE THEN '⚠️ VENCE HOJE'
-        WHEN t.data_fim_prevista <= CURRENT_DATE + INTERVAL '3 days' AND t.prioridade = 'urgente' THEN '🔥 URGENTE - 3 DIAS'
-        WHEN t.progresso < 50 AND t.data_fim_prevista <= CURRENT_DATE + INTERVAL '7 days' THEN '📈 PROGRESSO BAIXO'
+        WHEN t.data_vencimento < CURRENT_DATE THEN '🚨 ATRASADA'
+        WHEN t.data_vencimento = CURRENT_DATE THEN '⚠️ VENCE HOJE'
+        WHEN t.data_vencimento <= CURRENT_DATE + INTERVAL '3 days' AND t.prioridade = 'urgente' THEN '🔥 URGENTE - 3 DIAS'
+        WHEN p.progresso < 50 AND t.data_vencimento <= CURRENT_DATE + INTERVAL '7 days' THEN '📈 PROGRESSO BAIXO'
         ELSE '✅ OK'
     END as alerta
 
@@ -212,16 +191,16 @@ WHERE
     p.status IN ('em_progresso', 'planejamento')
     AND t.status NOT IN ('concluida', 'cancelada')
     AND (
-        t.data_fim_prevista <= CURRENT_DATE + INTERVAL '7 days'
+        t.data_vencimento <= CURRENT_DATE + INTERVAL '7 days'
         OR t.prioridade = 'urgente'
-        OR (t.progresso < 50 AND t.data_fim_prevista <= CURRENT_DATE + INTERVAL '14 days')
+        OR (p.progresso < 50 AND t.data_vencimento <= CURRENT_DATE + INTERVAL '14 days')
     )
 
 ORDER BY 
     CASE 
-        WHEN t.data_fim_prevista < CURRENT_DATE THEN 1
-        WHEN t.data_fim_prevista = CURRENT_DATE THEN 2
+        WHEN t.data_vencimento < CURRENT_DATE THEN 1
+        WHEN t.data_vencimento = CURRENT_DATE THEN 2
         WHEN t.prioridade = 'urgente' THEN 3
         ELSE 4
     END,
-    t.data_fim_prevista ASC;
+    t.data_vencimento ASC;

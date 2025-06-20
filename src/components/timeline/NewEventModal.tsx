@@ -102,7 +102,7 @@ export function NewEventModal({ isOpen, onClose, onEventCreated }: NewEventModal
         type: formData.type,
         title: formData.title.trim(),
         description: formData.description.trim(),
-        author: 'Sistema', // Será definido pelo hook baseado no usuário logado
+        author: 'Usuario', // Será definido pelo hook baseado no usuário logado
         timestamp: new Date().toISOString(),
         project: formData.project.trim() || undefined,
         metadata: {

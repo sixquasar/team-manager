@@ -12,6 +12,7 @@
 7. ✅ **NUNCA vou quebrar código funcionando?**
 8. ✅ **SÓ mexo no módulo reportado pelo usuário?**
 9. ✅ **NÃO executo/testo - apenas crio código?**
+10. ✅ **VERIFIQUEI ALINHAMENTO SUPABASE vs CÓDIGO?**
 
 ### **🔥 REGRAS FUNDAMENTAIS - NUNCA VIOLAR:**
 - Sempre crie 3 estrategias e escolha uma
@@ -23,6 +24,216 @@
 - Sempre leia o arquivo(read) antes de escrever(write)
 - Nunca use mock data
 - Sempre ler o CLAUDE.MD antes de fazer qualquer coisa caso tenha esquecido de algo ou tenha probabilidade de ter esquecido algo
+- **CRÍTICO**: SEMPRE verificar alinhamento entre Supabase Project e código da aplicação
+
+## 🔗 ALINHAMENTO OBRIGATÓRIO SUPABASE PROJECT vs CÓDIGO
+
+### **🚨 REGRA CRÍTICA - NUNCA VIOLAR:**
+**TUDO NO SUPABASE PROJECT DEVE ESTAR 100% ALINHADO COM O CÓDIGO DA APLICAÇÃO**
+
+### **📋 PROCESSO OBRIGATÓRIO ANTES DE QUALQUER SQL/QUERY:**
+
+1. **🔍 VERIFICAR HOOKS EXISTENTES:**
+   ```bash
+   # Ler TODOS os hooks para entender estrutura real
+   src/hooks/use-*.ts
+   ```
+
+2. **📊 MAPEAR ESTRUTURA DE TABELAS:**
+   - Nomes de tabelas exatos
+   - Nomes de campos exatos (case-sensitive)
+   - Tipos de dados corretos
+   - Relacionamentos (foreign keys)
+   - Campos obrigatórios vs opcionais
+
+3. **🎯 VERIFICAR INTERFACES TypeScript:**
+   ```typescript
+   // Sempre verificar interfaces definidas nos hooks
+   export interface Task {
+     id: string;
+     titulo: string;        // NOT title
+     data_vencimento: string; // NOT data_fim_prevista
+     // ...
+   }
+   ```
+
+4. **🔧 VALIDAR QUERIES REAIS:**
+   - Como os hooks fazem SELECT
+   - Quais campos são buscados
+   - Como são feitos JOINs
+   - Filtros aplicados
+
+### **📚 MAPEAMENTO ESTRUTURAL OBRIGATÓRIO:**
+
+#### **TABELA: tarefas**
+```sql
+-- ESTRUTURA REAL (baseada em use-tasks.ts):
+tarefas (
+  id: string,
+  titulo: string,              -- NOT title
+  descricao: string,
+  status: enum,
+  prioridade: enum,
+  responsavel_id: string,
+  data_vencimento: string,     -- NOT data_fim_prevista
+  data_conclusao: string,
+  tags: string[],
+  created_at: timestamp,       -- NOT data_criacao/data_inicio
+  equipe_id: string
+)
+```
+
+#### **TABELA: projetos**
+```sql
+-- ESTRUTURA REAL (baseada em use-projects.ts):
+projetos (
+  id: string,
+  nome: string,
+  descricao: string,
+  status: enum,
+  responsavel_id: string,
+  data_inicio: string,         -- Campo existe no projeto
+  data_fim_prevista: string,   -- Campo existe no projeto
+  orcamento: number,
+  progresso: number,
+  tecnologias: string[],
+  equipe_id: string,
+  created_at: timestamp
+)
+```
+
+#### **TABELA: usuarios**
+```sql
+-- ESTRUTURA REAL (baseada em AuthContext):
+usuarios (
+  id: string,
+  nome: string,
+  email: string,
+  tipo: string,
+  created_at: timestamp
+)
+```
+
+#### **TABELA: eventos_timeline**
+```sql
+-- ESTRUTURA REAL (baseada em use-timeline.ts):
+eventos_timeline (
+  id: string,
+  tipo: string,               -- NOT type
+  titulo: string,             -- NOT title
+  descricao: string,          -- NOT description
+  autor_id: string,
+  equipe_id: string,
+  timestamp: string,
+  projeto: string,
+  metadata: jsonb,
+  created_at: timestamp
+)
+```
+
+### **⚠️ ERROS COMUNS A EVITAR:**
+
+1. **❌ NOMES DE CAMPOS EM INGLÊS:**
+   ```sql
+   -- ERRADO:
+   SELECT title, description FROM tarefas
+   
+   -- CORRETO:
+   SELECT titulo, descricao FROM tarefas
+   ```
+
+2. **❌ CAMPOS INEXISTENTES:**
+   ```sql
+   -- ERRADO:
+   SELECT data_inicio FROM tarefas  -- Campo não existe em tarefas
+   
+   -- CORRETO:
+   SELECT created_at FROM tarefas   -- Campo que realmente existe
+   ```
+
+3. **❌ TIPOS DE DADOS INCORRETOS:**
+   ```sql
+   -- ERRADO:
+   SELECT horas_estimadas FROM tarefas  -- Campo pode não existir
+   
+   -- CORRETO:
+   SELECT tags FROM tarefas            -- Campo que existe
+   ```
+
+### **🔧 METODOLOGIA DE VERIFICAÇÃO:**
+
+#### **PASSO 1: LER HOOK CORRESPONDENTE**
+```bash
+# Para SQL de tarefas:
+Read src/hooks/use-tasks.ts
+
+# Para SQL de projetos:
+Read src/hooks/use-projects.ts
+
+# Para SQL de timeline:
+Read src/hooks/use-timeline.ts
+```
+
+#### **PASSO 2: EXTRAIR ESTRUTURA REAL**
+```typescript
+// Exemplo: use-tasks.ts mostra:
+const { data, error } = await supabase
+  .from('tarefas')               // Nome da tabela
+  .select(`
+    id,                          // Campos reais
+    titulo,                      // NOT title
+    descricao,
+    status,
+    prioridade,
+    responsavel_id,
+    data_vencimento,             // NOT data_fim_prevista
+    data_conclusao,
+    tags,
+    created_at,                  // NOT data_criacao
+    usuarios!tarefas_responsavel_id_fkey(nome)  // JOIN real
+  `)
+```
+
+#### **PASSO 3: CRIAR SQL BASEADO NA REALIDADE**
+```sql
+-- SQL baseado na estrutura REAL encontrada no hook:
+SELECT 
+  t.id,
+  t.titulo,                    -- Campo real
+  t.data_vencimento,           -- Campo real
+  t.created_at,                -- Campo real
+  u.nome as responsavel_nome
+FROM tarefas t
+INNER JOIN usuarios u ON t.responsavel_id = u.id  -- JOIN real
+WHERE t.status NOT IN ('concluida', 'cancelada')  -- Filtros reais
+ORDER BY t.data_vencimento ASC;                    -- Campo real
+```
+
+### **📝 TEMPLATE OBRIGATÓRIO PARA SQL:**
+
+```sql
+-- ================================================================
+-- VERIFICAÇÃO DE ESTRUTURA OBRIGATÓRIA
+-- Hook verificado: use-[nome].ts
+-- Tabelas confirmadas: [lista]
+-- Campos confirmados: [lista]
+-- JOINs confirmados: [lista]
+-- ================================================================
+
+-- [SQL baseado na estrutura real]
+```
+
+### **🚨 CONSEQUÊNCIAS DE NÃO SEGUIR:**
+- ❌ SQL quebrado com erro de "column does not exist"
+- ❌ Perda de tempo reescrevendo SQL
+- ❌ Dados incorretos ou incompletos
+- ❌ Aplicação não funcional
+
+### **✅ BENEFÍCIOS DE SEGUIR:**
+- ✅ SQL funciona na primeira execução
+- ✅ Dados corretos e completos
+- ✅ Aplicação robusta e confiável
+- ✅ Manutenção facilitada
 
 ## Instruções Especiais
 
@@ -299,4 +510,32 @@ sudo ./Scripts\ Deploy/update_team_manager.sh
 - ✅ Error handling robusto em todas as operações
 
 **COMMIT**: bc0ab57 - Modal funcional completo para criação de eventos Timeline
-**PRÓXIMA AÇÃO**: Timeline agora completamente funcional conforme mostrado nas imagens
+
+### 🗓️ 20/06/2025 - 19:00 - SQL COMPLETO PARA TAREFAS ATIVAS CRIADO
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Criação de SQL completo para todas as tarefas a partir de hoje com projetos ativos
+**SOLICITAÇÃO**: 
+- Usuário solicitou SQL para tarefas de hoje em diante com projetos ativos
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ SQL/tarefas_projetos_ativos_hoje.sql criado com 4 consultas distintas
+- ✅ **CONSULTA PRINCIPAL**: Tarefas completas com JOINs (tarefas, projetos, usuários, equipes)
+- ✅ **FILTROS APLICADOS**: data >= hoje, projetos em_progresso/planejamento, tarefas ativas
+- ✅ **CAMPOS COMPLETOS**: IDs, títulos, descrições, responsáveis, prazos, horas, progresso
+- ✅ **MÉTRICAS CALCULADAS**: situação prazo (ATRASADA/VENCE_HOJE/NO_PRAZO), dias restantes
+- ✅ **CONSULTA RESUMIDA**: Contadores por status, prioridade, situação de prazo
+- ✅ **CONSULTA POR EQUIPE**: Breakdown detalhado por equipe com métricas
+- ✅ **CONSULTA DE ALERTAS**: Tarefas críticas com sistema de alertas (🚨⚠️🔥📈)
+- ✅ **ORDENAÇÃO INTELIGENTE**: Prioridade (urgente→baixa) + prazo + projeto + tarefa
+- ✅ **VALIDAÇÕES**: Dados não nulos, status válidos, datas consistentes
+
+**CARACTERÍSTICAS DO SQL**:
+- **4 consultas especializadas** em um arquivo organizado
+- **Documentação completa** com cabeçalhos e comentários
+- **Filtros robustos** para garantir dados relevantes
+- **Métricas avançadas** com cálculos de prazo e progresso
+- **Sistema de alertas** para identificar tarefas críticas
+- **Compatível** com estrutura PostgreSQL/Supabase
+
+**COMMIT**: f9505c0 - SQL completo para tarefas de hoje com projetos ativos
+**PRÓXIMA AÇÃO**: SQL pronto para execução no Supabase para análise de tarefas ativas
