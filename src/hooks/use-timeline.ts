@@ -62,11 +62,11 @@ export function useTimeline() {
         .from('eventos_timeline')
         .select(`
           id,
-          type,
-          title,
-          description,
-          author,
-          project,
+          tipo,
+          titulo,
+          descricao,
+          autor,
+          projeto,
           metadata,
           created_at
         `)
@@ -89,12 +89,12 @@ export function useTimeline() {
         // Transformar dados do banco para interface local
         const eventsFormatted = data?.map(event => ({
           id: event.id,
-          type: event.type,
-          title: event.title,
-          description: event.description || '',
-          author: event.author || 'Sistema',
+          type: event.tipo,
+          title: event.titulo,
+          description: event.descricao || '',
+          author: event.autor || 'Sistema',
           timestamp: event.created_at, // Usar created_at como timestamp
-          project: event.project,
+          project: event.projeto,
           metadata: event.metadata || {}
         })) || [];
 
@@ -135,22 +135,22 @@ export function useTimeline() {
       const { data, error } = await supabase
         .from('eventos_timeline')
         .insert({
-          type: eventData.type,
-          title: eventData.title,
-          description: eventData.description,
-          author: usuario.nome,
+          tipo: eventData.type,
+          titulo: eventData.title,
+          descricao: eventData.description,
+          autor: usuario.nome,
           usuario_id: usuario.id,
           equipe_id: equipe.id,
-          project: eventData.project,
+          projeto: eventData.project,
           metadata: eventData.metadata || {}
         })
         .select(`
           id,
-          type,
-          title,
-          description,
-          author,
-          project,
+          tipo,
+          titulo,
+          descricao,
+          autor,
+          projeto,
           metadata,
           created_at
         `)
@@ -169,12 +169,12 @@ export function useTimeline() {
       // Adicionar à lista local
       const newEvent: TimelineEvent = {
         id: data.id,
-        type: data.type,
-        title: data.title,
-        description: data.description || '',
-        author: data.author || usuario.nome,
+        type: data.tipo,
+        title: data.titulo,
+        description: data.descricao || '',
+        author: data.autor || usuario.nome,
         timestamp: data.created_at, // Usar created_at como timestamp
-        project: data.project,
+        project: data.projeto,
         metadata: data.metadata || {}
       };
 
@@ -212,10 +212,10 @@ export function useTimeline() {
       console.log('✅ TIMELINE UPDATE: Conexão OK, atualizando evento...');
 
       const updateData: any = {};
-      if (updates.type) updateData.type = updates.type;
-      if (updates.title) updateData.title = updates.title;
-      if (updates.description) updateData.description = updates.description;
-      if (updates.project) updateData.project = updates.project;
+      if (updates.type) updateData.tipo = updates.type;
+      if (updates.title) updateData.titulo = updates.title;
+      if (updates.description) updateData.descricao = updates.description;
+      if (updates.project) updateData.projeto = updates.project;
       if (updates.metadata) updateData.metadata = updates.metadata;
       // Note: timestamp é read-only, usa created_at automaticamente
 
