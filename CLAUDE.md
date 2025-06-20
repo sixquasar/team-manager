@@ -244,4 +244,30 @@ VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 - ✅ Checklist de 9 pontos será verificado antes de toda resposta
 
 **LIÇÃO FUNDAMENTAL**: "TU TEM QUE LER O CLAUDE.MD POR COMPLETO!!" - regra nunca mais será violada
-**PRÓXIMA AÇÃO**: Seguir rigorosamente TODAS as instruções do CLAUDE.md sem exceção
+
+### 🗓️ 20/06/2025 - 18:30 - SCRIPT DE ATUALIZAÇÃO CRIADO CONFORME SOLICITADO
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Criação de script de atualização baseado no deploy_team_manager_complete.sh
+**PROBLEMA REPORTADO**: 
+- Usuário solicitou script de atualização baseado no script de deploy existente
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Script update_team_manager.sh criado baseado no deploy completo
+- ✅ 6 fases otimizadas: verificação, backup, git pull, dependências, build, reload
+- ✅ Backup automático da aplicação atual antes da atualização
+- ✅ Verificações de segurança: root, conectividade, nginx rodando
+- ✅ Sistema de checkpoint para recuperação em caso de falha
+- ✅ Configurações corretas SixQuasar: user.name "sixquasar", user.email "sixquasar07@gmail.com"
+- ✅ Progress bar e logs coloridos para melhor experiência
+- ✅ Atualização limpa: git fetch + reset + dependências + build
+- ✅ Permissões corretas (www-data) e reload seguro do Nginx
+- ✅ Status final com resumo completo e informações de acesso
+- ✅ Script executável e versionado no repositório
+
+**USO DO SCRIPT**:
+```bash
+sudo ./Scripts\ Deploy/update_team_manager.sh
+```
+
+**COMMIT**: bd786db - Script de atualização baseado no deploy completo
+**PRÓXIMA AÇÃO**: Script pronto para uso na VPS para atualizações automatizadas

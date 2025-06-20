@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useTimeline, TimelineEvent } from '@/hooks/use-timeline';
+import { NewEventModal } from '@/components/timeline/NewEventModal';
 
 
 const eventTypeConfig = {
@@ -420,24 +421,20 @@ export function Timeline() {
       </Card>
 
       {/* Modal de Novo Evento */}
-      {showNewEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-medium mb-4">Novo Evento</h2>
-            <p className="text-gray-600 mb-4">
-              Funcionalidade de criação de eventos será implementada em breve.
-            </p>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowNewEvent(false)}>
-                Fechar
-              </Button>
-              <Button className="bg-team-primary hover:bg-team-primary/90">
-                Criar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <NewEventModal
+        isOpen={showNewEvent}
+        onClose={() => setShowNewEvent(false)}
+        onEventCreated={async (eventData) => {
+          console.log('📝 TIMELINE PAGE: Recebido evento para criar:', eventData);
+          const result = await createEvent(eventData);
+          if (result.success) {
+            console.log('✅ TIMELINE PAGE: Evento criado com sucesso');
+          } else {
+            console.error('❌ TIMELINE PAGE: Erro ao criar evento:', result.error);
+          }
+          return result;
+        }}
+      />
     </div>
   );
 }
