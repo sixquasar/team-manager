@@ -66,13 +66,12 @@ export function useTimeline() {
           title,
           description,
           author,
-          timestamp,
           project,
           metadata,
           created_at
         `)
         .eq('equipe_id', equipe.id)
-        .order('timestamp', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ TIMELINE: ERRO SUPABASE:', error);
@@ -94,7 +93,7 @@ export function useTimeline() {
           title: event.title,
           description: event.description || '',
           author: event.author || 'Sistema',
-          timestamp: event.timestamp,
+          timestamp: event.created_at, // Usar created_at como timestamp
           project: event.project,
           metadata: event.metadata || {}
         })) || [];
@@ -142,7 +141,6 @@ export function useTimeline() {
           author: usuario.nome,
           usuario_id: usuario.id,
           equipe_id: equipe.id,
-          timestamp: eventData.timestamp,
           project: eventData.project,
           metadata: eventData.metadata || {}
         })
@@ -152,9 +150,9 @@ export function useTimeline() {
           title,
           description,
           author,
-          timestamp,
           project,
-          metadata
+          metadata,
+          created_at
         `)
         .single();
 
@@ -175,7 +173,7 @@ export function useTimeline() {
         title: data.title,
         description: data.description || '',
         author: data.author || usuario.nome,
-        timestamp: data.timestamp,
+        timestamp: data.created_at, // Usar created_at como timestamp
         project: data.project,
         metadata: data.metadata || {}
       };
@@ -217,9 +215,9 @@ export function useTimeline() {
       if (updates.type) updateData.type = updates.type;
       if (updates.title) updateData.title = updates.title;
       if (updates.description) updateData.description = updates.description;
-      if (updates.timestamp) updateData.timestamp = updates.timestamp;
       if (updates.project) updateData.project = updates.project;
       if (updates.metadata) updateData.metadata = updates.metadata;
+      // Note: timestamp é read-only, usa created_at automaticamente
 
       console.log('📊 TIMELINE UPDATE: Dados para update:', updateData);
 
