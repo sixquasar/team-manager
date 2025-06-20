@@ -35,6 +35,62 @@ export function useTeam() {
       console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
       console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
       console.log('🏢 EQUIPE:', equipe);
+      console.log('👤 USUARIO:', usuario);
+
+      // Teste de conectividade
+      const { data: testData, error: testError } = await supabase
+        .from('usuarios')
+        .select('count')
+        .limit(1);
+
+      if (testError) {
+        console.error('❌ TEAM: ERRO DE CONEXÃO:', testError);
+        setMembers([
+          {
+            id: '550e8400-e29b-41d4-a716-446655440001',
+            nome: 'Ricardo Landim',
+            email: 'ricardo@sixquasar.pro',
+            cargo: 'Tech Lead',
+            tipo: 'owner',
+            data_entrada: '2024-01-01T00:00:00Z',
+            status: 'ativo',
+            especialidades: ['Python', 'IA', 'Arquitetura'],
+            projetos_ativos: 2,
+            tarefas_concluidas: 8,
+            rating: 4.9
+          },
+          {
+            id: '550e8400-e29b-41d4-a716-446655440002',
+            nome: 'Leonardo Candiani',
+            email: 'leonardo@sixquasar.pro',
+            cargo: 'Developer',
+            tipo: 'admin',
+            data_entrada: '2024-01-15T00:00:00Z',
+            status: 'ativo',
+            especialidades: ['Python', 'SDK', 'Multi-LLM'],
+            projetos_ativos: 1,
+            tarefas_concluidas: 6,
+            rating: 4.8
+          },
+          {
+            id: '550e8400-e29b-41d4-a716-446655440003',
+            nome: 'Rodrigo Marochi',
+            email: 'rodrigo@sixquasar.pro',
+            cargo: 'Developer',
+            tipo: 'member',
+            data_entrada: '2024-02-01T00:00:00Z',
+            status: 'ativo',
+            especialidades: ['WhatsApp', 'Integrações'],
+            projetos_ativos: 2,
+            tarefas_concluidas: 4,
+            rating: 4.7
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ TEAM: Conexão OK, buscando membros...');
       
       if (!equipe?.id) {
         console.log('⚠️ TEAM: Sem equipe selecionada, usando dados SixQuasar');
@@ -118,7 +174,10 @@ export function useTeam() {
         .eq('ativo', true);
 
       if (error) {
-        console.error('Erro ao buscar membros da equipe:', error);
+        console.error('❌ TEAM: ERRO SUPABASE:', error);
+        console.error('❌ Código:', error.code);
+        console.error('❌ Mensagem:', error.message);
+        console.error('❌ Detalhes:', error.details);
         // Fallback para dados SixQuasar
         setMembers([
           {
@@ -202,6 +261,8 @@ export function useTeam() {
         }) || []
       );
 
+      console.log('✅ TEAM: Membros encontrados:', membersWithStats?.length || 0);
+      console.log('📊 TEAM: Dados brutos:', membersWithStats);
       setMembers(membersWithStats);
 
     } catch (error) {

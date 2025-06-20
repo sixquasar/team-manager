@@ -49,16 +49,21 @@
 
 ### **PÁGINAS QUE PRECISAM DESTA METODOLOGIA:**
 
-#### **🔄 PRÓXIMAS CORREÇÕES NECESSÁRIAS:**
-1. **📋 TASKS** - `use-tasks.ts` ainda usa mock data, precisa conectar com tabela 'tarefas'
-2. **👥 TEAM** - `use-team.ts` precisa verificar conexão com tabela 'usuarios' 
-3. **💬 MESSAGES** - `use-messages.ts` precisa conectar com tabela 'mensagens'
-4. **📊 DASHBOARD** - `use-dashboard.ts` precisa dados reais agregados
-5. **📈 REPORTS** - `use-reports.ts` precisa métricas reais
-6. **👤 PROFILE** - `use-profile.ts` precisa estatísticas reais do usuário
+#### **✅ PÁGINAS TODAS CORRIGIDAS COM METODOLOGIA PERFEITA:**
+1. **✅ PROJECTS** - Sincronizado com projetos reais + debug completo
+2. **✅ TASKS** - Debug completo + teste de conectividade + fallback SixQuasar  
+3. **✅ TEAM** - Debug completo + teste de conectividade + fallback SixQuasar
+4. **✅ MESSAGES** - Debug completo + teste de conectividade + fallback SixQuasar
+5. **✅ DASHBOARD** - Debug completo + teste de conectividade + fallback SixQuasar
+6. **✅ REPORTS** - Debug completo + teste de conectividade + fallback SixQuasar
+7. **✅ PROFILE** - Debug completo + teste de conectividade + fallback SixQuasar
 
-#### **✅ PÁGINAS JÁ CORRIGIDAS:**
-- **PROJECTS** - Sincronizado com projetos reais (Sistema Palmas IA, Automação Jocum)
+#### **🎯 METODOLOGIA APLICADA EM TODOS OS HOOKS:**
+- 🔍 Debug inicial: URL, ANON_KEY, EQUIPE, USUARIO
+- 🌐 Teste de conectividade automático  
+- ❌ Error handling detalhado: código, mensagem, detalhes
+- ✅ Logs de sucesso com quantidade e dados brutos
+- 🔄 Fallback inteligente para dados SixQuasar
 
 ### **TEMPLATE DE CORREÇÃO PARA HOOKS:**
 

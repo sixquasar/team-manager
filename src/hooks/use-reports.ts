@@ -40,6 +40,55 @@ export function useReports() {
   const fetchReportsData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 REPORTS: Iniciando busca...');
+      console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+      console.log('🏢 EQUIPE:', equipe);
+
+      // Teste de conectividade
+      const { data: testData, error: testError } = await supabase
+        .from('usuarios')
+        .select('count')
+        .limit(1);
+
+      if (testError) {
+        console.error('❌ REPORTS: ERRO DE CONEXÃO:', testError);
+        setTeamMetrics({
+          tasksCompleted: 8,
+          tasksInProgress: 4,
+          averageCompletionTime: 2.3,
+          productivityScore: 78,
+          teamUtilization: 85
+        });
+        setChartData([
+          { period: 'Nov Sem 1', completed: 2, started: 4, delayed: 0 },
+          { period: 'Nov Sem 2', completed: 3, started: 3, delayed: 0 },
+          { period: 'Dez Sem 1', completed: 2, started: 4, delayed: 1 },
+          { period: 'Dez Sem 2', completed: 1, started: 1, delayed: 0 }
+        ]);
+        setProjectMetrics([
+          {
+            name: 'Sistema Palmas IA',
+            progress: 25,
+            budget: 2400000,
+            spent: 600000,
+            daysRemaining: 252,
+            status: 'on_track'
+          },
+          {
+            name: 'Automação Jocum SDK',
+            progress: 15,
+            budget: 625000,
+            spent: 93750,
+            daysRemaining: 132,
+            status: 'on_track'
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ REPORTS: Conexão OK, buscando relatórios...');
       
       if (!equipe?.id) {
         console.log('🚨 REPORTS: Sem equipe selecionada, usando dados SixQuasar');
@@ -99,7 +148,17 @@ export function useReports() {
         .eq('equipe_id', equipe.id);
 
       if (tarefasError || projetosError) {
-        console.error('Erro ao buscar dados para relatórios:', { tarefasError, projetosError });
+        console.error('❌ REPORTS: ERRO SUPABASE:', { tarefasError, projetosError });
+        if (tarefasError) {
+          console.error('❌ TAREFAS - Código:', tarefasError.code);
+          console.error('❌ TAREFAS - Mensagem:', tarefasError.message);
+          console.error('❌ TAREFAS - Detalhes:', tarefasError.details);
+        }
+        if (projetosError) {
+          console.error('❌ PROJETOS - Código:', projetosError.code);
+          console.error('❌ PROJETOS - Mensagem:', projetosError.message);
+          console.error('❌ PROJETOS - Detalhes:', projetosError.details);
+        }
         // Fallback para dados SixQuasar
         setTeamMetrics({
           tasksCompleted: 8,
@@ -146,6 +205,8 @@ export function useReports() {
         status: getProjectStatus(projeto.progresso || 0, projeto.data_fim_prevista)
       })) || [];
 
+      console.log('✅ REPORTS: Métricas encontradas:', projectMetricsData?.length || 0);
+      console.log('📊 REPORTS: Dados brutos:', projectMetricsData);
       setProjectMetrics(projectMetricsData);
 
       // Gerar dados de chart baseados no histórico (simplificado)

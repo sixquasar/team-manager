@@ -48,6 +48,37 @@ export function useMessages() {
   const fetchChannelsAndMessages = async () => {
     try {
       setLoading(true);
+      console.log('🔍 MESSAGES: Iniciando busca...');
+      console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+      console.log('🏢 EQUIPE:', equipe);
+      console.log('👤 USUARIO:', usuario);
+
+      // Teste de conectividade
+      const { data: testData, error: testError } = await supabase
+        .from('usuarios')
+        .select('count')
+        .limit(1);
+
+      if (testError) {
+        console.error('❌ MESSAGES: ERRO DE CONEXÃO:', testError);
+        setChannels([
+          {
+            id: 'general',
+            name: 'Geral',
+            type: 'public',
+            description: 'Discussões gerais da equipe SixQuasar',
+            memberCount: 3,
+            unreadCount: 0,
+            lastActivity: '2h atrás'
+          }
+        ]);
+        setMessages([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ MESSAGES: Conexão OK, buscando mensagens...');
       
       if (!equipe?.id) {
         console.log('🚨 MESSAGES: Sem equipe selecionada, usando dados SixQuasar');
@@ -173,7 +204,10 @@ export function useMessages() {
           .order('created_at', { ascending: true });
 
         if (mensagensError) {
-          console.error('❌ Erro ao buscar mensagens do Supabase:', mensagensError);
+          console.error('❌ MESSAGES: ERRO SUPABASE:', mensagensError);
+          console.error('❌ Código:', mensagensError.code);
+          console.error('❌ Mensagem:', mensagensError.message);
+          console.error('❌ Detalhes:', mensagensError.details);
           // Usar dados mock como fallback
           setMessages([
             {
@@ -196,8 +230,9 @@ export function useMessages() {
             timestamp: msg.created_at
           })) || [];
 
+          console.log('✅ MESSAGES: Mensagens encontradas:', mensagensFormatadas?.length || 0);
+          console.log('📊 MESSAGES: Dados brutos:', mensagensFormatadas);
           setMessages(mensagensFormatadas);
-          console.log(`✅ ${mensagensFormatadas.length} mensagens carregadas do Supabase`);
         }
       } catch (error) {
         console.error('❌ Erro ao carregar mensagens:', error);

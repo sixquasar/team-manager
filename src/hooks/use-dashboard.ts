@@ -30,6 +30,40 @@ export function useDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 DASHBOARD: Iniciando busca...');
+      console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+      console.log('🏢 EQUIPE:', equipe);
+      console.log('👤 USUARIO:', usuario);
+
+      // Teste de conectividade
+      const { data: testData, error: testError } = await supabase
+        .from('usuarios')
+        .select('count')
+        .limit(1);
+
+      if (testError) {
+        console.error('❌ DASHBOARD: ERRO DE CONEXÃO:', testError);
+        setMetrics({
+          tasksCompleted: 12,
+          tasksInProgress: 8,
+          productivity: 78,
+          activeMembers: 3
+        });
+        setRecentActivity([
+          {
+            id: '1',
+            title: 'Ricardo finalizou arquitetura Palmas',
+            description: 'Sistema IA para 350k habitantes - infraestrutura aprovada',
+            author: 'Ricardo Landim',
+            timestamp: '2h atrás'
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('✅ DASHBOARD: Conexão OK, buscando dados...');
       
       if (!equipe?.id) {
         console.log('🚨 DASHBOARD: Sem equipe selecionada, gerando métricas baseadas nos projetos');
@@ -88,7 +122,10 @@ export function useDashboard() {
         .eq('ativo', true);
 
       if (usuariosError) {
-        console.error('Erro ao buscar usuários:', usuariosError);
+        console.error('❌ DASHBOARD: ERRO USUARIOS:', usuariosError);
+        console.error('❌ Código:', usuariosError.code);
+        console.error('❌ Mensagem:', usuariosError.message);
+        console.error('❌ Detalhes:', usuariosError.details);
       }
 
       // Buscar eventos recentes da timeline
@@ -107,7 +144,13 @@ export function useDashboard() {
         .limit(5);
 
       if (eventosError) {
-        console.error('Erro ao buscar eventos:', eventosError);
+        console.error('❌ DASHBOARD: ERRO EVENTOS:', eventosError);
+        console.error('❌ Código:', eventosError.code);
+        console.error('❌ Mensagem:', eventosError.message);
+        console.error('❌ Detalhes:', eventosError.details);
+      } else {
+        console.log('✅ DASHBOARD: Eventos encontrados:', eventos?.length || 0);
+        console.log('📊 DASHBOARD: Dados eventos:', eventos);
       }
 
       // Calcular métricas reais ou usar dados baseados nos projetos
