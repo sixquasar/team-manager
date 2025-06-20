@@ -173,4 +173,17 @@ VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 
 **OBJETIVO**: Eliminar erros por não seguir instruções - agora há verificação visual obrigatória em toda resposta
 
-**PRÓXIMA AÇÃO**: Seguir rigorosamente o template em todas as respostas futuras
+### 🗓️ 20/06/2025 - 17:15 - CORREÇÃO TIMELINE E APLICAÇÃO RIGOROSA CLAUDE.MD
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Aplicação rigorosa do template CLAUDE.md + correção Timeline com eliminação total de mock data
+**RESULTADO**: 
+- ✅ Timeline.tsx conectado ao hook use-timeline.ts (Supabase)
+- ✅ Eliminação completa do array hardcoded com datas 2024
+- ✅ Implementação de loading state e error handling
+- ✅ Template obrigatório seguido: <reasoning> + checklist + 3 estratégias
+- ✅ Commit executivo seguindo padrão profissional
+- ✅ Sistema de persistência atualizado com timestamp
+
+**LIÇÃO CRÍTICA**: CLAUDE.md é o "head" da aplicação - todas as nuances devem ser seguidas literalmente
+**COMMIT**: 2444727 - Timeline conectado ao Supabase via use-timeline.ts
+**PRÓXIMA AÇÃO**: Manter rigidez absoluta no cumprimento do CLAUDE.md em todas as interações

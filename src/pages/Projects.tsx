@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { 
   Folder,
   Calendar,
@@ -24,7 +25,9 @@ import {
   Edit,
   Trash2,
   Eye,
-  Plus
+  Plus,
+  Search,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useProjects } from '@/hooks/use-projects';
@@ -59,9 +62,33 @@ export function Projects() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
+  
+  // Estados para pesquisa
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Função de pesquisa
+  const handleSearch = () => {
+    console.log('🔍 PROJECTS: Executando busca:', searchInput);
+    setSearchTerm(searchInput);
+  };
+
+  // Função para Enter key
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Função para limpar pesquisa
+  const clearSearch = () => {
+    console.log('🧹 PROJECTS: Limpando pesquisa');
+    setSearchInput('');
+    setSearchTerm('');
+  };
 
 
-  // Transformar dados do banco para interface local
+  // Transformar dados do banco para interface local com datas 2025 corretas
   const projectsFormatted = projects.map(project => {
     // Mapear responsável baseado no responsavel_id
     let responsavelNome = 'Não atribuído';
@@ -73,28 +100,42 @@ export function Projects() {
       responsavelNome = 'Rodrigo Marochi';
     }
 
+    // Corrigir datas para 2025 - dados reais do Supabase
+    const dataInicio = project.data_inicio || project.created_at || new Date().toISOString();
+    const dataFimPrevista = project.data_fim_prevista || new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+
     return {
       id: project.id,
       nome: project.nome,
       descricao: project.descricao || '',
       status: project.status,
       responsavel: responsavelNome,
-      data_inicio: project.data_inicio || '',
-      data_fim_prevista: project.data_fim_prevista || '',
+      data_inicio: dataInicio,
+      data_fim_prevista: dataFimPrevista,
       progresso: project.progresso || 0,
       orcamento: project.orcamento || 0,
       tecnologias: project.tecnologias || [],
       equipe: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi'],
       kpis: {
-        usuarios_meta: project.nome.includes('Palmas') ? '350.000 habitantes' : '50.000 usuários/dia',
-        volume_meta: project.nome.includes('Palmas') ? '1M mensagens/mês' : '50.000 atendimentos/dia',
+        usuarios_meta: project.nome?.includes('Palmas') ? '350.000 habitantes' : '50.000 usuários/dia',
+        volume_meta: project.nome?.includes('Palmas') ? '1M mensagens/mês' : '50.000 atendimentos/dia',
         economia: '30% custos operacionais',
-        roi: project.nome.includes('Palmas') ? '30% no primeiro ano' : '25% no primeiro ano',
+        roi: project.nome?.includes('Palmas') ? '30% no primeiro ano' : '25% no primeiro ano',
         disponibilidade: '99.9%',
         satisfacao: '85% satisfação'
       }
     };
   });
+
+  // Filtrar projetos baseado na pesquisa
+  const filteredProjects = searchTerm.trim() === '' 
+    ? projectsFormatted 
+    : projectsFormatted.filter(project => 
+        project.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.responsavel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.tecnologias.some(tech => tech.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
 
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -158,9 +199,9 @@ export function Projects() {
     return Math.max(0, diffDays);
   };
 
-  const totalBudget = projectsFormatted.reduce((acc, project) => acc + project.orcamento, 0);
-  const averageProgress = projectsFormatted.length > 0 
-    ? Math.round(projectsFormatted.reduce((acc, project) => acc + project.progresso, 0) / projectsFormatted.length)
+  const totalBudget = filteredProjects.reduce((acc, project) => acc + project.orcamento, 0);
+  const averageProgress = filteredProjects.length > 0 
+    ? Math.round(filteredProjects.reduce((acc, project) => acc + project.progresso, 0) / filteredProjects.length)
     : 0;
 
   return (
@@ -183,6 +224,41 @@ export function Projects() {
         </Button>
       </div>
 
+      {/* Campo de Pesquisa */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Pesquisar projetos por nome, descrição, responsável ou tecnologia..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-10 pr-10"
+              />
+              {searchInput && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button onClick={handleSearch} className="bg-team-primary hover:bg-team-primary/90">
+              <Search className="h-4 w-4 mr-2" />
+              Buscar
+            </Button>
+          </div>
+          {searchTerm && (
+            <p className="text-sm text-gray-600 mt-2">
+              Mostrando {filteredProjects.length} projeto(s) para "{searchTerm}"
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Loading State */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
@@ -198,7 +274,7 @@ export function Projects() {
                   <Folder className="h-8 w-8 text-blue-500" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total de Projetos</p>
-                    <p className="text-2xl font-bold text-gray-900">{projectsFormatted.length}</p>
+                    <p className="text-2xl font-bold text-gray-900">{filteredProjects.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -235,7 +311,7 @@ export function Projects() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Em Progresso</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {projectsFormatted.filter(p => p.status === 'em_progresso').length}
+                      {filteredProjects.filter(p => p.status === 'em_progresso').length}
                     </p>
                   </div>
                 </div>
@@ -245,7 +321,7 @@ export function Projects() {
 
           {/* Projects Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {projectsFormatted.map(project => (
+            {filteredProjects.map(project => (
               <Card key={project.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -376,11 +452,15 @@ export function Projects() {
           </div>
 
           {/* Empty State */}
-          {projectsFormatted.length === 0 && (
+          {filteredProjects.length === 0 && !loading && (
             <div className="text-center py-12">
               <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">Nenhum projeto encontrado</h3>
-              <p className="text-gray-500 mb-4">Comece criando seu primeiro projeto.</p>
+              <h3 className="text-lg font-medium text-gray-900">
+                {searchTerm ? `Nenhum projeto encontrado para "${searchTerm}"` : 'Nenhum projeto encontrado'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm ? 'Tente outros termos de busca.' : 'Comece criando seu primeiro projeto.'}
+              </p>
               <Button onClick={() => setShowNewProject(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Projeto
