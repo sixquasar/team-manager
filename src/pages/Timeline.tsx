@@ -18,21 +18,8 @@ import {
   Database
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { useTimeline, TimelineEvent } from '@/hooks/use-timeline';
 
-interface TimelineEvent {
-  id: string;
-  type: 'task' | 'message' | 'milestone' | 'meeting' | 'deadline';
-  title: string;
-  description: string;
-  author: string;
-  timestamp: string;
-  project?: string;
-  metadata?: {
-    taskStatus?: 'completed' | 'started' | 'delayed';
-    priority?: 'low' | 'medium' | 'high' | 'urgent';
-    participants?: string[];
-  };
-}
 
 const eventTypeConfig = {
   task: {
@@ -70,134 +57,24 @@ const eventTypeConfig = {
 export function Timeline() {
   const { equipe, usuario } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  
+  // Hook conectado ao Supabase - sem mock data
+  const { 
+    loading, 
+    events: timelineEvents, 
+    createEvent, 
+    updateEvent, 
+    deleteEvent, 
+    refetch 
+  } = useTimeline();
 
-  // Timeline baseada nos projetos reais da SixQuasar
-  const timelineEvents: TimelineEvent[] = [
-    {
-      id: '1',
-      type: 'milestone',
-      title: 'Início do Projeto Palmas',
-      description: 'Sistema de Atendimento ao Cidadão com IA - R$ 2.4M aprovado pela Prefeitura',
-      author: 'Ricardo Landim',
-      timestamp: '2024-11-01T09:00:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        priority: 'high'
-      }
-    },
-    {
-      id: '2',
-      type: 'task',
-      title: 'Arquitetura do sistema aprovada',
-      description: 'Definida infraestrutura para atender 350k habitantes com 99.9% disponibilidade',
-      author: 'Ricardo Landim',
-      timestamp: '2024-11-15T14:30:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        taskStatus: 'completed',
-        priority: 'high'
-      }
-    },
-    {
-      id: '3',
-      type: 'meeting',
-      title: 'Reunião de planejamento Palmas',
-      description: 'Alinhamento sobre metas: 1M mensagens/mês e 30% economia operacional',
-      author: 'Equipe SixQuasar',
-      timestamp: '2024-11-20T10:00:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        participants: ['Ricardo Landim', 'Leonardo Candiani', 'Rodrigo Marochi']
-      }
-    },
-    {
-      id: '4',
-      type: 'milestone',
-      title: 'Início do Projeto Jocum',
-      description: 'Automação com SDK Multi-LLM - R$ 625K para 50k atendimentos/dia',
-      author: 'Leonardo Candiani',
-      timestamp: '2024-12-01T08:00:00Z',
-      project: 'Automação Jocum',
-      metadata: {
-        priority: 'high'
-      }
-    },
-    {
-      id: '5',
-      type: 'task',
-      title: 'Integração SDK OpenAI + Anthropic',
-      description: 'Implementação da integração com múltiplos LLMs para máxima flexibilidade',
-      author: 'Leonardo Candiani',
-      timestamp: '2024-12-10T16:45:00Z',
-      project: 'Automação Jocum',
-      metadata: {
-        taskStatus: 'completed',
-        priority: 'medium'
-      }
-    },
-    {
-      id: '6',
-      type: 'task',
-      title: 'Mapeamento de bases Jocum',
-      description: 'Identificadas 80+ bases para integração com WhatsApp e VoIP',
-      author: 'Rodrigo Marochi',
-      timestamp: '2024-12-15T11:20:00Z',
-      project: 'Automação Jocum',
-      metadata: {
-        taskStatus: 'completed',
-        priority: 'medium'
-      }
-    },
-    {
-      id: '7',
-      type: 'task',
-      title: 'Desenvolvimento POC Palmas',
-      description: 'Protótipo para 5.000 cidadãos em funcionamento',
-      author: 'Ricardo Landim',
-      timestamp: '2024-12-20T13:15:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        taskStatus: 'started',
-        priority: 'high'
-      }
-    },
-    {
-      id: '8',
-      type: 'deadline',
-      title: 'Entrega POC Palmas',
-      description: 'Demonstração para 5.000 cidadãos - validação do sistema IA',
-      author: 'Sistema',
-      timestamp: '2025-01-31T23:59:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        priority: 'urgent'
-      }
-    },
-    {
-      id: '9',
-      type: 'deadline',
-      title: 'Entrega POC Jocum',
-      description: 'SDK Multi-LLM funcional com integração completa',
-      author: 'Sistema',
-      timestamp: '2025-06-30T23:59:00Z',
-      project: 'Automação Jocum',
-      metadata: {
-        priority: 'urgent'
-      }
-    },
-    {
-      id: '10',
-      type: 'milestone',
-      title: 'Go-live Sistema Palmas',
-      description: 'Lançamento oficial para 350k habitantes de Palmas-TO',
-      author: 'Sistema',
-      timestamp: '2025-09-30T00:00:00Z',
-      project: 'Sistema Palmas IA',
-      metadata: {
-        priority: 'urgent'
-      }
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-team-primary"></div>
+      </div>
+    );
+  }
 
   const filteredEvents = selectedFilter === 'all' 
     ? timelineEvents 
@@ -252,7 +129,13 @@ export function Timeline() {
           </p>
         </div>
         
-        <Button className="bg-team-primary hover:bg-team-primary/90">
+        <Button 
+          className="bg-team-primary hover:bg-team-primary/90"
+          onClick={() => {
+            console.log('📝 Novo evento Timeline - funcionalidade será implementada');
+            // TODO: Implementar modal de criação de evento
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Evento
         </Button>
