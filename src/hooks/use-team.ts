@@ -31,9 +31,13 @@ export function useTeam() {
   const fetchTeamMembers = async () => {
     try {
       setLoading(true);
+      console.log('🔍 TEAM: Iniciando busca...');
+      console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
+      console.log('🏢 EQUIPE:', equipe);
       
       if (!equipe?.id) {
-        console.log('🚨 TEAM: Sem equipe selecionada, usando dados SixQuasar');
+        console.log('⚠️ TEAM: Sem equipe selecionada, usando dados SixQuasar');
         
         // Dados da equipe SixQuasar baseados nos projetos reais
         setMembers([
