@@ -62,13 +62,13 @@ export function useTimeline() {
       console.log('👤 TIMELINE: Usuario atual:', usuario);
 
       // TESTE: Verificar se existem eventos na tabela (sem filtro)
-      const { data: allEvents, error: testError } = await supabase
+      const { data: allEvents, error: allEventsError } = await supabase
         .from('eventos_timeline')
         .select('id, equipe_id, tipo, titulo')
         .limit(10);
 
-      if (testError) {
-        console.error('❌ TIMELINE TEST: Erro ao buscar todos eventos:', testError);
+      if (allEventsError) {
+        console.error('❌ TIMELINE TEST: Erro ao buscar todos eventos:', allEventsError);
       } else {
         console.log('🧪 TIMELINE TEST: Total eventos na tabela:', allEvents?.length || 0);
         console.log('🧪 TIMELINE TEST: Eventos encontrados:', allEvents);
