@@ -186,4 +186,24 @@ VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 
 **LIÇÃO CRÍTICA**: CLAUDE.md é o "head" da aplicação - todas as nuances devem ser seguidas literalmente
 **COMMIT**: 2444727 - Timeline conectado ao Supabase via use-timeline.ts
-**PRÓXIMA AÇÃO**: Manter rigidez absoluta no cumprimento do CLAUDE.md em todas as interações
+
+### 🗓️ 20/06/2025 - 17:45 - PESQUISA FUNCIONAL PROJECTS + DATAS 2025 CORRIGIDAS  
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Implementação completa de pesquisa funcional + correção definitiva de datas para 2025
+**PROBLEMA REPORTADO**: 
+- Pesquisa de projetos sem reação/funcionalidade
+- Datas ainda aparecendo incorretas (2024 ao invés de 2025)
+- Mock data proibida conforme CLAUDE.md
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Campo de pesquisa completo: botão, Enter key, ícone clicável
+- ✅ Pesquisa multi-campo: nome, descrição, responsável, tecnologias
+- ✅ Botão limpar (X) para resetar pesquisa instantaneamente
+- ✅ Contador de resultados da pesquisa em tempo real
+- ✅ Datas corrigidas usando dados reais do Supabase (created_at fallback)
+- ✅ Zero mock data - sempre dados do banco conforme CLAUDE.md
+- ✅ Empty state adaptado para resultados de pesquisa
+- ✅ Overview cards atualizados para refletir filtros
+
+**COMMIT**: 171431f - Pesquisa funcional completa em Projects + correção de datas 2025
+**PRÓXIMA AÇÃO**: Aguardar teste manual do usuário para confirmar funcionalidade

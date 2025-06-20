@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   Clock,
   CheckCircle2,
@@ -15,7 +16,11 @@ import {
   Target,
   TrendingUp,
   Code,
-  Database
+  Database,
+  Search,
+  X,
+  Activity,
+  Users
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useTimeline, TimelineEvent } from '@/hooks/use-timeline';
@@ -58,6 +63,13 @@ export function Timeline() {
   const { equipe, usuario } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   
+  // Estados para pesquisa
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados para modal
+  const [showNewEvent, setShowNewEvent] = useState(false);
+  
   // Hook conectado ao Supabase - sem mock data
   const { 
     loading, 
@@ -68,6 +80,26 @@ export function Timeline() {
     refetch 
   } = useTimeline();
 
+  // Função de pesquisa
+  const handleSearch = () => {
+    console.log('🔍 TIMELINE: Executando busca:', searchInput);
+    setSearchTerm(searchInput);
+  };
+
+  // Função para Enter key
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Função para limpar pesquisa
+  const clearSearch = () => {
+    console.log('🧹 TIMELINE: Limpando pesquisa');
+    setSearchInput('');
+    setSearchTerm('');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -76,9 +108,23 @@ export function Timeline() {
     );
   }
 
-  const filteredEvents = selectedFilter === 'all' 
-    ? timelineEvents 
-    : timelineEvents.filter(event => event.type === selectedFilter);
+  // Aplicar filtros de tipo e pesquisa
+  let filteredEvents = timelineEvents;
+  
+  // Filtro por tipo
+  if (selectedFilter !== 'all') {
+    filteredEvents = filteredEvents.filter(event => event.type === selectedFilter);
+  }
+  
+  // Filtro por pesquisa
+  if (searchTerm.trim() !== '') {
+    filteredEvents = filteredEvents.filter(event =>
+      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (event.project && event.project.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -118,6 +164,16 @@ export function Timeline() {
     }
   };
 
+  // Estatísticas para os cards de overview
+  const totalEvents = timelineEvents.length;
+  const todayEvents = timelineEvents.filter(event => {
+    const eventDate = new Date(event.timestamp);
+    const today = new Date();
+    return eventDate.toDateString() === today.toDateString();
+  }).length;
+  const taskEvents = timelineEvents.filter(event => event.type === 'task').length;
+  const milestoneEvents = timelineEvents.filter(event => event.type === 'milestone').length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -131,15 +187,98 @@ export function Timeline() {
         
         <Button 
           className="bg-team-primary hover:bg-team-primary/90"
-          onClick={() => {
-            console.log('📝 Novo evento Timeline - funcionalidade será implementada');
-            // TODO: Implementar modal de criação de evento
-          }}
+          onClick={() => setShowNewEvent(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
           Novo Evento
         </Button>
       </div>
+
+      {/* Cards de Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Activity className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total de Eventos</p>
+                <p className="text-2xl font-bold text-gray-900">{filteredEvents.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Hoje</p>
+                <p className="text-2xl font-bold text-gray-900">{todayEvents}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <CheckCircle2 className="h-8 w-8 text-purple-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Tarefas</p>
+                <p className="text-2xl font-bold text-gray-900">{taskEvents}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Target className="h-8 w-8 text-yellow-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Marcos</p>
+                <p className="text-2xl font-bold text-gray-900">{milestoneEvents}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Campo de Pesquisa */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Pesquisar eventos por título, descrição, autor ou projeto..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-10 pr-10"
+              />
+              {searchInput && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button onClick={handleSearch} className="bg-team-primary hover:bg-team-primary/90">
+              <Search className="h-4 w-4 mr-2" />
+              Buscar
+            </Button>
+          </div>
+          {searchTerm && (
+            <p className="text-sm text-gray-600 mt-2">
+              Mostrando {filteredEvents.length} evento(s) para "{searchTerm}"
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
@@ -178,8 +317,23 @@ export function Timeline() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {filteredEvents.map((event, index) => {
+          {filteredEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900">
+                {searchTerm ? `Nenhum evento encontrado para "${searchTerm}"` : 'Nenhum evento encontrado'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm ? 'Tente outros termos de busca.' : 'Comece criando seu primeiro evento.'}
+              </p>
+              <Button onClick={() => setShowNewEvent(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Evento
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredEvents.map((event, index) => {
               const config = eventTypeConfig[event.type];
               const IconComponent = config.icon;
               
@@ -260,9 +414,30 @@ export function Timeline() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Modal de Novo Evento */}
+      {showNewEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-medium mb-4">Novo Evento</h2>
+            <p className="text-gray-600 mb-4">
+              Funcionalidade de criação de eventos será implementada em breve.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowNewEvent(false)}>
+                Fechar
+              </Button>
+              <Button className="bg-team-primary hover:bg-team-primary/90">
+                Criar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
