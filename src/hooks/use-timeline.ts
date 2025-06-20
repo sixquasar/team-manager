@@ -52,9 +52,26 @@ export function useTimeline() {
 
       if (!equipe?.id) {
         console.log('⚠️ TIMELINE: Sem equipe selecionada');
+        console.log('🔍 TIMELINE: Dados de equipe:', equipe);
         setEvents([]);
         setLoading(false);
         return;
+      }
+
+      console.log('🎯 TIMELINE: Buscando eventos para equipe_id:', equipe.id);
+      console.log('👤 TIMELINE: Usuario atual:', usuario);
+
+      // TESTE: Verificar se existem eventos na tabela (sem filtro)
+      const { data: allEvents, error: testError } = await supabase
+        .from('eventos_timeline')
+        .select('id, equipe_id, tipo, titulo')
+        .limit(10);
+
+      if (testError) {
+        console.error('❌ TIMELINE TEST: Erro ao buscar todos eventos:', testError);
+      } else {
+        console.log('🧪 TIMELINE TEST: Total eventos na tabela:', allEvents?.length || 0);
+        console.log('🧪 TIMELINE TEST: Eventos encontrados:', allEvents);
       }
 
       // Buscar eventos reais do Supabase
@@ -78,13 +95,16 @@ export function useTimeline() {
         console.error('❌ Código:', error.code);
         console.error('❌ Mensagem:', error.message);
         console.error('❌ Detalhes:', error.details);
+        console.error('❌ Query que falhou: SELECT FROM eventos_timeline WHERE equipe_id =', equipe.id);
         
         // Fallback para array vazio - SEM MOCK DATA
         console.log('🔄 TIMELINE: Erro no Supabase, retornando lista vazia');
         setEvents([]);
       } else {
-        console.log('✅ TIMELINE: Eventos encontrados:', data?.length || 0);
-        console.log('📊 TIMELINE: Dados brutos:', data);
+        console.log('✅ TIMELINE: Query executada com sucesso');
+        console.log('📊 TIMELINE: Eventos encontrados:', data?.length || 0);
+        console.log('🗃️ TIMELINE: Dados brutos completos:', JSON.stringify(data, null, 2));
+        console.log('🎯 TIMELINE: Equipe filtrada:', equipe.id);
         
         // Transformar dados do banco para interface local
         const eventsFormatted = data?.map(event => ({
