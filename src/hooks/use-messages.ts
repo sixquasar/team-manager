@@ -131,7 +131,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440001',
             authorName: 'Ricardo Landim',
             content: 'Pessoal, finalizei a arquitetura do sistema para atender 350k habitantes. A infraestrutura está preparada para 99.9% de disponibilidade com AWS + Kubernetes.',
-            timestamp: '2024-12-20T14:30:00Z'
+            timestamp: '2025-06-20T14:30:00Z'
           },
           {
             id: '2',
@@ -139,7 +139,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440003',
             authorName: 'Rodrigo Marochi',
             content: 'Ótimo! Já comecei a integração com WhatsApp API. Vai ser crucial para atingir a meta de 1M mensagens/mês.',
-            timestamp: '2024-12-20T14:35:00Z'
+            timestamp: '2025-06-20T14:35:00Z'
           },
           {
             id: '3',
@@ -147,7 +147,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440002',
             authorName: 'Leonardo Candiani',
             content: 'SDK multi-LLM funcionando! OpenAI + Anthropic + Gemini integrados. Conseguimos fallback automático entre os modelos.',
-            timestamp: '2024-12-20T15:00:00Z'
+            timestamp: '2025-06-20T15:00:00Z'
           },
           {
             id: '4',
@@ -155,7 +155,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440001',
             authorName: 'Ricardo Landim',
             content: 'Excelente! Isso vai garantir os 50k atendimentos/dia que o cliente precisa. 🚀',
-            timestamp: '2024-12-20T15:05:00Z',
+            timestamp: '2025-06-20T15:05:00Z',
             reactions: [
               { emoji: '🚀', count: 2, users: ['Leonardo Candiani', 'Rodrigo Marochi'] }
             ]
@@ -166,7 +166,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440003',
             authorName: 'Rodrigo Marochi',
             content: 'Mapeei 80+ bases da Jocum para integração. VoIP + WhatsApp vai cobrir todos os canais de atendimento.',
-            timestamp: '2024-12-20T16:00:00Z'
+            timestamp: '2025-06-20T16:00:00Z'
           },
           {
             id: '6',
@@ -174,7 +174,7 @@ export function useMessages() {
             authorId: '550e8400-e29b-41d4-a716-446655440001',
             authorName: 'Ricardo Landim',
             content: 'Pessoal, estamos com 25% do Palmas e 15% do Jocum. POCs entregam em 31/01. Vamos acelerar! 💪',
-            timestamp: '2024-12-20T16:30:00Z',
+            timestamp: '2025-06-20T16:30:00Z',
             pinned: true,
             reactions: [
               { emoji: '💪', count: 3, users: ['Leonardo Candiani', 'Rodrigo Marochi', 'Ricardo Landim'] }

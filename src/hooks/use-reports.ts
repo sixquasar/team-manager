@@ -104,10 +104,10 @@ export function useReports() {
 
         // Dados de progresso semanal baseados nos projetos
         setChartData([
-          { period: 'Nov Sem 1', completed: 2, started: 4, delayed: 0 }, // Início Palmas
-          { period: 'Nov Sem 2', completed: 3, started: 3, delayed: 0 }, // Arquitetura
-          { period: 'Dez Sem 1', completed: 2, started: 4, delayed: 1 }, // Início Jocum
-          { period: 'Dez Sem 2', completed: 1, started: 1, delayed: 0 }  // SDK integrado
+          { period: 'Mai Sem 1', completed: 2, started: 4, delayed: 0 }, // Início Palmas
+          { period: 'Mai Sem 2', completed: 3, started: 3, delayed: 0 }, // Arquitetura
+          { period: 'Jun Sem 1', completed: 2, started: 4, delayed: 1 }, // Início Jocum
+          { period: 'Jun Sem 2', completed: 1, started: 1, delayed: 0 }  // SDK integrado
         ]);
 
         // Métricas dos projetos reais
@@ -136,16 +136,35 @@ export function useReports() {
 
       console.log('✅ REPORTS: Equipe encontrada, buscando dados do Supabase');
       
-      // Buscar métricas reais do Supabase
-      const { data: tarefas, error: tarefasError } = await supabase
-        .from('tarefas')
-        .select('status, created_at, data_conclusao')
-        .eq('equipe_id', equipe.id);
+      // Buscar métricas reais do Supabase com fallback robusto
+      let tarefas = null;
+      let projetos = null;
+      let tarefasError = null;
+      let projetosError = null;
 
-      const { data: projetos, error: projetosError } = await supabase
-        .from('projetos')
-        .select('nome, progresso, orcamento, data_inicio, data_fim_prevista')
-        .eq('equipe_id', equipe.id);
+      try {
+        const tarefasResponse = await supabase
+          .from('tarefas')
+          .select('status, created_at, data_conclusao')
+          .eq('equipe_id', equipe.id);
+        tarefas = tarefasResponse.data;
+        tarefasError = tarefasResponse.error;
+      } catch (error) {
+        console.error('❌ REPORTS: Erro ao buscar tarefas:', error);
+        tarefasError = error;
+      }
+
+      try {
+        const projetosResponse = await supabase
+          .from('projetos')
+          .select('nome, progresso, orcamento, data_inicio, data_fim_prevista')
+          .eq('equipe_id', equipe.id);
+        projetos = projetosResponse.data;
+        projetosError = projetosResponse.error;
+      } catch (error) {
+        console.error('❌ REPORTS: Erro ao buscar projetos:', error);
+        projetosError = error;
+      }
 
       if (tarefasError || projetosError) {
         console.error('❌ REPORTS: ERRO SUPABASE:', { tarefasError, projetosError });
@@ -211,10 +230,10 @@ export function useReports() {
 
       // Gerar dados de chart baseados no histórico (simplificado)
       setChartData([
-        { period: 'Nov Sem 1', completed: Math.floor(tasksCompleted * 0.25), started: Math.floor(tasksInProgress * 0.5), delayed: 0 },
-        { period: 'Nov Sem 2', completed: Math.floor(tasksCompleted * 0.35), started: Math.floor(tasksInProgress * 0.3), delayed: 0 },
-        { period: 'Dez Sem 1', completed: Math.floor(tasksCompleted * 0.25), started: Math.floor(tasksInProgress * 0.4), delayed: 1 },
-        { period: 'Dez Sem 2', completed: Math.floor(tasksCompleted * 0.15), started: Math.floor(tasksInProgress * 0.2), delayed: 0 }
+        { period: 'Mai Sem 1', completed: Math.floor(tasksCompleted * 0.25), started: Math.floor(tasksInProgress * 0.5), delayed: 0 },
+        { period: 'Mai Sem 2', completed: Math.floor(tasksCompleted * 0.35), started: Math.floor(tasksInProgress * 0.3), delayed: 0 },
+        { period: 'Jun Sem 1', completed: Math.floor(tasksCompleted * 0.25), started: Math.floor(tasksInProgress * 0.4), delayed: 1 },
+        { period: 'Jun Sem 2', completed: Math.floor(tasksCompleted * 0.15), started: Math.floor(tasksInProgress * 0.2), delayed: 0 }
       ]);
 
     } catch (error) {
@@ -230,10 +249,10 @@ export function useReports() {
       });
       
       setChartData([
-        { period: 'Nov Sem 1', completed: 2, started: 4, delayed: 0 },
-        { period: 'Nov Sem 2', completed: 3, started: 3, delayed: 0 },
-        { period: 'Dez Sem 1', completed: 2, started: 4, delayed: 1 },
-        { period: 'Dez Sem 2', completed: 1, started: 1, delayed: 0 }
+        { period: 'Mai Sem 1', completed: 2, started: 4, delayed: 0 },
+        { period: 'Mai Sem 2', completed: 3, started: 3, delayed: 0 },
+        { period: 'Jun Sem 1', completed: 2, started: 4, delayed: 1 },
+        { period: 'Jun Sem 2', completed: 1, started: 1, delayed: 0 }
       ]);
       
       setProjectMetrics([

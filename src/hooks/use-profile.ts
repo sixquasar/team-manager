@@ -54,21 +54,21 @@ export function useProfile() {
             id: '1',
             title: 'Projeto Palmas IA iniciado',
             description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-            timestamp: '2024-11-01T09:00:00Z',
+            timestamp: '2025-05-01T09:00:00Z',
             type: 'project'
           },
           {
             id: '2',
             title: 'Arquitetura do sistema definida',
             description: 'Infraestrutura com 99.9% disponibilidade',
-            timestamp: '2024-11-15T14:30:00Z',
+            timestamp: '2025-05-15T14:30:00Z',
             type: 'task'
           },
           {
             id: '3',
             title: 'Conquista desbloqueada',
             description: 'Expert em Multi-LLM - Projeto Jocum SDK',
-            timestamp: '2024-12-01T08:00:00Z',
+            timestamp: '2025-06-01T08:00:00Z',
             type: 'achievement'
           }
         ]
@@ -107,7 +107,7 @@ export function useProfile() {
               id: '1',
               title: 'Projeto Palmas IA iniciado',
               description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-              timestamp: '2024-11-01T09:00:00Z',
+              timestamp: '2025-05-01T09:00:00Z',
               type: 'project'
             }
           ]
@@ -215,14 +215,14 @@ export function useProfile() {
             id: '1',
             title: 'Projeto Palmas IA iniciado',
             description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-            timestamp: '2024-11-01T09:00:00Z',
+            timestamp: '2025-05-01T09:00:00Z',
             type: 'project'
           },
           {
             id: '2',
             title: 'Arquitetura do sistema definida', 
             description: 'Infraestrutura com 99.9% disponibilidade',
-            timestamp: '2024-11-15T14:30:00Z',
+            timestamp: '2025-05-15T14:30:00Z',
             type: 'task'
           }
         ]

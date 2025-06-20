@@ -34,9 +34,9 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
       responsavel_nome: 'Ricardo Landim',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-11-01T09:00:00Z',
-      data_vencimento: '2024-11-15T17:00:00Z',
-      data_conclusao: '2024-11-14T16:30:00Z',
+      data_criacao: '2025-05-01T09:00:00Z',
+      data_vencimento: '2025-05-15T17:00:00Z',
+      data_conclusao: '2025-05-14T16:30:00Z',
       tags: ['arquitetura', 'kubernetes', 'aws', 'redis']
     },
     {
@@ -48,8 +48,8 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
       responsavel_nome: 'Rodrigo Marochi',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-11-16T10:00:00Z',
-      data_vencimento: '2024-12-31T17:00:00Z',
+      data_criacao: '2025-05-16T10:00:00Z',
+      data_vencimento: '2025-07-31T17:00:00Z',
       tags: ['whatsapp', 'api', 'integração', 'messaging']
     },
     {
@@ -61,8 +61,8 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
       responsavel_nome: 'Ricardo Landim',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-01T08:00:00Z',
-      data_vencimento: '2025-01-15T17:00:00Z',
+      data_criacao: '2025-06-01T08:00:00Z',
+      data_vencimento: '2025-08-15T17:00:00Z',
       tags: ['langchain', 'openai', 'gpt-4o', 'ia', 'nlp']
     },
     // Tarefas do Projeto Jocum SDK
@@ -75,9 +75,9 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
       responsavel_nome: 'Leonardo Candiani',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-01T09:00:00Z',
-      data_vencimento: '2024-12-15T17:00:00Z',
-      data_conclusao: '2024-12-14T15:20:00Z',
+      data_criacao: '2025-06-01T09:00:00Z',
+      data_vencimento: '2025-06-15T17:00:00Z',
+      data_conclusao: '2025-06-14T15:20:00Z',
       tags: ['sdk', 'openai', 'anthropic', 'gemini', 'multi-llm']
     },
     {
@@ -89,8 +89,8 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
       responsavel_nome: 'Rodrigo Marochi',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-10T14:00:00Z',
-      data_vencimento: '2025-02-01T17:00:00Z',
+      data_criacao: '2025-06-10T14:00:00Z',
+      data_vencimento: '2025-08-01T17:00:00Z',
       tags: ['mapeamento', 'bases-dados', 'integração', 'jocum']
     },
     {
@@ -102,8 +102,8 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
       responsavel_nome: 'Rodrigo Marochi',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-15T11:00:00Z',
-      data_vencimento: '2025-03-01T17:00:00Z',
+      data_criacao: '2025-06-15T11:00:00Z',
+      data_vencimento: '2025-09-01T17:00:00Z',
       tags: ['voip', 'whatsapp', 'canais', 'atendimento']
     },
     // Tarefas Gerais da SixQuasar
@@ -116,9 +116,9 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
       responsavel_nome: 'Ricardo Landim',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-18T16:00:00Z',
-      data_vencimento: '2024-12-20T17:00:00Z',
-      data_conclusao: '2024-12-20T14:45:00Z',
+      data_criacao: '2025-06-18T16:00:00Z',
+      data_vencimento: '2025-06-20T17:00:00Z',
+      data_conclusao: '2025-06-20T14:45:00Z',
       tags: ['deploy', 'team-manager', 'produção', 'nginx']
     },
     {
@@ -130,8 +130,8 @@ export function useTasks() {
       responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
       responsavel_nome: 'Leonardo Candiani',
       equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2024-12-20T09:00:00Z',
-      data_vencimento: '2025-01-10T17:00:00Z',
+      data_criacao: '2025-06-20T09:00:00Z',
+      data_vencimento: '2025-07-10T17:00:00Z',
       tags: ['documentação', 'arquitetura', 'processos']
     }
   ];
