@@ -139,7 +139,7 @@ export function useTimeline() {
           titulo: eventData.title,
           descricao: eventData.description,
           autor: usuario.nome,
-          usuario_id: usuario.id,
+          autor_id: usuario.id,
           equipe_id: equipe.id,
           projeto: eventData.project,
           metadata: eventData.metadata || {}
