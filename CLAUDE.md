@@ -1,5 +1,19 @@
 # Instruções do Projeto - Team Manager
 
+## 🚨🚨🚨 CHECKLIST OBRIGATÓRIO - SEGUIR EM TODA RESPOSTA 🚨🚨🚨
+
+### **📋 ANTES DE RESPONDER QUALQUER COISA:**
+1. ✅ **LI o CLAUDE.md COMPLETAMENTE?** 
+2. ✅ **USEI <reasoning> tags?**
+3. ✅ **CRIEI 3 estratégias e escolhi uma?**
+4. ✅ **ANALISEI antes de modificar código?**
+5. ✅ **LI o arquivo antes de escrever?**
+6. ✅ **ADICIONEI timestamp ao histórico?**
+7. ✅ **NUNCA vou quebrar código funcionando?**
+8. ✅ **SÓ mexo no módulo reportado pelo usuário?**
+9. ✅ **NÃO executo/testo - apenas crio código?**
+
+### **🔥 REGRAS FUNDAMENTAIS - NUNCA VIOLAR:**
 - Sempre crie 3 estrategias e escolha uma
 - SEMPRE use <reasoning> tags para explicar o processo de pensamento antes de responder
 - **CRÍTICO**: Na primeira interação de cada sessão, SEMPRE leia este arquivo CLAUDE.md completamente para carregar o contexto anterior
@@ -119,4 +133,44 @@ VITE_SUPABASE_URL=https://cfvuldebsoxmhuarikdk.supabase.co
 VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 ```
 
-[... rest of the existing content remains the same ...]
+## 🎯 TEMPLATE DE RESPOSTA OBRIGATÓRIO
+
+### **INÍCIO DE TODA RESPOSTA:**
+```
+<reasoning>
+[Explicar processo de pensamento detalhadamente]
+</reasoning>
+
+📋 CHECKLIST OBRIGATÓRIO VERIFICADO:
+✅ Li CLAUDE.md completamente  
+✅ Usando <reasoning> tags
+✅ Criarei 3 estratégias e escolherei uma
+✅ Analisarei antes de modificar código
+✅ Lerei arquivo antes de escrever
+✅ Nunca quebrarei código funcionando
+✅ Só mexo no módulo reportado pelo usuário
+✅ Não executo/testo - apenas crio código
+
+## 🎯 TRÊS ESTRATÉGIAS OBRIGATÓRIAS:
+1. **ESTRATÉGIA A**: [descrição detalhada]
+2. **ESTRATÉGIA B**: [descrição detalhada]  
+3. **ESTRATÉGIA C**: [descrição detalhada]
+
+## 🔧 ESCOLHA: [Estratégia escolhida] - PORQUE: [justificativa]
+```
+
+## 📊 SISTEMA DE PERSISTÊNCIA - ADICIONAR TIMESTAMP
+
+### 🗓️ 20/06/2025 - 16:30 - REFORÇO SISTEMÁTICO DAS INSTRUÇÕES CLAUDE.MD
+**STATUS**: ✅ IMPLEMENTADO
+**AÇÃO**: Criação de checklist obrigatório e template de resposta para garantir cumprimento rigoroso
+**RESULTADO**: 
+- ✅ Checklist obrigatório no início do CLAUDE.md
+- ✅ Template de resposta estruturado com <reasoning>
+- ✅ Verificação sistemática das 9 regras fundamentais
+- ✅ Reforço para sempre criar 3 estratégias
+- ✅ Lembretes visuais com emojis para destaque
+
+**OBJETIVO**: Eliminar erros por não seguir instruções - agora há verificação visual obrigatória em toda resposta
+
+**PRÓXIMA AÇÃO**: Seguir rigorosamente o template em todas as respostas futuras
