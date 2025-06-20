@@ -16,7 +16,8 @@ import {
   UserPlus,
   Filter,
   Activity,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useTeam, TeamMember } from '@/hooks/use-team';
@@ -35,6 +36,7 @@ export function Team() {
     refetch 
   } = useTeam();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -184,6 +186,23 @@ export function Team() {
     setShowEditModal(true);
   };
 
+  const handleSearch = () => {
+    console.log('🔍 Executando busca de membros:', searchInput);
+    setSearchTerm(searchInput);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const clearSearch = () => {
+    console.log('🗑️ Limpando busca de membros');
+    setSearchInput('');
+    setSearchTerm('');
+  };
+
   const handleSendMessage = (member: TeamMember) => {
     console.log('💬 Enviar mensagem para:', member.nome);
     // Em produção, redirecionaria para o sistema de mensagens
@@ -213,15 +232,38 @@ export function Team() {
       {/* Filters */}
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search 
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-team-primary transition-colors" 
+            onClick={handleSearch}
+            title="Buscar membros"
+          />
           <input
             type="text"
-            placeholder="Buscar membros..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
+            placeholder="Buscar membros... (Enter para buscar)"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-team-primary focus:border-transparent"
           />
+          {(searchInput || searchTerm) && (
+            <X 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-red-500 transition-colors" 
+              onClick={clearSearch}
+              title="Limpar busca"
+            />
+          )}
         </div>
+
+        <Button 
+          onClick={handleSearch}
+          variant="outline"
+          size="sm"
+          className="flex items-center space-x-2"
+          disabled={!searchInput.trim()}
+        >
+          <Search className="h-4 w-4" />
+          <span>Buscar</span>
+        </Button>
 
         <select
           value={selectedRole}
