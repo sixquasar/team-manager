@@ -45,20 +45,12 @@ export function useDashboard() {
       if (testError) {
         console.error('❌ DASHBOARD: ERRO DE CONEXÃO:', testError);
         setMetrics({
-          tasksCompleted: 12,
-          tasksInProgress: 8,
-          productivity: 78,
-          activeMembers: 3
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          productivity: 0,
+          activeMembers: 0
         });
-        setRecentActivity([
-          {
-            id: '1',
-            title: 'Ricardo finalizou arquitetura Palmas',
-            description: 'Sistema IA para 350k habitantes - infraestrutura aprovada',
-            author: 'Ricardo Landim',
-            timestamp: '2h atrás'
-          }
-        ]);
+        setRecentActivity([]);
         setLoading(false);
         return;
       }
@@ -66,41 +58,14 @@ export function useDashboard() {
       console.log('✅ DASHBOARD: Conexão OK, buscando dados...');
       
       if (!equipe?.id) {
-        console.log('🚨 DASHBOARD: Sem equipe selecionada, gerando métricas baseadas nos projetos');
-        
-        // Métricas baseadas nos projetos reais da SixQuasar
+        console.log('⚠️ DASHBOARD: Sem equipe selecionada');
         setMetrics({
-          tasksCompleted: 12,      // Baseado nas entregas já feitas
-          tasksInProgress: 8,      // Tarefas em andamento dos 2 projetos
-          productivity: 78,        // Média entre 25% (Palmas) e 15% (Jocum) * 100 / 20 * 4
-          activeMembers: 3         // Ricardo, Leonardo, Rodrigo
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          productivity: 0,
+          activeMembers: 0
         });
-
-        // Atividades reais baseadas nos projetos
-        setRecentActivity([
-          {
-            id: '1',
-            title: 'Ricardo finalizou arquitetura Palmas',
-            description: 'Sistema IA para 350k habitantes - infraestrutura aprovada',
-            author: 'Ricardo Landim',
-            timestamp: '2h atrás'
-          },
-          {
-            id: '2', 
-            title: 'Leonardo implementou SDK Jocum',
-            description: 'Integração OpenAI + Anthropic + Gemini funcionando',
-            author: 'Leonardo Candiani',
-            timestamp: '4h atrás'
-          },
-          {
-            id: '3',
-            title: 'Rodrigo mapeou fluxos WhatsApp',
-            description: 'Jocum: 50k atendimentos/dia via WhatsApp + VoIP',
-            author: 'Rodrigo Marochi',
-            timestamp: '6h atrás'
-          }
-        ]);
-        
+        setRecentActivity([]);
         setLoading(false);
         return;
       }
@@ -176,15 +141,15 @@ export function useDashboard() {
         activeMembers
       });
 
-      // Se não há tarefas no banco, usar métricas baseadas nos projetos
+      // Métricas sempre baseadas em dados reais do banco
       setMetrics({
-        tasksCompleted: totalTasks > 0 ? tasksCompleted : 12,
-        tasksInProgress: totalTasks > 0 ? tasksInProgress : 8, 
-        productivity: productivity || 78,
+        tasksCompleted,
+        tasksInProgress, 
+        productivity,
         activeMembers
       });
 
-      // Processar eventos ou criar atividades baseadas nos projetos
+      // Processar eventos sempre do banco
       if (eventos && eventos.length > 0) {
         const activities = eventos.map(evento => ({
           id: evento.id,
@@ -195,66 +160,23 @@ export function useDashboard() {
         }));
         setRecentActivity(activities);
       } else {
-        console.log('📋 Criando atividades baseadas nos projetos reais');
-        setRecentActivity([
-          {
-            id: '1',
-            title: 'Ricardo finalizou arquitetura Palmas',
-            description: 'Sistema IA para 350k habitantes - infraestrutura aprovada',
-            author: 'Ricardo Landim',
-            timestamp: '2h atrás'
-          },
-          {
-            id: '2',
-            title: 'Leonardo implementou SDK Jocum', 
-            description: 'Integração OpenAI + Anthropic + Gemini funcionando',
-            author: 'Leonardo Candiani',
-            timestamp: '4h atrás'
-          },
-          {
-            id: '3',
-            title: 'Rodrigo mapeou fluxos WhatsApp',
-            description: 'Jocum: 50k atendimentos/dia via WhatsApp + VoIP',
-            author: 'Rodrigo Marochi',
-            timestamp: '6h atrás'
-          }
-        ]);
+        console.log('📋 DASHBOARD: Nenhum evento encontrado, lista vazia');
+        setRecentActivity([]);
       }
 
     } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
+      console.error('❌ DASHBOARD: ERRO JAVASCRIPT:', error);
       
-      // Fallback para dados baseados nos projetos reais
+      // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 DASHBOARD: Erro JavaScript, retornando dados zerados');
       setMetrics({
-        tasksCompleted: 12,
-        tasksInProgress: 8,
-        productivity: 78,
-        activeMembers: 3
+        tasksCompleted: 0,
+        tasksInProgress: 0,
+        productivity: 0,
+        activeMembers: 0
       });
       
-      setRecentActivity([
-        {
-          id: '1',
-          title: 'Ricardo finalizou arquitetura Palmas',
-          description: 'Sistema IA para 350k habitantes - R$ 2.4M aprovado',
-          author: 'Ricardo Landim',
-          timestamp: '2h atrás'
-        },
-        {
-          id: '2',
-          title: 'Leonardo implementou SDK Jocum',
-          description: 'Multi-LLM: OpenAI + Anthropic + Gemini integrados',
-          author: 'Leonardo Candiani',
-          timestamp: '4h atrás'
-        },
-        {
-          id: '3',
-          title: 'Rodrigo mapeou automação completa',
-          description: 'Jocum: WhatsApp + VoIP para 50k atendimentos/dia',
-          author: 'Rodrigo Marochi',
-          timestamp: '6h atrás'
-        }
-      ]);
+      setRecentActivity([]);
     } finally {
       setLoading(false);
     }

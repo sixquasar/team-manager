@@ -18,123 +18,9 @@ export interface Task {
 }
 
 export function useTasks() {
-  const { equipe } = useAuth();
+  const { equipe, usuario } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Dados reais das tarefas da SixQuasar baseados nos projetos
-  const mockTasks: Task[] = [
-    // Tarefas do Projeto Palmas IA
-    {
-      id: 'task-palmas-001',
-      titulo: 'Arquitetura Sistema Palmas IA',
-      descricao: 'Definir arquitetura completa para atender 350k habitantes com 99.9% disponibilidade',
-      status: 'concluida',
-      prioridade: 'alta',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-      responsavel_nome: 'Ricardo Landim',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-05-01T09:00:00Z',
-      data_vencimento: '2025-05-15T17:00:00Z',
-      data_conclusao: '2025-05-14T16:30:00Z',
-      tags: ['arquitetura', 'kubernetes', 'aws', 'redis']
-    },
-    {
-      id: 'task-palmas-002',
-      titulo: 'Integração WhatsApp API Palmas',
-      descricao: 'Implementar integração com WhatsApp para meta de 1M mensagens/mês',
-      status: 'em_progresso',
-      prioridade: 'alta',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
-      responsavel_nome: 'Rodrigo Marochi',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-05-16T10:00:00Z',
-      data_vencimento: '2025-07-31T17:00:00Z',
-      tags: ['whatsapp', 'api', 'integração', 'messaging']
-    },
-    {
-      id: 'task-palmas-003',
-      titulo: 'LangChain + GPT-4o Setup',
-      descricao: 'Configurar pipeline de IA para processar consultas dos cidadãos',
-      status: 'em_progresso',
-      prioridade: 'alta',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-      responsavel_nome: 'Ricardo Landim',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-01T08:00:00Z',
-      data_vencimento: '2025-08-15T17:00:00Z',
-      tags: ['langchain', 'openai', 'gpt-4o', 'ia', 'nlp']
-    },
-    // Tarefas do Projeto Jocum SDK
-    {
-      id: 'task-jocum-001',
-      titulo: 'SDK Multi-LLM Jocum',
-      descricao: 'Desenvolver SDK que integra OpenAI + Anthropic + Gemini com fallback automático',
-      status: 'concluida',
-      prioridade: 'alta',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
-      responsavel_nome: 'Leonardo Candiani',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-01T09:00:00Z',
-      data_vencimento: '2025-06-15T17:00:00Z',
-      data_conclusao: '2025-06-14T15:20:00Z',
-      tags: ['sdk', 'openai', 'anthropic', 'gemini', 'multi-llm']
-    },
-    {
-      id: 'task-jocum-002',
-      titulo: 'Mapeamento 80 Bases Jocum',
-      descricao: 'Mapear e integrar todas as 80+ bases de dados da Jocum para o sistema',
-      status: 'em_progresso',
-      prioridade: 'media',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
-      responsavel_nome: 'Rodrigo Marochi',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-10T14:00:00Z',
-      data_vencimento: '2025-08-01T17:00:00Z',
-      tags: ['mapeamento', 'bases-dados', 'integração', 'jocum']
-    },
-    {
-      id: 'task-jocum-003',
-      titulo: 'VoIP + WhatsApp Integration',
-      descricao: 'Integrar canais VoIP e WhatsApp para cobertura completa de atendimento',
-      status: 'pendente',
-      prioridade: 'alta',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440003',
-      responsavel_nome: 'Rodrigo Marochi',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-15T11:00:00Z',
-      data_vencimento: '2025-09-01T17:00:00Z',
-      tags: ['voip', 'whatsapp', 'canais', 'atendimento']
-    },
-    // Tarefas Gerais da SixQuasar
-    {
-      id: 'task-sixquasar-001',
-      titulo: 'Deploy Team Manager',
-      descricao: 'Deploy do sistema Team Manager em admin.sixquasar.pro',
-      status: 'concluida',
-      prioridade: 'media',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440001',
-      responsavel_nome: 'Ricardo Landim',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-18T16:00:00Z',
-      data_vencimento: '2025-06-20T17:00:00Z',
-      data_conclusao: '2025-06-20T14:45:00Z',
-      tags: ['deploy', 'team-manager', 'produção', 'nginx']
-    },
-    {
-      id: 'task-sixquasar-002',
-      titulo: 'Documentação Projetos',
-      descricao: 'Documentar arquitetura e processos dos projetos Palmas e Jocum',
-      status: 'pendente',
-      prioridade: 'baixa',
-      responsavel_id: '550e8400-e29b-41d4-a716-446655440002',
-      responsavel_nome: 'Leonardo Candiani',
-      equipe_id: '650e8400-e29b-41d4-a716-446655440001',
-      data_criacao: '2025-06-20T09:00:00Z',
-      data_vencimento: '2025-07-10T17:00:00Z',
-      tags: ['documentação', 'arquitetura', 'processos']
-    }
-  ];
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -144,12 +30,16 @@ export function useTasks() {
         console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
         console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
         console.log('🏢 EQUIPE:', equipe);
+        console.log('👤 USUARIO:', usuario);
         
         if (!equipe?.id) {
-          console.log('⚠️ TASKS: Sem equipe selecionada, usando dados mock');
-          setTasks(mockTasks);
+          console.log('⚠️ TASKS: Sem equipe selecionada');
+          setTasks([]);
+          setLoading(false);
           return;
         }
+
+        console.log('🎯 TASKS: Buscando tarefas para equipe_id:', equipe.id);
 
         // Teste de conectividade
         const { data: testData, error: testError } = await supabase
@@ -159,7 +49,8 @@ export function useTasks() {
 
         if (testError) {
           console.error('❌ TASKS: ERRO DE CONEXÃO:', testError);
-          setTasks(mockTasks);
+          setTasks([]);
+          setLoading(false);
           return;
         }
 
@@ -189,8 +80,12 @@ export function useTasks() {
           console.error('❌ Código:', error.code);
           console.error('❌ Mensagem:', error.message);
           console.error('❌ Detalhes:', error.details);
-          // Fallback para dados mock
-          setTasks(mockTasks);
+          console.error('❌ Query que falhou: SELECT FROM tarefas WHERE equipe_id =', equipe.id);
+          
+          // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+          console.log('🔄 TASKS: Erro no Supabase, retornando lista vazia');
+          setTasks([]);
+          setLoading(false);
           return;
         }
 
@@ -210,17 +105,19 @@ export function useTasks() {
           tags: task.tags || []
         })) || [];
 
-        console.log('✅ TASKS: Tarefas encontradas:', data?.length || 0);
-        console.log('📊 TASKS: Dados brutos:', data);
-        console.log('🎯 TASKS: Tarefas formatadas:', tasksFormatted);
+        console.log('✅ TASKS: Query executada com sucesso');
+        console.log('📊 TASKS: Tarefas encontradas:', data?.length || 0);
+        console.log('🗃️ TASKS: Dados brutos completos:', JSON.stringify(data, null, 2));
+        console.log('🎯 TASKS: Equipe filtrada:', equipe.id);
         
+        // Processar dados sempre do Supabase - nunca mock data
         setTasks(tasksFormatted);
         
       } catch (error) {
         console.error('❌ TASKS: ERRO JAVASCRIPT:', error);
-        // Fallback para dados mock em caso de erro
-        console.log('🔄 TASKS: Usando fallback para dados mock');
-        setTasks(mockTasks);
+        // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 TASKS: Erro JavaScript, retornando lista vazia');
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -430,8 +327,9 @@ export function useTasks() {
       setLoading(true);
       
       if (!equipe?.id) {
-        console.log('🔄 Sem equipe selecionada, usando dados mock');
-        setTasks(mockTasks);
+        console.log('⚠️ TASKS REFETCH: Sem equipe selecionada');
+        setTasks([]);
+        setLoading(false);
         return;
       }
 
@@ -457,9 +355,15 @@ export function useTasks() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Erro ao recarregar tarefas:', error);
-        // Fallback para dados mock
-        setTasks(mockTasks);
+        console.error('❌ TASKS REFETCH: ERRO SUPABASE:', error);
+        console.error('❌ Código:', error.code);
+        console.error('❌ Mensagem:', error.message);
+        console.error('❌ Detalhes:', error.details);
+        
+        // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 TASKS REFETCH: Erro no Supabase, retornando lista vazia');
+        setTasks([]);
+        setLoading(false);
         return;
       }
 
@@ -483,9 +387,10 @@ export function useTasks() {
       console.log(`✅ ${tasksFormatted.length} tarefas recarregadas com sucesso`);
       
     } catch (error) {
-      console.error('❌ Erro ao recarregar tarefas:', error);
-      // Fallback para dados mock em caso de erro
-      setTasks(mockTasks);
+      console.error('❌ TASKS REFETCH: ERRO JAVASCRIPT:', error);
+      // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 TASKS REFETCH: Erro JavaScript, retornando lista vazia');
+      setTasks([]);
     } finally {
       setLoading(false);
     }

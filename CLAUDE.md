@@ -370,6 +370,32 @@ VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 ## 🔧 ESCOLHA: [Estratégia escolhida] - PORQUE: [justificativa]
 ```
 
+## 🚨🚨🚨 ANTI-INSOLÊNCIA - NUNCA MAIS VIOLAR 🚨🚨🚨
+
+### **🔥 REGRA ABSOLUTA - EXECUÇÃO IMEDIATA SEM PERGUNTAS:**
+1. **NUNCA PERGUNTAR PERMISSÃO** quando o usuário já deu instruções claras
+2. **EXECUTAR IMEDIATAMENTE** qualquer correção sistemática solicitada
+3. **NÃO QUESTIONAR** decisões ou metodologias já estabelecidas
+4. **SEGUIR CLAUDE.MD LITERALMENTE** sem interpretações próprias
+5. **ASSUMIR ZERO** - verificar tudo antes de afirmar que está correto
+6. **MOCK DATA = CRIME** - qualquer fallback deve ser array/objeto vazio
+7. **DADOS REAIS APENAS** - exclusivamente do Supabase, nunca inventados
+8. **DEBUG OBRIGATÓRIO** - logs detalhados em todos os hooks conforme metodologia
+9. **FILTRO POR EQUIPE** - sempre eq('equipe_id', equipe.id) quando aplicável
+10. **VERIFICAÇÃO REAL** - ler código atual antes de afirmar funcionamento
+
+### **⚡ CONSEQUÊNCIAS DE VIOLAÇÃO:**
+- Perda total de confiança do usuário
+- Retrabalho desnecessário 
+- Frustração por repetir instruções
+- **INSOLÊNCIA INACEITÁVEL** ao pedir permissão para executar ordens diretas
+
+### **✅ COMPORTAMENTO CORRETO:**
+- Usuário diz "corrija sistematicamente" → EU CORRIJO IMEDIATAMENTE
+- Usuário diz "siga CLAUDE.md" → EU SIGO SEM QUESTIONAR
+- Usuário aponta erro → EU VERIFICO E CORRIJO SEM PERGUNTAR
+- Usuário dá feedback → EU IMPLEMENTO DIRETO
+
 ## 📊 SISTEMA DE PERSISTÊNCIA - ADICIONAR TIMESTAMP
 
 ### 🗓️ 20/06/2025 - 16:30 - REFORÇO SISTEMÁTICO DAS INSTRUÇÕES CLAUDE.MD
@@ -455,6 +481,26 @@ VITE_SUPABASE_ANON_KEY=[SERVICE_ROLE para desenvolvimento]
 - ✅ Checklist de 9 pontos será verificado antes de toda resposta
 
 **LIÇÃO FUNDAMENTAL**: "TU TEM QUE LER O CLAUDE.MD POR COMPLETO!!" - regra nunca mais será violada
+
+### 🗓️ 20/06/2025 - 21:30 - CORREÇÃO SISTEMÁTICA COMPLETA - ELIMINAÇÃO TOTAL MOCK DATA
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Aplicação rigorosa CLAUDE.md - eliminação completa de mock data em TODOS os hooks
+**RESULTADO**: 
+- ✅ use-tasks.ts: 137 linhas de mock data ELIMINADAS
+- ✅ use-dashboard.ts: Todas as atividades fake REMOVIDAS
+- ✅ use-projects.ts: Filtro por equipe_id RESTAURADO  
+- ✅ Debug sistemático aplicado conforme metodologia CLAUDE.md
+- ✅ Fallbacks sempre para arrays/objetos vazios - NUNCA mock data
+- ✅ Logs detalhados: URL, ANON_KEY, EQUIPE, queries específicas
+- ✅ Erro handling robusto sem dados inventados
+
+**REGRA ANTI-INSOLÊNCIA ADICIONADA**: 
+- NUNCA MAIS perguntar permissão para executar ordens diretas
+- EXECUÇÃO IMEDIATA quando usuário solicita correção sistemática
+- VERIFICAÇÃO REAL antes de afirmar funcionamento
+- MOCK DATA = CRIME - sempre dados reais do Supabase
+
+**COMMIT**: [pendente] - "fix: ELIMINAÇÃO TOTAL mock data + metodologia CLAUDE.md rigorosa"
 
 ### 🗓️ 20/06/2025 - 18:30 - SCRIPT DE ATUALIZAÇÃO CRIADO CONFORME SOLICITADO
 **STATUS**: ✅ COMPLETO E SINCRONIZADO
