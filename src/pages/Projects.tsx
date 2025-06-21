@@ -110,7 +110,7 @@ export function Projects() {
       descricao: project.descricao || '',
       status: project.status,
       responsavel: responsavelNome,
-      data_inicio: dataInicio,
+      data_inicio: dataIni/cio,
       data_fim_prevista: dataFimPrevista,
       progresso: project.progresso || 0,
       orcamento: project.orcamento || 0,
