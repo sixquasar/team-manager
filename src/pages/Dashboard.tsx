@@ -32,7 +32,7 @@ import { toast } from '@/hooks/use-toast';
 export function Dashboard() {
   const { equipe, usuario } = useAuth();
   const { metrics, recentActivity, loading, refetch } = useDashboard();
-  const { projects, milestones, formatCurrency, formatDateRange, formatDate } = useDashboardExtended();
+  const { projects, milestones, formatCurrency, formatDateRange, formatDate, formatDateBR } = useDashboardExtended();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -248,7 +248,10 @@ export function Dashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-gray-900">{formatCurrency(project.orcamento)}</p>
-                      <p className="text-sm text-gray-600">{formatDateRange(project.data_inicio, project.data_fim_prevista)}</p>
+                      <div className="text-xs text-gray-600 mt-1 space-y-1">
+                        <div>Início: <span className="font-medium">{formatDateBR(project.data_inicio)}</span></div>
+                        <div>Previsão: <span className="font-medium">{formatDateBR(project.data_fim_prevista)}</span></div>
+                      </div>
                     </div>
                   </div>
                 ))

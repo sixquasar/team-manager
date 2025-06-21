@@ -114,6 +114,14 @@ export function useDashboardExtended() {
     return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  const formatDateBR = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const formatDateRange = (startDate: string, endDate: string) => {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
@@ -124,6 +132,7 @@ export function useDashboardExtended() {
     loading,
     formatCurrency,
     formatDate,
+    formatDateBR,
     formatDateRange,
     refetch: fetchExtendedData
   };
