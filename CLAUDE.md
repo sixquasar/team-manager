@@ -28,3 +28,34 @@
 - **CRÍTICO**: SEMPRE verificar alinhamento entre Supabase Project e código da aplicação
 
 [Restante do arquivo mantido igual ao conteúdo original]
+
+## 📊 HISTÓRICO DE SESSÕES - SISTEMA DE PERSISTÊNCIA
+
+### 🗓️ 21/06/2025 - 02:10 - CORREÇÃO DADOS REAIS DASHBOARD E REPORTS
+**STATUS**: ✅ COMPLETO
+**AÇÃO**: Correção de datas hardcoded e implementação de dados reais do banco
+**PROBLEMA REPORTADO**: 
+- Dashboard mostrando datas fixas (Jan 2025, Set 2025) ao invés de dados do banco
+- Reports mostrando erro "Erro ao carregar relatórios"
+- Usuário solicitou que tudo venha do banco como outras páginas
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Criado hook use-dashboard-extended.ts para buscar projetos e marcos reais
+- ✅ Dashboard agora busca projetos ativos do banco com datas reais
+- ✅ Próximos Marcos busca tarefas de alta prioridade do banco
+- ✅ Resumo Financeiro calcula valores baseados nos projetos reais
+- ✅ Hook use-reports corrigido (teamMetrics → metrics)
+- ✅ Removidas todas as datas e valores hardcoded
+
+**ARQUIVOS CRIADOS/MODIFICADOS**:
+- src/hooks/use-dashboard-extended.ts (novo)
+- src/pages/Dashboard.tsx (atualizado para dados reais)
+- src/hooks/use-reports.ts (corrigido nome do retorno)
+
+**DADOS AGORA VINDOS DO BANCO**:
+- Projetos: nome, cliente, progresso, orçamento, datas reais
+- Marcos: tarefas prioritárias com datas de vencimento
+- Financeiro: soma real dos orçamentos e faturamento
+- Todas as datas formatadas em português (Jan, Fev, etc)
+
+**COMMIT**: 0367a12

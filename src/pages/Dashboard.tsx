@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useDashboard } from '@/hooks/use-dashboard';
+import { useDashboardExtended } from '@/hooks/use-dashboard-extended';
 import { DocumentUpload } from '@/components/dashboard/DocumentUpload';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -31,6 +32,7 @@ import { toast } from '@/hooks/use-toast';
 export function Dashboard() {
   const { equipe, usuario } = useAuth();
   const { metrics, recentActivity, loading, refetch } = useDashboard();
+  const { projects, milestones, formatCurrency, formatDateRange, formatDate } = useDashboardExtended();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -227,45 +229,35 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div 
-                className="flex items-center justify-between p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-                onClick={() => navigate('/projects')}
-              >
-                <div>
-                  <p className="font-medium text-gray-900">Sistema Palmas IA</p>
-                  <p className="text-sm text-gray-600">Prefeitura Municipal</p>
-                  <div className="flex items-center mt-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: '25%' }}></div>
+              {projects.length > 0 ? (
+                projects.slice(0, 2).map((project, index) => (
+                  <div 
+                    key={project.id}
+                    className={`flex items-center justify-between p-4 ${index === 0 ? 'bg-blue-50 hover:bg-blue-100' : 'bg-purple-50 hover:bg-purple-100'} rounded-lg cursor-pointer transition-colors`}
+                    onClick={() => navigate('/projects')}
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{project.nome}</p>
+                      <p className="text-sm text-gray-600">{project.cliente}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
+                          <div className={`${index === 0 ? 'bg-blue-600' : 'bg-purple-600'} h-2 rounded-full`} style={{ width: `${project.progresso}%` }}></div>
+                        </div>
+                        <span className="text-sm text-gray-600">{project.progresso}%</span>
+                      </div>
                     </div>
-                    <span className="text-sm text-gray-600">25%</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">R$ 2.4M</p>
-                  <p className="text-sm text-gray-600">Nov 2024 - Set 2025</p>
-                </div>
-              </div>
-              
-              <div 
-                className="flex items-center justify-between p-4 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
-                onClick={() => navigate('/projects')}
-              >
-                <div>
-                  <p className="font-medium text-gray-900">Automação Jocum</p>
-                  <p className="text-sm text-gray-600">SDK Multi-LLM</p>
-                  <div className="flex items-center mt-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: '15%' }}></div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900">{formatCurrency(project.orcamento)}</p>
+                      <p className="text-sm text-gray-600">{formatDateRange(project.data_inicio, project.data_fim_prevista)}</p>
                     </div>
-                    <span className="text-sm text-gray-600">15%</span>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Target className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Nenhum projeto ativo</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">R$ 625K</p>
-                  <p className="text-sm text-gray-600">Dez 2024 - Jun 2025</p>
-                </div>
-              </div>
+              )}
             </div>
             <div className="mt-4">
               <Button 
@@ -303,20 +295,26 @@ export function Dashboard() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Contratos Ativos</span>
-                <span className="text-xl font-bold text-gray-900">R$ 3.025M</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {formatCurrency(projects.reduce((acc, p) => acc + p.orcamento, 0))}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Faturamento Esperado</span>
-                <span className="text-lg text-green-600">R$ 1.2M (2025)</span>
+                <span className="text-lg text-green-600">
+                  {formatCurrency(projects.reduce((acc, p) => acc + (p.orcamento * p.progresso / 100), 0))} ({new Date().getFullYear()})
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">ROI Médio</span>
-                <span className="text-lg text-blue-600">27.5%</span>
+                <span className="text-lg text-blue-600">
+                  {projects.length > 0 ? Math.round(projects.reduce((acc, p) => acc + p.progresso, 0) / projects.length) : 0}%
+                </span>
               </div>
               <div className="pt-2 border-t">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-800 font-medium">Projetos Ativos</span>
-                  <span className="text-2xl font-bold text-purple-600">2</span>
+                  <span className="text-2xl font-bold text-purple-600">{projects.length}</span>
                 </div>
               </div>
             </div>
@@ -424,38 +422,38 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div 
-                className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-                onClick={() => navigate('/tasks')}
-              >
-                <Clock className="h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="text-sm font-medium">POC Palmas - Entrega</p>
-                  <p className="text-xs text-gray-500">31 Jan 2025 - 5.000 cidadãos</p>
+              {milestones.length > 0 ? (
+                milestones.map((milestone, index) => {
+                  const iconColor = milestone.tipo === 'entrega' ? 'text-blue-500' : 
+                                    milestone.tipo === 'marco' ? 'text-purple-500' : 'text-green-500';
+                  const bgColor = milestone.tipo === 'entrega' ? 'bg-blue-50 hover:bg-blue-100' : 
+                                  milestone.tipo === 'marco' ? 'bg-purple-50 hover:bg-purple-100' : 'bg-green-50 hover:bg-green-100';
+                  const Icon = milestone.tipo === 'entrega' ? Clock : 
+                               milestone.tipo === 'marco' ? AlertTriangle : TrendingUp;
+                  
+                  return (
+                    <div 
+                      key={milestone.id}
+                      className={`flex items-center space-x-3 p-3 ${bgColor} rounded-lg cursor-pointer transition-colors`}
+                      onClick={() => navigate('/tasks')}
+                    >
+                      <Icon className={`h-5 w-5 ${iconColor}`} />
+                      <div>
+                        <p className="text-sm font-medium">{milestone.titulo}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(milestone.data_prevista)}
+                          {milestone.projeto_nome && ` - ${milestone.projeto_nome}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <Calendar className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Nenhum marco próximo</p>
                 </div>
-              </div>
-              
-              <div 
-                className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
-                onClick={() => navigate('/tasks')}
-              >
-                <AlertTriangle className="h-5 w-5 text-purple-500" />
-                <div>
-                  <p className="text-sm font-medium">POC Jocum - SDK Integration</p>
-                  <p className="text-xs text-gray-500">31 Jan 2025 - Multi-LLM</p>
-                </div>
-              </div>
-              
-              <div 
-                className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors"
-                onClick={() => navigate('/projects')}
-              >
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-sm font-medium">Go-live Palmas</p>
-                  <p className="text-xs text-gray-500">Set 2025 - 350k habitantes</p>
-                </div>
-              </div>
+              )}
               
               <div className="mt-4">
                 <Button 
