@@ -11,7 +11,7 @@
 3. Seguir sempre as diretrizes do arquivo CLAUDE.md
 4. Commits devem ser descritivos e incluir o nome do desenvolvedor
 
----
+----
 
 ## 🚀 TAREFAS POR DESENVOLVEDOR
 
