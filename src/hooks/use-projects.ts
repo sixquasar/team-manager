@@ -18,6 +18,7 @@ export function useProjects() {
       console.log('🌐 SUPABASE URL:', import.meta.env.VITE_SUPABASE_URL);
       console.log('🔑 ANON KEY (primeiros 50):', import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 50));
       console.log('🏢 EQUIPE:', equipe);
+      console.log('👤 USUARIO:', import.meta.env.VITE_CURRENT_USER || 'não definido');
 
       // Teste de conexão básica
       const { data: testData, error: testError } = await supabase
@@ -33,10 +34,20 @@ export function useProjects() {
 
       console.log('✅ CONEXÃO OK, buscando projetos...');
 
-      // Query direta da tabela projetos REAL
+      if (!equipe?.id) {
+        console.log('⚠️ PROJECTS: Sem equipe selecionada');
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('🎯 PROJECTS: Buscando projetos para equipe_id:', equipe.id);
+
+      // Query direta da tabela projetos REAL com filtro por equipe
       const { data, error } = await supabase
         .from('projetos')
         .select('*')
+        .eq('equipe_id', equipe.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -44,10 +55,18 @@ export function useProjects() {
         console.error('❌ Código:', error.code);
         console.error('❌ Mensagem:', error.message);
         console.error('❌ Detalhes:', error.details);
+        console.error('❌ Query que falhou: SELECT * FROM projetos WHERE equipe_id =', equipe.id);
+        
+        // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 PROJECTS: Erro no Supabase, retornando lista vazia');
         setProjects([]);
       } else {
-        console.log('✅ PROJETOS ENCONTRADOS:', data?.length || 0);
-        console.log('📊 DADOS:', data);
+        console.log('✅ PROJECTS: Query executada com sucesso');
+        console.log('📊 PROJECTS: Projetos encontrados:', data?.length || 0);
+        console.log('🗃️ PROJECTS: Dados brutos completos:', JSON.stringify(data, null, 2));
+        console.log('🎯 PROJECTS: Equipe filtrada:', equipe.id);
+        
+        // Processar dados sempre do Supabase - nunca mock data
         setProjects(data || []);
       }
       
