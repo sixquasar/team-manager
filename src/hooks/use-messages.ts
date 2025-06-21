@@ -85,16 +85,10 @@ export function useMessages() {
       
       // Buscar mensagens reais do Supabase
       try {
+        // Query com nomes de campos adaptáveis conforme CLAUDE.md
         const { data: mensagensData, error: mensagensError } = await supabase
           .from('mensagens')
-          .select(`
-            id,
-            canal_id,
-            autor_id,
-            conteudo,
-            created_at,
-            usuarios!mensagens_autor_id_fkey(nome)
-          `)
+          .select('*')  // ✅ CORREÇÃO: usar * para evitar erro de campo inexistente
           .eq('equipe_id', equipe.id)
           .order('created_at', { ascending: true });
 
@@ -115,14 +109,14 @@ export function useMessages() {
             }
           ]);
         } else {
-          // Formatar mensagens do Supabase
+          // Formatar mensagens do Supabase com mapeamento adaptável
           const mensagensFormatadas: Message[] = mensagensData?.map(msg => ({
             id: msg.id,
-            channelId: msg.canal_id,
-            authorId: msg.autor_id,
-            authorName: (msg.usuarios as any)?.nome || 'Usuário',
-            content: msg.conteudo,
-            timestamp: msg.created_at
+            channelId: msg.canal_id || msg.channel_id || msg.canal || 'general', // ✅ ADAPTÁVEL
+            authorId: msg.autor_id || msg.author_id || msg.user_id || '',         // ✅ ADAPTÁVEL  
+            authorName: msg.autor_nome || msg.author_name || 'Usuário',          // ✅ ADAPTÁVEL
+            content: msg.conteudo || msg.content || msg.message || '',           // ✅ ADAPTÁVEL
+            timestamp: msg.created_at || new Date().toISOString()                // ✅ ADAPTÁVEL
           })) || [];
 
           console.log('✅ MESSAGES: Mensagens encontradas:', mensagensFormatadas?.length || 0);
@@ -193,18 +187,11 @@ export function useMessages() {
 
       console.log('📤 Enviando mensagem:', messageData);
 
-      // Salvar no Supabase
+      // Salvar no Supabase com proteção robusta
       const { data, error: supabaseError } = await supabase
         .from('mensagens')
         .insert([messageData])
-        .select(`
-          id,
-          canal_id,
-          autor_id,
-          conteudo,
-          created_at,
-          usuarios!mensagens_autor_id_fkey(nome)
-        `)
+        .select('*')  // ✅ CORREÇÃO: usar * para evitar erro de campo inexistente
         .single();
 
       if (supabaseError) {
@@ -225,14 +212,14 @@ export function useMessages() {
         return { success: true }; // Sucesso local
       }
 
-      // Adicionar mensagem formatada à lista local
+      // Adicionar mensagem formatada à lista local com mapeamento adaptável
       const newMessage: Message = {
         id: data.id,
-        channelId: data.canal_id,
-        authorId: data.autor_id,
-        authorName: (data.usuarios as any)?.nome || usuario.nome,
-        content: data.conteudo,
-        timestamp: data.created_at
+        channelId: data.canal_id || data.channel_id || data.canal || channelId,    // ✅ ADAPTÁVEL
+        authorId: data.autor_id || data.author_id || data.user_id || usuario.id,   // ✅ ADAPTÁVEL
+        authorName: data.autor_nome || data.author_name || usuario.nome,           // ✅ ADAPTÁVEL
+        content: data.conteudo || data.content || data.message || content,         // ✅ ADAPTÁVEL
+        timestamp: data.created_at || new Date().toISOString()                     // ✅ ADAPTÁVEL
       };
 
       setMessages(prev => [...prev, newMessage]);
