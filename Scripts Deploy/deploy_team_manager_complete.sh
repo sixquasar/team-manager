@@ -330,12 +330,32 @@ configurar_env() {
 # Configurações do Team Manager
 VITE_SUPABASE_URL=sua_url_aqui
 VITE_SUPABASE_ANON_KEY=sua_chave_aqui
+
+# Configurações do Servidor Backend
+NODE_ENV=production
+PORT=3001
+
+# OpenAI API Configuration (Opcional)
+# OPENAI_API_KEY=sua_chave_openai_aqui
 EOF
         
         log "Arquivo .env criado" "success"
         log "IMPORTANTE: Configure as variáveis do Supabase no arquivo .env" "warning"
+        log "OPCIONAL: Configure OPENAI_API_KEY para análise IA de documentos" "info"
     else
         log "Arquivo .env já existe" "info"
+        
+        # Adicionar variáveis do servidor se não existirem
+        if ! grep -q "NODE_ENV" .env; then
+            echo "" >> .env
+            echo "# Configurações do Servidor Backend" >> .env
+            echo "NODE_ENV=production" >> .env
+            echo "PORT=3001" >> .env
+            echo "" >> .env
+            echo "# OpenAI API Configuration (Opcional)" >> .env
+            echo "# OPENAI_API_KEY=sua_chave_openai_aqui" >> .env
+            log "Variáveis do servidor adicionadas ao .env" "info"
+        fi
     fi
     
     create_checkpoint 7
@@ -409,6 +429,34 @@ server {
     # Logs
     access_log /var/log/nginx/team-manager.access.log;
     error_log /var/log/nginx/team-manager.error.log;
+    
+    # API Backend para processamento de documentos
+    location /api/ {
+        proxy_pass http://localhost:3001/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Timeout para upload de arquivos
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        
+        # Tamanho máximo do body (para uploads)
+        client_max_body_size 10M;
+    }
+    
+    # Health check do backend
+    location /health {
+        proxy_pass http://localhost:3001/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
     
     # Configuração SPA - Estilo HelioGen
     location / {
@@ -531,6 +579,51 @@ iniciar_servicos() {
     log "Iniciando serviços" "phase" "12"
     show_progress 12
     
+    # Configurar serviço do backend Node.js
+    log "Configurando serviço backend..." "info"
+    
+    cat > /etc/systemd/system/team-manager-backend.service << 'SERVICE_CONF'
+[Unit]
+Description=Team Manager Backend Server
+Documentation=https://github.com/sixquasar/team-manager
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/team-manager
+Environment=NODE_ENV=production
+Environment=PORT=3001
+EnvironmentFile=/var/www/team-manager/.env
+ExecStart=/usr/bin/node server/index.js
+Restart=on-failure
+RestartSec=10
+KillMode=process
+
+# Logging
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=team-manager-backend
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_CONF
+    
+    # Recarregar systemd e iniciar serviço backend
+    log "Iniciando serviço backend..." "info"
+    systemctl daemon-reload
+    systemctl enable team-manager-backend
+    systemctl start team-manager-backend
+    
+    # Verificar status do backend
+    sleep 2
+    if systemctl is-active --quiet team-manager-backend; then
+        log "Backend está rodando na porta 3001" "success"
+    else
+        log "Backend não está rodando - verificar logs" "warning"
+        journalctl -u team-manager-backend --no-pager -n 10
+    fi
+    
     # Reiniciar Nginx
     log "Reiniciando Nginx..." "info"
     systemctl restart nginx
@@ -571,12 +664,21 @@ status_final() {
     echo ""
     echo -e "${AZUL}📝 PRÓXIMOS PASSOS:${RESET}"
     echo -e "  1. Configure as variáveis do Supabase em: $APP_DIR/.env"
-    echo -e "  2. Execute o SQL schema no Supabase"
-    echo -e "  3. Teste o login com os usuários padrão"
+    echo -e "  2. Configure OPENAI_API_KEY (opcional) para análise IA de documentos"
+    echo -e "  3. Execute o SQL schema no Supabase"
+    echo -e "  4. Teste o login com os usuários padrão"
+    echo -e "  5. Teste upload de documentos no Dashboard"
+    echo ""
+    echo -e "${AZUL}🔧 SERVIÇOS ATIVOS:${RESET}"
+    echo -e "  - Frontend: Nginx servindo arquivos estáticos"
+    echo -e "  - Backend: Node.js na porta 3001 (team-manager-backend.service)"
+    echo -e "  - API: /api/process-document para análise de documentos"
     echo ""
     echo -e "${AMARELO}⚠️  IMPORTANTE:${RESET}"
     echo -e "  - Usuários padrão: ricardo/leonardo/rodrigo@sixquasar.pro (senha: senha123)"
     echo -e "  - Logs do Nginx: /var/log/nginx/team-manager.*.log"
+    echo -e "  - Logs do Backend: journalctl -u team-manager-backend -f"
+    echo -e "  - Health check: curl http://localhost:3001/health"
     echo ""
     
     # Limpar checkpoint

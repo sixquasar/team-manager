@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useDashboard } from '@/hooks/use-dashboard';
+import { DocumentUpload } from '@/components/dashboard/DocumentUpload';
 
 export function Dashboard() {
   const { equipe, usuario } = useAuth();
@@ -164,6 +165,11 @@ export function Dashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Document Upload - AI Integration */}
+      <div className="w-full">
+        <DocumentUpload />
       </div>
 
       {/* Recent Activity and Events */}

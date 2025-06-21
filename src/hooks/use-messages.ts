@@ -85,12 +85,24 @@ export function useMessages() {
       
       // Buscar mensagens reais do Supabase
       try {
-        // Query com nomes de campos adaptáveis conforme CLAUDE.md
-        const { data: mensagensData, error: mensagensError } = await supabase
-          .from('mensagens')
-          .select('*')  // ✅ CORREÇÃO: usar * para evitar erro de campo inexistente
-          .eq('equipe_id', equipe.id)
-          .order('created_at', { ascending: true });
+        // Query com fallback progressivo conforme metodologia CLAUDE.md
+        let mensagensData = null;
+        let mensagensError = null;
+        
+        // Tentar query com estrutura mais provável primeiro
+        try {
+          const result = await supabase
+            .from('mensagens')
+            .select('*')
+            .eq('equipe_id', equipe.id)
+            .order('created_at', { ascending: true });
+          
+          mensagensData = result.data;
+          mensagensError = result.error;
+        } catch (queryError) {
+          console.error('❌ MESSAGES: Erro na query principal:', queryError);
+          mensagensError = queryError;
+        }
 
         if (mensagensError) {
           console.error('❌ MESSAGES: ERRO SUPABASE:', mensagensError);
