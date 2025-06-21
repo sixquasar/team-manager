@@ -45,47 +45,7 @@ export function useTeam() {
 
       if (testError) {
         console.error('❌ TEAM: ERRO DE CONEXÃO:', testError);
-        setMembers([
-          {
-            id: '550e8400-e29b-41d4-a716-446655440001',
-            nome: 'Ricardo Landim',
-            email: 'ricardo@sixquasar.pro',
-            cargo: 'Tech Lead',
-            tipo: 'owner',
-            data_entrada: '2025-01-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'IA', 'Arquitetura'],
-            projetos_ativos: 2,
-            tarefas_concluidas: 8,
-            rating: 4.9
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440002',
-            nome: 'Leonardo Candiani',
-            email: 'leonardo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'admin',
-            data_entrada: '2025-01-15T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'SDK', 'Multi-LLM'],
-            projetos_ativos: 1,
-            tarefas_concluidas: 6,
-            rating: 4.8
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440003',
-            nome: 'Rodrigo Marochi',
-            email: 'rodrigo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'member',
-            data_entrada: '2025-02-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['WhatsApp', 'Integrações'],
-            projetos_ativos: 2,
-            tarefas_concluidas: 4,
-            rating: 4.7
-          }
-        ]);
+        setMembers([]);
         setLoading(false);
         return;
       }
@@ -93,57 +53,8 @@ export function useTeam() {
       console.log('✅ TEAM: Conexão OK, buscando membros...');
       
       if (!equipe?.id) {
-        console.log('⚠️ TEAM: Sem equipe selecionada, usando dados SixQuasar');
-        
-        // Dados da equipe SixQuasar baseados nos projetos reais
-        setMembers([
-          {
-            id: '550e8400-e29b-41d4-a716-446655440001',
-            nome: 'Ricardo Landim',
-            email: 'ricardo@sixquasar.pro',
-            cargo: 'Tech Lead',
-            tipo: 'owner',
-            telefone: '+55 11 99999-9999',
-            localizacao: 'São Paulo, SP',
-            data_entrada: '2025-01-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'IA', 'Arquitetura', 'LangChain', 'AWS'],
-            projetos_ativos: 2, // Palmas IA + Jocum
-            tarefas_concluidas: 8,
-            rating: 4.9
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440002',
-            nome: 'Leonardo Candiani',
-            email: 'leonardo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'admin',
-            telefone: '+55 11 88888-8888',
-            localizacao: 'São Paulo, SP',
-            data_entrada: '2025-01-15T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'SDK', 'OpenAI', 'Anthropic', 'Multi-LLM'],
-            projetos_ativos: 1, // Jocum SDK
-            tarefas_concluidas: 6,
-            rating: 4.8
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440003',
-            nome: 'Rodrigo Marochi',
-            email: 'rodrigo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'member',
-            telefone: '+55 11 77777-7777',
-            localizacao: 'São Paulo, SP',
-            data_entrada: '2025-02-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['WhatsApp API', 'VoIP', 'Integrações', 'Mapeamento'],
-            projetos_ativos: 2, // Palmas IA + Jocum
-            tarefas_concluidas: 4,
-            rating: 4.7
-          }
-        ]);
-        
+        console.log('⚠️ TEAM: Sem equipe selecionada');
+        setMembers([]);
         setLoading(false);
         return;
       }
@@ -178,48 +89,10 @@ export function useTeam() {
         console.error('❌ Código:', error.code);
         console.error('❌ Mensagem:', error.message);
         console.error('❌ Detalhes:', error.details);
-        // Fallback para dados SixQuasar
-        setMembers([
-          {
-            id: '550e8400-e29b-41d4-a716-446655440001',
-            nome: 'Ricardo Landim',
-            email: 'ricardo@sixquasar.pro',
-            cargo: 'Tech Lead',
-            tipo: 'owner',
-            data_entrada: '2025-01-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'IA', 'Arquitetura'],
-            projetos_ativos: 2,
-            tarefas_concluidas: 8,
-            rating: 4.9
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440002',
-            nome: 'Leonardo Candiani',
-            email: 'leonardo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'admin',
-            data_entrada: '2025-01-15T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['Python', 'SDK', 'Multi-LLM'],
-            projetos_ativos: 1,
-            tarefas_concluidas: 6,
-            rating: 4.8
-          },
-          {
-            id: '550e8400-e29b-41d4-a716-446655440003',
-            nome: 'Rodrigo Marochi',
-            email: 'rodrigo@sixquasar.pro',
-            cargo: 'Developer',
-            tipo: 'member',
-            data_entrada: '2025-02-01T00:00:00Z',
-            status: 'ativo',
-            especialidades: ['WhatsApp', 'Integrações'],
-            projetos_ativos: 2,
-            tarefas_concluidas: 4,
-            rating: 4.7
-          }
-        ]);
+        // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 TEAM: Erro no Supabase, retornando lista vazia');
+        setMembers([]);
+        setLoading(false);
         return;
       }
 
@@ -268,48 +141,9 @@ export function useTeam() {
     } catch (error) {
       console.error('Erro ao carregar membros da equipe:', error);
       
-      // Fallback para dados SixQuasar em caso de erro
-      setMembers([
-        {
-          id: '1',
-          nome: 'Ricardo Landim',
-          email: 'ricardo@sixquasar.pro',
-          cargo: 'Tech Lead',
-          tipo: 'owner',
-          data_entrada: '2024-01-01T00:00:00Z',
-          status: 'ativo',
-          especialidades: ['Python', 'IA', 'Arquitetura'],
-          projetos_ativos: 2,
-          tarefas_concluidas: 8,
-          rating: 4.9
-        },
-        {
-          id: '2',
-          nome: 'Leonardo Candiani',
-          email: 'leonardo@sixquasar.pro',
-          cargo: 'Developer',
-          tipo: 'admin',
-          data_entrada: '2024-01-15T00:00:00Z',
-          status: 'ativo',
-          especialidades: ['Python', 'SDK', 'Multi-LLM'],
-          projetos_ativos: 1,
-          tarefas_concluidas: 6,
-          rating: 4.8
-        },
-        {
-          id: '3',
-          nome: 'Rodrigo Marochi',
-          email: 'rodrigo@sixquasar.pro',
-          cargo: 'Developer',
-          tipo: 'member',
-          data_entrada: '2024-02-01T00:00:00Z',
-          status: 'ativo',
-          especialidades: ['WhatsApp', 'Integrações'],
-          projetos_ativos: 2,
-          tarefas_concluidas: 4,
-          rating: 4.7
-        }
-      ]);
+      // Fallback para array vazio - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 TEAM: Erro JavaScript, retornando lista vazia');
+      setMembers([]);
     } finally {
       setLoading(false);
     }
