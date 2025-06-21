@@ -53,37 +53,17 @@ export function useReports() {
 
       if (testError) {
         console.error('❌ REPORTS: ERRO DE CONEXÃO:', testError);
+        // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 REPORTS: Erro de conexão, retornando dados zerados');
         setTeamMetrics({
-          tasksCompleted: 8,
-          tasksInProgress: 4,
-          averageCompletionTime: 2.3,
-          productivityScore: 78,
-          teamUtilization: 85
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          averageCompletionTime: 0,
+          productivityScore: 0,
+          teamUtilization: 0
         });
-        setChartData([
-          { period: 'Nov Sem 1', completed: 2, started: 4, delayed: 0 },
-          { period: 'Nov Sem 2', completed: 3, started: 3, delayed: 0 },
-          { period: 'Dez Sem 1', completed: 2, started: 4, delayed: 1 },
-          { period: 'Dez Sem 2', completed: 1, started: 1, delayed: 0 }
-        ]);
-        setProjectMetrics([
-          {
-            name: 'Sistema Palmas IA',
-            progress: 25,
-            budget: 2400000,
-            spent: 600000,
-            daysRemaining: 252,
-            status: 'on_track'
-          },
-          {
-            name: 'Automação Jocum SDK',
-            progress: 15,
-            budget: 625000,
-            spent: 93750,
-            daysRemaining: 132,
-            status: 'on_track'
-          }
-        ]);
+        setChartData([]);
+        setProjectMetrics([]);
         setLoading(false);
         return;
       }
@@ -91,45 +71,17 @@ export function useReports() {
       console.log('✅ REPORTS: Conexão OK, buscando relatórios...');
       
       if (!equipe?.id) {
-        console.log('🚨 REPORTS: Sem equipe selecionada, usando dados SixQuasar');
-        
-        // Métricas baseadas nos projetos reais da SixQuasar
+        console.log('⚠️ REPORTS: Sem equipe selecionada');
+        // Dados zerados - SEM MOCK DATA conforme CLAUDE.md
         setTeamMetrics({
-          tasksCompleted: 8,        // Tarefas concluídas dos projetos
-          tasksInProgress: 4,       // Tarefas em andamento
-          averageCompletionTime: 2.3, // Dias médios para concluir
-          productivityScore: 78,    // Score baseado nos projetos (25% + 15%) / 2 * 3.9
-          teamUtilization: 85       // 3 membros ativos nos 2 projetos
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          averageCompletionTime: 0,
+          productivityScore: 0,
+          teamUtilization: 0
         });
-
-        // Dados de progresso semanal baseados nos projetos
-        setChartData([
-          { period: 'Mai Sem 1', completed: 2, started: 4, delayed: 0 }, // Início Palmas
-          { period: 'Mai Sem 2', completed: 3, started: 3, delayed: 0 }, // Arquitetura
-          { period: 'Jun Sem 1', completed: 2, started: 4, delayed: 1 }, // Início Jocum
-          { period: 'Jun Sem 2', completed: 1, started: 1, delayed: 0 }  // SDK integrado
-        ]);
-
-        // Métricas dos projetos reais
-        setProjectMetrics([
-          {
-            name: 'Sistema Palmas IA',
-            progress: 25,
-            budget: 2400000,
-            spent: 600000, // 25% do orçamento
-            daysRemaining: 252, // Nov 2024 - Set 2025
-            status: 'on_track'
-          },
-          {
-            name: 'Automação Jocum SDK',
-            progress: 15,
-            budget: 625000,
-            spent: 93750, // 15% do orçamento
-            daysRemaining: 132, // Dez 2024 - Jun 2025
-            status: 'on_track'
-          }
-        ]);
-        
+        setChartData([]);
+        setProjectMetrics([]);
         setLoading(false);
         return;
       }
@@ -237,42 +189,20 @@ export function useReports() {
       ]);
 
     } catch (error) {
-      console.error('Erro ao carregar dados de relatórios:', error);
+      console.error('❌ REPORTS: ERRO JAVASCRIPT:', error);
       
-      // Fallback para dados SixQuasar
+      // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 REPORTS: Erro JavaScript, retornando dados zerados');
       setTeamMetrics({
-        tasksCompleted: 8,
-        tasksInProgress: 4,
-        averageCompletionTime: 2.3,
-        productivityScore: 78,
-        teamUtilization: 85
+        tasksCompleted: 0,
+        tasksInProgress: 0,
+        averageCompletionTime: 0,
+        productivityScore: 0,
+        teamUtilization: 0
       });
       
-      setChartData([
-        { period: 'Mai Sem 1', completed: 2, started: 4, delayed: 0 },
-        { period: 'Mai Sem 2', completed: 3, started: 3, delayed: 0 },
-        { period: 'Jun Sem 1', completed: 2, started: 4, delayed: 1 },
-        { period: 'Jun Sem 2', completed: 1, started: 1, delayed: 0 }
-      ]);
-      
-      setProjectMetrics([
-        {
-          name: 'Sistema Palmas IA',
-          progress: 25,
-          budget: 2400000,
-          spent: 600000,
-          daysRemaining: 252,
-          status: 'on_track'
-        },
-        {
-          name: 'Automação Jocum SDK',
-          progress: 15,
-          budget: 625000,
-          spent: 93750,
-          daysRemaining: 132,
-          status: 'on_track'
-        }
-      ]);
+      setChartData([]);
+      setProjectMetrics([]);
     } finally {
       setLoading(false);
     }

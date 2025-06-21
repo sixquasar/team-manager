@@ -33,45 +33,18 @@ export function useProfile() {
     console.log('👤 USUARIO:', usuario);
 
     if (!usuario?.id || !equipe?.id) {
-      console.log('⚠️ PROFILE: Sem usuário/equipe, usando dados SixQuasar');
-      // Dados baseados no perfil de Ricardo Landim da SixQuasar
+      console.log('⚠️ PROFILE: Sem usuário/equipe');
+      // Dados zerados - SEM MOCK DATA conforme CLAUDE.md
       setStats({
         projectsCompleted: 0,
-        projectsActive: 2,
-        tasksCompleted: 12,
-        tasksInProgress: 8,
-        teamCollaboration: 98,
-        averageRating: 4.8,
-        hoursLogged: 520,
-        achievements: [
-          'Arquiteto de Sistemas IA',
-          'Expert em Multi-LLM',
-          'Líder de Projetos Complexos',
-          'Mentor da Equipe'
-        ],
-        recentActivity: [
-          {
-            id: '1',
-            title: 'Projeto Palmas IA iniciado',
-            description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-            timestamp: '2025-05-01T09:00:00Z',
-            type: 'project'
-          },
-          {
-            id: '2',
-            title: 'Arquitetura do sistema definida',
-            description: 'Infraestrutura com 99.9% disponibilidade',
-            timestamp: '2025-05-15T14:30:00Z',
-            type: 'task'
-          },
-          {
-            id: '3',
-            title: 'Conquista desbloqueada',
-            description: 'Expert em Multi-LLM - Projeto Jocum SDK',
-            timestamp: '2025-06-01T08:00:00Z',
-            type: 'achievement'
-          }
-        ]
+        projectsActive: 0,
+        tasksCompleted: 0,
+        tasksInProgress: 0,
+        teamCollaboration: 0,
+        averageRating: 0,
+        hoursLogged: 0,
+        achievements: [],
+        recentActivity: []
       });
       setLoading(false);
       return;
@@ -88,29 +61,18 @@ export function useProfile() {
 
       if (testError) {
         console.error('❌ PROFILE: ERRO DE CONEXÃO:', testError);
+        // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 PROFILE: Erro de conexão, retornando dados zerados');
         setStats({
           projectsCompleted: 0,
-          projectsActive: 2,
-          tasksCompleted: 12,
-          tasksInProgress: 8,
-          teamCollaboration: 98,
-          averageRating: 4.8,
-          hoursLogged: 520,
-          achievements: [
-            'Arquiteto de Sistemas IA',
-            'Expert em Multi-LLM',
-            'Líder de Projetos Complexos',
-            'Mentor da Equipe'
-          ],
-          recentActivity: [
-            {
-              id: '1',
-              title: 'Projeto Palmas IA iniciado',
-              description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-              timestamp: '2025-05-01T09:00:00Z',
-              type: 'project'
-            }
-          ]
+          projectsActive: 0,
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          teamCollaboration: 0,
+          averageRating: 0,
+          hoursLogged: 0,
+          achievements: [],
+          recentActivity: []
         });
         setLoading(false);
         return;
@@ -118,20 +80,41 @@ export function useProfile() {
 
       console.log('✅ PROFILE: Conexão OK, buscando perfil...');
 
-      // Buscar dados reais do usuário
+      // Buscar dados reais do usuário - NOMES CORRETOS conforme CLAUDE.md
       const [tasksResponse, projectsResponse] = await Promise.all([
         supabase
-          .from('tasks')
-          .select('*')
-          .eq('responsavel_id', usuario.id),
-        supabase
-          .from('projects')
+          .from('tarefas')  // ✅ CORRETO: português conforme outros hooks
           .select('*')
           .eq('responsavel_id', usuario.id)
+          .eq('equipe_id', equipe.id), // ✅ FILTRO POR EQUIPE conforme metodologia
+        supabase
+          .from('projetos') // ✅ CORRETO: português conforme outros hooks
+          .select('*')
+          .eq('responsavel_id', usuario.id)
+          .eq('equipe_id', equipe.id)  // ✅ FILTRO POR EQUIPE conforme metodologia
       ]);
+
+      if (tasksResponse.error) {
+        console.error('❌ PROFILE: ERRO TAREFAS:', tasksResponse.error);
+        console.error('❌ Código:', tasksResponse.error.code);
+        console.error('❌ Mensagem:', tasksResponse.error.message);
+        console.error('❌ Detalhes:', tasksResponse.error.details);
+      }
+
+      if (projectsResponse.error) {
+        console.error('❌ PROFILE: ERRO PROJETOS:', projectsResponse.error);
+        console.error('❌ Código:', projectsResponse.error.code);
+        console.error('❌ Mensagem:', projectsResponse.error.message);
+        console.error('❌ Detalhes:', projectsResponse.error.details);
+      }
 
       const userTasks = tasksResponse.data || [];
       const userProjects = projectsResponse.data || [];
+
+      console.log('✅ PROFILE: Tarefas encontradas:', userTasks?.length || 0);
+      console.log('✅ PROFILE: Projetos encontrados:', userProjects?.length || 0);
+      console.log('📊 PROFILE: Dados tarefas:', userTasks);
+      console.log('📊 PROFILE: Dados projetos:', userProjects);
 
       // Calcular estatísticas reais
       const tasksCompleted = userTasks.filter(t => t.status === 'concluida').length;
@@ -195,37 +178,18 @@ export function useProfile() {
 
     } catch (error) {
       console.error('❌ PROFILE: ERRO JAVASCRIPT:', error);
-      // Fallback para dados do Ricardo Landim
+      // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 PROFILE: Erro JavaScript, retornando dados zerados');
       setStats({
         projectsCompleted: 0,
-        projectsActive: 2,
-        tasksCompleted: 12,
-        tasksInProgress: 8,
-        teamCollaboration: 98,
-        averageRating: 4.8,
-        hoursLogged: 520,
-        achievements: [
-          'Arquiteto de Sistemas IA',
-          'Expert em Multi-LLM', 
-          'Líder de Projetos Complexos',
-          'Mentor da Equipe'
-        ],
-        recentActivity: [
-          {
-            id: '1',
-            title: 'Projeto Palmas IA iniciado',
-            description: 'Sistema para 350k habitantes aprovado - R$ 2.4M',
-            timestamp: '2025-05-01T09:00:00Z',
-            type: 'project'
-          },
-          {
-            id: '2',
-            title: 'Arquitetura do sistema definida', 
-            description: 'Infraestrutura com 99.9% disponibilidade',
-            timestamp: '2025-05-15T14:30:00Z',
-            type: 'task'
-          }
-        ]
+        projectsActive: 0,
+        tasksCompleted: 0,
+        tasksInProgress: 0,
+        teamCollaboration: 0,
+        averageRating: 0,
+        hoursLogged: 0,
+        achievements: [],
+        recentActivity: []
       });
     } finally {
       setLoading(false);

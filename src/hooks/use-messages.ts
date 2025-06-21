@@ -62,17 +62,9 @@ export function useMessages() {
 
       if (testError) {
         console.error('❌ MESSAGES: ERRO DE CONEXÃO:', testError);
-        setChannels([
-          {
-            id: 'general',
-            name: 'Geral',
-            type: 'public',
-            description: 'Discussões gerais da equipe SixQuasar',
-            memberCount: 3,
-            unreadCount: 0,
-            lastActivity: '2h atrás'
-          }
-        ]);
+        // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 MESSAGES: Erro de conexão, retornando dados zerados');
+        setChannels([]);
         setMessages([]);
         setLoading(false);
         return;
@@ -81,107 +73,10 @@ export function useMessages() {
       console.log('✅ MESSAGES: Conexão OK, buscando mensagens...');
       
       if (!equipe?.id) {
-        console.log('🚨 MESSAGES: Sem equipe selecionada, usando dados SixQuasar');
-        
-        // Canais padrão da SixQuasar baseados nos projetos
-        setChannels([
-          {
-            id: 'general',
-            name: 'Geral',
-            type: 'public',
-            description: 'Discussões gerais da equipe SixQuasar',
-            memberCount: 3,
-            unreadCount: 0,
-            lastActivity: '2h atrás'
-          },
-          {
-            id: 'palmas-ia',
-            name: 'Projeto Palmas IA',
-            type: 'public',
-            description: 'Sistema de Atendimento ao Cidadão - R$ 2.4M',
-            memberCount: 3,
-            unreadCount: 2,
-            lastActivity: '30min atrás'
-          },
-          {
-            id: 'jocum-sdk',
-            name: 'Projeto Jocum SDK',
-            type: 'public',
-            description: 'Automação Multi-LLM - R$ 625K',
-            memberCount: 3,
-            unreadCount: 1,
-            lastActivity: '1h atrás'
-          },
-          {
-            id: 'dev-team',
-            name: 'Desenvolvimento',
-            type: 'private',
-            description: 'Canal privado da equipe de desenvolvimento',
-            memberCount: 3,
-            unreadCount: 0,
-            lastActivity: '4h atrás'
-          }
-        ]);
-
-        // Mensagens baseadas nos projetos reais
-        setMessages([
-          {
-            id: '1',
-            channelId: 'palmas-ia',
-            authorId: '550e8400-e29b-41d4-a716-446655440001',
-            authorName: 'Ricardo Landim',
-            content: 'Pessoal, finalizei a arquitetura do sistema para atender 350k habitantes. A infraestrutura está preparada para 99.9% de disponibilidade com AWS + Kubernetes.',
-            timestamp: '2025-06-20T14:30:00Z'
-          },
-          {
-            id: '2',
-            channelId: 'palmas-ia',
-            authorId: '550e8400-e29b-41d4-a716-446655440003',
-            authorName: 'Rodrigo Marochi',
-            content: 'Ótimo! Já comecei a integração com WhatsApp API. Vai ser crucial para atingir a meta de 1M mensagens/mês.',
-            timestamp: '2025-06-20T14:35:00Z'
-          },
-          {
-            id: '3',
-            channelId: 'jocum-sdk',
-            authorId: '550e8400-e29b-41d4-a716-446655440002',
-            authorName: 'Leonardo Candiani',
-            content: 'SDK multi-LLM funcionando! OpenAI + Anthropic + Gemini integrados. Conseguimos fallback automático entre os modelos.',
-            timestamp: '2025-06-20T15:00:00Z'
-          },
-          {
-            id: '4',
-            channelId: 'jocum-sdk',
-            authorId: '550e8400-e29b-41d4-a716-446655440001',
-            authorName: 'Ricardo Landim',
-            content: 'Excelente! Isso vai garantir os 50k atendimentos/dia que o cliente precisa. 🚀',
-            timestamp: '2025-06-20T15:05:00Z',
-            reactions: [
-              { emoji: '🚀', count: 2, users: ['Leonardo Candiani', 'Rodrigo Marochi'] }
-            ]
-          },
-          {
-            id: '5',
-            channelId: 'general',
-            authorId: '550e8400-e29b-41d4-a716-446655440003',
-            authorName: 'Rodrigo Marochi',
-            content: 'Mapeei 80+ bases da Jocum para integração. VoIP + WhatsApp vai cobrir todos os canais de atendimento.',
-            timestamp: '2025-06-20T16:00:00Z'
-          },
-          {
-            id: '6',
-            channelId: 'dev-team',
-            authorId: '550e8400-e29b-41d4-a716-446655440001',
-            authorName: 'Ricardo Landim',
-            content: 'Pessoal, estamos com 25% do Palmas e 15% do Jocum. POCs entregam em 31/01. Vamos acelerar! 💪',
-            timestamp: '2025-06-20T16:30:00Z',
-            pinned: true,
-            reactions: [
-              { emoji: '💪', count: 3, users: ['Leonardo Candiani', 'Rodrigo Marochi', 'Ricardo Landim'] }
-            ]
-          }
-        ]);
-        
+        console.log('⚠️ MESSAGES: Sem equipe selecionada');
+        // Dados zerados - SEM MOCK DATA conforme CLAUDE.md
+        setChannels([]);
+        setMessages([]);
         setLoading(false);
         return;
       }
@@ -271,20 +166,11 @@ export function useMessages() {
       ]);
 
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error);
+      console.error('❌ MESSAGES: ERRO JAVASCRIPT:', error);
       
-      // Fallback para dados SixQuasar
-      setChannels([
-        {
-          id: 'general',
-          name: 'Geral',
-          type: 'public',
-          memberCount: 3,
-          unreadCount: 0,
-          lastActivity: '2h atrás'
-        }
-      ]);
-      
+      // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+      console.log('🔄 MESSAGES: Erro JavaScript, retornando dados zerados');
+      setChannels([]);
       setMessages([]);
     } finally {
       setLoading(false);
