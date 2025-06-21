@@ -244,7 +244,7 @@ export function useReports() {
 
   return {
     loading,
-    teamMetrics,
+    metrics: teamMetrics,
     chartData,
     projectMetrics,
     exportReport,
