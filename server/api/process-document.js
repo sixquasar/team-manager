@@ -1,10 +1,10 @@
-const express = require('express');
-const multer = require('multer');
-const fs = require('fs').promises;
-const path = require('path');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
-const OpenAI = require('openai');
+import express from 'express';
+import multer from 'multer';
+import { promises as fs } from 'fs';
+import path from 'path';
+import pdfParse from 'pdf-parse';
+import mammoth from 'mammoth';
+import OpenAI from 'openai';
 
 const router = express.Router();
 
@@ -347,4 +347,4 @@ router.get('/status', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

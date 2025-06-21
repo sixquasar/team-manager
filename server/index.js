@@ -1,7 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const dotenv = require('dotenv');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ES Module equivalents for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configurar variáveis de ambiente
 dotenv.config();
@@ -27,7 +33,7 @@ app.use((req, res, next) => {
 });
 
 // Importar rotas da API
-const processDocumentRouter = require('./api/process-document');
+import processDocumentRouter from './api/process-document.js';
 
 // Usar rotas da API
 app.use('/api', processDocumentRouter);
@@ -102,4 +108,4 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-module.exports = app;
+export default app;
