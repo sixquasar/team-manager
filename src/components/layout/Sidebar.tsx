@@ -34,10 +34,10 @@ export function Sidebar() {
     <>
       {/* Mobile menu button */}
       <button
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-white rounded-md shadow-lg"
+        className="lg:hidden fixed top-[4.5rem] left-4 z-50 p-2 bg-white rounded-md shadow-lg border border-gray-200"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {/* Overlay */}
@@ -50,7 +50,7 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg border-r border-gray-200 pt-16
+        fixed top-16 left-0 bottom-0 z-40 w-64 bg-white shadow-lg border-r border-gray-200
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
