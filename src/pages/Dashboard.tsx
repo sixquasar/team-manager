@@ -126,17 +126,17 @@ export function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {quickActions.map((action, index) => {
           const Icon = action.icon;
           return (
             <button
               key={index}
               onClick={action.onClick}
-              className={`${action.color} text-white p-4 rounded-lg transition-all hover:shadow-lg transform hover:-translate-y-1 flex flex-col items-center gap-2`}
+              className={`${action.color} text-white p-3 sm:p-4 rounded-lg transition-all hover:shadow-lg transform hover:-translate-y-1 flex flex-col items-center gap-1 sm:gap-2`}
             >
-              <Icon className="h-6 w-6" />
-              <span className="text-sm font-medium">{action.label}</span>
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs sm:text-sm font-medium text-center">{action.label}</span>
             </button>
           );
         })}

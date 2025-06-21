@@ -12,8 +12,10 @@ export function Layout({ children }: LayoutProps) {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 ml-64">
-          {children}
+        <main className="flex-1 p-6 lg:ml-64 transition-all duration-300">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
