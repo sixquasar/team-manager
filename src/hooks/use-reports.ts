@@ -130,14 +130,18 @@ export function useReports() {
           console.error('❌ PROJETOS - Mensagem:', projetosError.message);
           console.error('❌ PROJETOS - Detalhes:', projetosError.details);
         }
-        // Fallback para dados SixQuasar
+        // Fallback para dados zerados - SEM MOCK DATA conforme CLAUDE.md
+        console.log('🔄 REPORTS: Erro Supabase, retornando dados zerados');
         setTeamMetrics({
-          tasksCompleted: 8,
-          tasksInProgress: 4,
-          averageCompletionTime: 2.3,
-          productivityScore: 78,
-          teamUtilization: 85
+          tasksCompleted: 0,
+          tasksInProgress: 0,
+          averageCompletionTime: 0,
+          productivityScore: 0,
+          teamUtilization: 0
         });
+        setChartData([]);
+        setProjectMetrics([]);
+        setLoading(false);
         return;
       }
 
