@@ -201,6 +201,7 @@ export function useDashboard() {
   return {
     loading,
     metrics,
-    recentActivity
+    recentActivity,
+    refetch: fetchDashboardData
   };
 }
