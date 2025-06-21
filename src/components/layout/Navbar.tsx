@@ -25,7 +25,7 @@ export function Navbar() {
           </div>
 
           {/* Center - Search */}
-          <div className="flex-1 flex items-center justify-center px-8">
+          <div className="hidden md:flex flex-1 items-center justify-center px-4 lg:px-8">
             <div className="w-full max-w-lg">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -33,7 +33,7 @@ export function Navbar() {
                 </div>
                 <Input
                   type="text"
-                  placeholder="Buscar tarefas, projetos, mensagens..."
+                  placeholder="Buscar tarefas, projetos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-team-primary focus:border-team-primary"
