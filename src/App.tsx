@@ -5,6 +5,7 @@ import { Layout } from '@/components/layout/Layout';
 
 // Pages
 import { Dashboard } from '@/pages/Dashboard';
+import DashboardAI from '@/pages/DashboardAI';
 import { Login } from '@/pages/Login';
 import { Projects } from '@/pages/Projects';
 import { Tasks } from '@/pages/Tasks';
@@ -68,6 +69,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/dashboard-ai" 
+            element={
+              <ProtectedRoute>
+                <DashboardAI />
               </ProtectedRoute>
             } 
           />

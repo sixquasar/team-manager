@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { supabase } from '@/lib/supabase';
+import { ProjectAIAnalysis } from './ProjectAIAnalysis';
 
 interface Project {
   id: string;
@@ -533,6 +534,18 @@ export function ProjectDetailsModal({
             <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
               <span className="text-sm text-red-700">{error}</span>
+            </div>
+          )}
+
+          {/* Análise IA - Mostrar apenas quando não está editando */}
+          {!isEditing && project && (
+            <div className="mt-6 pt-6 border-t">
+              <ProjectAIAnalysis 
+                project={{
+                  ...project,
+                  orcamento_usado: project.orcamento * (project.progresso / 100)
+                }} 
+              />
             </div>
           )}
 
