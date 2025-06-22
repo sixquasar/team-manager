@@ -46,7 +46,17 @@ export function useDashboardExtended() {
       // Buscar projetos ativos
       const { data: projetosData, error: projetosError } = await supabase
         .from('projetos')
-        .select('*')
+        .select(`
+          id,
+          nome,
+          cliente,
+          progresso,
+          orcamento,
+          data_inicio,
+          data_fim_prevista,
+          status,
+          created_at
+        `)
         .eq('equipe_id', equipe.id)
         .in('status', ['planejamento', 'em_progresso'])
         .order('created_at', { ascending: false });
