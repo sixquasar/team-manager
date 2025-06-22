@@ -41,24 +41,25 @@ CREATE TRIGGER update_usuarios_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Atualizar valores padrão para usuários existentes
+-- Atualizar valores padrão para usuários existentes (versão segura)
 UPDATE usuarios 
 SET 
-    bio = 'Membro da equipe ' || (SELECT nome FROM equipes WHERE id = usuarios.equipe_id LIMIT 1),
+    bio = COALESCE(bio, 'Membro da equipe'),
     telefone = CASE 
         WHEN email LIKE '%ricardo%' THEN '(11) 98765-4321'
         WHEN email LIKE '%leonardo%' THEN '(11) 91234-5678'
         WHEN email LIKE '%rodrigo%' THEN '(11) 95555-5555'
-        ELSE NULL
+        ELSE telefone
     END,
     localizacao = CASE 
         WHEN email LIKE '%ricardo%' THEN 'São Paulo, SP'
         WHEN email LIKE '%leonardo%' THEN 'Rio de Janeiro, RJ'
         WHEN email LIKE '%rodrigo%' THEN 'Curitiba, PR'
-        ELSE 'Brasil'
+        WHEN localizacao IS NULL THEN 'Brasil'
+        ELSE localizacao
     END,
     cargo = COALESCE(cargo, 'Desenvolvedor')
-WHERE bio IS NULL;
+WHERE bio IS NULL OR telefone IS NULL OR localizacao IS NULL;
 
 -- Verificar estrutura final
 SELECT 

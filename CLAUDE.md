@@ -133,3 +133,25 @@
 
 **COMMIT**: b390788
 **PRÓXIMA AÇÃO**: Verificar logs no console F12 para entender estrutura real dos dados
+
+### 🗓️ 22/06/2025 - 04:45 - SQL PARA ADICIONAR COLUNAS FALTANTES PROFILE
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Criar SQL para adicionar colunas faltantes na tabela usuarios
+**PROBLEMA REPORTADO**: 
+- Erro: "Could not find the 'bio' column of 'usuarios' in the schema cache"
+- Página Profile tentando salvar campos que não existem na tabela
+
+**SOLUÇÃO CORRETA IMPLEMENTADA**:
+- ✅ Criado ADD_MISSING_COLUMNS_PROFILE.sql
+- ✅ Adiciona colunas: bio, telefone, localizacao, cargo, updated_at
+- ✅ Cria trigger para atualizar updated_at automaticamente
+- ✅ Popula valores padrão para usuários existentes
+- ✅ Mantém funcionalidade completa do Profile ao invés de remover features
+
+**FILOSOFIA APLICADA**:
+- "Adicionar o que falta" ao invés de "remover funcionalidade"
+- Manter integridade e features completas da aplicação
+- Usar IF NOT EXISTS para segurança na execução
+
+**COMMIT**: 0d172ba
+**PRÓXIMA AÇÃO**: Executar ADD_MISSING_COLUMNS_PROFILE.sql no Supabase SQL Editor
