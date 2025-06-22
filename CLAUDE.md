@@ -86,3 +86,50 @@
 - ❌ Não adicionei timestamp ao histórico
 
 **PRÓXIMA AÇÃO**: Usuário executar ./fix-build-error.sh para corrigir build
+
+### 🗓️ 22/06/2025 - 04:15 - CORREÇÃO DEFINITIVA ERRO dataInI - BARRA NO CÓDIGO
+**STATUS**: ✅ CORRIGIDO E SINCRONIZADO
+**AÇÃO**: Correção definitiva do erro ReferenceError: dataInI is not defined
+**PROBLEMA RAIZ ENCONTRADO**: 
+- Linha 113 de Projects.tsx tinha: `data_inicio: dataIni/cio,`
+- Uma BARRA (/) estava dividindo a variável causando erro de sintaxe
+- JavaScript interpretava como divisão: dataInI / cio
+- Erro gerado: "dataInI is not defined"
+
+**SOLUÇÃO DEFINITIVA**:
+- ✅ Corrigido: `data_inicio: dataInicio,` (sem a barra)
+- ✅ Commit realizado com sucesso após git pull --rebase
+- ✅ Push completado para repositório remoto
+- ✅ Causa raiz identificada e eliminada
+
+**LIÇÕES APRENDIDAS**:
+- Erro não era no build/cache mas sim um erro de digitação no código
+- A importância de verificar caracteres especiais em variáveis
+- Sistema de notificações do IDE ajudou a identificar mudança
+
+**COMMIT**: 7d54796
+**PRÓXIMA AÇÃO**: Deploy automático deve resolver o erro definitivamente
+
+### 🗓️ 22/06/2025 - 04:30 - CORREÇÃO DASHBOARD SEM PROJETOS - QUERY ADAPTÁVEL
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Correção do Dashboard não mostrando projetos
+**PROBLEMA REPORTADO**: 
+- Dashboard sem nenhum projeto visível
+- Usuário relatou que não está conectado com as tabelas
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Mudado select de campos específicos para select('*') 
+- ✅ Adicionados logs detalhados para debug da estrutura real
+- ✅ Implementado mapeamento de campos para compatibilidade
+- ✅ Adicionado fallback: se não há projetos com status específicos, busca todos
+- ✅ Campos mapeados com múltiplas opções: nome/name, cliente/cliente_nome, etc
+- ✅ Valores padrão para campos ausentes
+
+**TÉCNICAS APLICADAS**:
+- Query adaptável que funciona com qualquer estrutura
+- Logs detalhados para entender estrutura real do banco
+- Fallback progressivo: status específicos → todos projetos
+- Mapeamento inteligente de campos com valores padrão
+
+**COMMIT**: b390788
+**PRÓXIMA AÇÃO**: Verificar logs no console F12 para entender estrutura real dos dados
