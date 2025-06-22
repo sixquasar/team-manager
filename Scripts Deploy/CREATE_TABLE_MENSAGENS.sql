@@ -15,14 +15,14 @@ CREATE TABLE IF NOT EXISTS mensagens (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     editado BOOLEAN DEFAULT FALSE,
-    fixado BOOLEAN DEFAULT FALSE,
-    
-    -- Índices para performance
-    INDEX idx_mensagens_canal (canal_id),
-    INDEX idx_mensagens_autor (autor_id),
-    INDEX idx_mensagens_equipe (equipe_id),
-    INDEX idx_mensagens_created (created_at DESC)
+    fixado BOOLEAN DEFAULT FALSE
 );
+
+-- Criar índices para performance
+CREATE INDEX IF NOT EXISTS idx_mensagens_canal ON mensagens (canal_id);
+CREATE INDEX IF NOT EXISTS idx_mensagens_autor ON mensagens (autor_id);
+CREATE INDEX IF NOT EXISTS idx_mensagens_equipe ON mensagens (equipe_id);
+CREATE INDEX IF NOT EXISTS idx_mensagens_created ON mensagens (created_at DESC);
 
 -- Criar tabela de canais se não existir
 CREATE TABLE IF NOT EXISTS canais (
@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS canais (
     tipo VARCHAR(20) DEFAULT 'public' CHECK (tipo IN ('public', 'private', 'direct')),
     descricao TEXT,
     equipe_id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- Índice para busca por equipe
-    INDEX idx_canais_equipe (equipe_id)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Criar índice para busca por equipe
+CREATE INDEX IF NOT EXISTS idx_canais_equipe ON canais (equipe_id);
 
 -- Inserir canais padrão
 INSERT INTO canais (id, nome, tipo, descricao, equipe_id)

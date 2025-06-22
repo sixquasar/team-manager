@@ -180,3 +180,28 @@
 
 **COMMIT**: 4876c09
 **PRÓXIMA AÇÃO**: Executar CREATE_TABLE_CONFIGURACOES_USUARIO.sql no Supabase SQL Editor
+
+### 🗓️ 22/06/2025 - 05:15 - SQL PARA CRIAR TABELAS MENSAGENS E CANAIS
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Criar tabelas para sistema de chat (mensagens e canais)
+**PROBLEMA REPORTADO**: 
+- Erro 400 ao enviar mensagem no chat
+- Tabelas mensagens/canais provavelmente não existem
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Criado CREATE_TABLE_MENSAGENS.sql
+- ✅ Tabela mensagens: id, canal_id, autor_id, equipe_id, conteudo, timestamps
+- ✅ Tabela canais: id, nome, tipo, descricao, equipe_id
+- ✅ Canais padrão: general, random, announcements
+- ✅ Mensagem de boas-vindas em cada equipe
+- ✅ Índices para performance em queries
+- ✅ Trigger para marcar mensagem como editada
+- ✅ RLS desabilitado para evitar problemas
+
+**ESTRUTURA COMPATÍVEL**:
+- Hook use-messages.ts espera campos específicos
+- Mapeamento adaptável já implementado no código
+- Canais criados automaticamente por equipe
+
+**COMMIT**: 8efdf47
+**PRÓXIMA AÇÃO**: Executar CREATE_TABLE_MENSAGENS.sql no Supabase SQL Editor
