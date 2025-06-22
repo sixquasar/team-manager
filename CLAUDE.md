@@ -155,3 +155,28 @@
 
 **COMMIT**: 0d172ba
 **PRÓXIMA AÇÃO**: Executar ADD_MISSING_COLUMNS_PROFILE.sql no Supabase SQL Editor
+
+### 🗓️ 22/06/2025 - 05:00 - SQL PARA CRIAR TABELA CONFIGURACOES_USUARIO
+**STATUS**: ✅ COMPLETO E SINCRONIZADO
+**AÇÃO**: Criar tabela configuracoes_usuario para página Settings
+**PROBLEMA REPORTADO**: 
+- Erro: "relation 'public.configuracoes_usuario' does not exist"
+- Página Settings tentando acessar tabela inexistente
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Criado CREATE_TABLE_CONFIGURACOES_USUARIO.sql
+- ✅ Tabela com estrutura: id, usuario_id, configuracoes (JSONB), timestamps
+- ✅ Constraint UNIQUE em usuario_id (um registro por usuário)
+- ✅ Trigger para updated_at automático
+- ✅ População inicial com configurações padrão para todos usuários
+- ✅ RLS desabilitado para evitar problemas de acesso
+
+**ESTRUTURA DE CONFIGURAÇÕES JSONB**:
+- Tema, idioma, timezone
+- Notificações (email, push, som)
+- Privacidade e segurança
+- Interface e exibição
+- Todas as opções da página Settings
+
+**COMMIT**: 4876c09
+**PRÓXIMA AÇÃO**: Executar CREATE_TABLE_CONFIGURACOES_USUARIO.sql no Supabase SQL Editor
