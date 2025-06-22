@@ -44,27 +44,72 @@ export function useDashboardExtended() {
       }
 
       // Buscar projetos ativos
+      console.log('🔍 DASHBOARD: Buscando projetos para equipe:', equipe.id);
+      
       const { data: projetosData, error: projetosError } = await supabase
         .from('projetos')
-        .select(`
-          id,
-          nome,
-          cliente,
-          progresso,
-          orcamento,
-          data_inicio,
-          data_fim_prevista,
-          status,
-          created_at
-        `)
+        .select('*')
         .eq('equipe_id', equipe.id)
         .in('status', ['planejamento', 'em_progresso'])
         .order('created_at', { ascending: false });
 
       if (projetosError) {
         console.error('❌ DASHBOARD: Erro ao buscar projetos:', projetosError);
+        console.error('❌ DASHBOARD: Detalhes do erro:', {
+          message: projetosError.message,
+          details: projetosError.details,
+          hint: projetosError.hint,
+          code: projetosError.code
+        });
       } else if (projetosData) {
-        setProjects(projetosData);
+        console.log('✅ DASHBOARD: Projetos encontrados:', projetosData.length);
+        if (projetosData.length > 0) {
+          console.log('📊 DASHBOARD: Estrutura do primeiro projeto:', Object.keys(projetosData[0]));
+          console.log('📊 DASHBOARD: Dados do primeiro projeto:', projetosData[0]);
+        }
+        // Mapear campos para garantir compatibilidade
+        const projetosMapeados = projetosData.map(p => ({
+          id: p.id,
+          nome: p.nome || p.name || 'Projeto sem nome',
+          cliente: p.cliente || p.cliente_nome || 'Cliente não definido',
+          progresso: p.progresso || 0,
+          orcamento: p.orcamento || 0,
+          data_inicio: p.data_inicio || p.created_at || new Date().toISOString(),
+          data_fim_prevista: p.data_fim_prevista || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+        }));
+        setProjects(projetosMapeados);
+      } else {
+        console.warn('⚠️ DASHBOARD: Nenhum projeto retornado, mas sem erro');
+        setProjects([]);
+      }
+      
+      // Se não encontrou projetos com status específicos, buscar todos
+      if (!projetosData || projetosData.length === 0) {
+        console.log('🔄 DASHBOARD: Buscando TODOS os projetos como fallback...');
+        const { data: todosProjetosData, error: todosProjetosError } = await supabase
+          .from('projetos')
+          .select('*')
+          .eq('equipe_id', equipe.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        if (todosProjetosError) {
+          console.error('❌ DASHBOARD: Erro ao buscar todos projetos:', todosProjetosError);
+        } else if (todosProjetosData && todosProjetosData.length > 0) {
+          console.log('✅ DASHBOARD: Projetos encontrados no fallback:', todosProjetosData.length);
+          console.log('📊 DASHBOARD: Status dos projetos:', todosProjetosData.map(p => p.status));
+          // Mapear campos do fallback também
+          const projetosFallbackMapeados = todosProjetosData.map(p => ({
+            id: p.id,
+            nome: p.nome || p.name || 'Projeto sem nome',
+            cliente: p.cliente || p.cliente_nome || 'Cliente não definido',
+            progresso: p.progresso || 0,
+            orcamento: p.orcamento || 0,
+            data_inicio: p.data_inicio || p.created_at || new Date().toISOString(),
+            data_fim_prevista: p.data_fim_prevista || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+          }));
+          setProjects(projetosFallbackMapeados);
+        }
       }
 
       // Buscar marcos próximos (tarefas importantes)
