@@ -190,7 +190,7 @@ export function useMessages() {
       }
 
       const messageData = {
-        canal_id: channelId,
+        canal: channelId,  // Mudado de canal_id para canal
         autor_id: usuario.id,
         equipe_id: equipe.id,
         conteudo: content.trim(),

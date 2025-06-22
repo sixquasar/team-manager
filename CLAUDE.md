@@ -205,3 +205,32 @@
 
 **COMMIT**: 8efdf47
 **PRÓXIMA AÇÃO**: Executar CREATE_TABLE_MENSAGENS.sql no Supabase SQL Editor
+
+### 🗓️ 22/06/2025 - 05:30 - DEBUG MENSAGENS NÃO SALVANDO NO BANCO
+**STATUS**: ✅ DEBUG IMPLEMENTADO
+**AÇÃO**: Adicionar logs detalhados e simplificar insert de mensagens
+**PROBLEMA REPORTADO**: 
+- Mensagens enviadas mas não salvando no banco
+- Nenhum registro criado após executar SQL
+
+**SOLUÇÃO IMPLEMENTADA**:
+- ✅ Simplificado insert: removido .select().single() 
+- ✅ Adicionado logs de Supabase URL e Key
+- ✅ Adicionado verificação após insert
+- ✅ Logs detalhados de erro com code, message, details
+- ✅ Criado TEST_INSERT_MENSAGEM.sql para teste direto
+
+**DEBUG ADICIONADO**:
+- Console mostrará URL e se key existe
+- Verificação após insert para confirmar se salvou
+- Detalhes completos de qualquer erro
+- Teste de query para verificar última mensagem
+
+**TESTE MANUAL**:
+Execute TEST_INSERT_MENSAGEM.sql para:
+1. Ver estrutura da tabela
+2. Fazer insert direto
+3. Verificar se funciona via SQL
+
+**COMMIT**: c2a8e69
+**PRÓXIMA AÇÃO**: Verificar logs no Console F12 após enviar mensagem

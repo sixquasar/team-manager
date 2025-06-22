@@ -16,7 +16,8 @@ WHERE table_name = 'mensagens'
 ORDER BY ordinal_position;
 
 -- PASSO 2: Adicionar colunas faltantes (se não existirem)
-ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS canal_id VARCHAR(100) DEFAULT 'general';
+-- NOTA: A coluna se chama 'canal' e não 'canal_id'
+ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS canal VARCHAR(100) DEFAULT 'general';
 ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS autor_id UUID;
 ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS equipe_id UUID;
 ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS conteudo TEXT;
@@ -25,7 +26,7 @@ ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS fixado BOOLEAN DEFAULT FALSE;
 ALTER TABLE mensagens ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 -- PASSO 3: Criar índices (se não existirem)
-CREATE INDEX IF NOT EXISTS idx_mensagens_canal ON mensagens (canal_id);
+CREATE INDEX IF NOT EXISTS idx_mensagens_canal ON mensagens (canal);
 CREATE INDEX IF NOT EXISTS idx_mensagens_autor ON mensagens (autor_id);
 CREATE INDEX IF NOT EXISTS idx_mensagens_equipe ON mensagens (equipe_id);
 CREATE INDEX IF NOT EXISTS idx_mensagens_created ON mensagens (created_at DESC);
@@ -68,10 +69,10 @@ WHERE NOT EXISTS (
     SELECT 1 FROM canais WHERE id = 'general'
 );
 
--- PASSO 7: Atualizar mensagens existentes sem canal_id
+-- PASSO 7: Atualizar mensagens existentes sem canal
 UPDATE mensagens 
-SET canal_id = 'general'
-WHERE canal_id IS NULL;
+SET canal = 'general'
+WHERE canal IS NULL;
 
 -- PASSO 8: Criar trigger para updated_at
 CREATE OR REPLACE FUNCTION update_mensagens_updated_at()
@@ -97,7 +98,7 @@ ALTER TABLE canais DISABLE ROW LEVEL SECURITY;
 SELECT 
     'Estrutura corrigida!' as status,
     COUNT(*) as total_mensagens,
-    COUNT(DISTINCT canal_id) as canais_usados,
+    COUNT(DISTINCT canal) as canais_usados,
     COUNT(DISTINCT equipe_id) as equipes_com_mensagens
 FROM mensagens;
 
