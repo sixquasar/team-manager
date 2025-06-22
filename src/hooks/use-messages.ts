@@ -198,16 +198,22 @@ export function useMessages() {
       };
 
       console.log('📤 Enviando mensagem:', messageData);
+      console.log('🔑 Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔑 Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
 
-      // Salvar no Supabase com proteção robusta
-      const { data, error: supabaseError } = await supabase
+      // Primeiro tentar insert simples sem select
+      const { error: insertError } = await supabase
         .from('mensagens')
-        .insert([messageData])
-        .select('*')  // ✅ CORREÇÃO: usar * para evitar erro de campo inexistente
-        .single();
+        .insert([messageData]);
 
-      if (supabaseError) {
-        console.error('❌ Erro do Supabase ao enviar mensagem:', supabaseError);
+      if (insertError) {
+        console.error('❌ Erro do Supabase ao enviar mensagem:', insertError);
+        console.error('❌ Detalhes do erro:', {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint
+        });
         
         // Fallback: adicionar mensagem localmente mesmo com erro
         const newMessage: Message = {
@@ -221,17 +227,33 @@ export function useMessages() {
         setMessages(prev => [...prev, newMessage]);
         console.log('⚠️ Mensagem adicionada localmente como fallback');
         
-        return { success: true }; // Sucesso local
+        return { success: false, error: insertError.message };
       }
 
-      // Adicionar mensagem formatada à lista local com mapeamento adaptável
+      console.log('✅ Mensagem inserida no banco com sucesso!');
+      
+      // Verificar se realmente foi salva
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('mensagens')
+        .select('*')
+        .eq('equipe_id', equipe.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+        
+      if (verifyError) {
+        console.error('❌ Erro ao verificar mensagem salva:', verifyError);
+      } else {
+        console.log('🔍 Última mensagem no banco:', verifyData?.[0]);
+      }
+
+      // Adicionar mensagem à lista local já que o insert funcionou
       const newMessage: Message = {
-        id: data.id,
-        channelId: data.canal_id || data.channel_id || data.canal || channelId,    // ✅ ADAPTÁVEL
-        authorId: data.autor_id || data.author_id || data.user_id || usuario.id,   // ✅ ADAPTÁVEL
-        authorName: data.autor_nome || data.author_name || usuario.nome,           // ✅ ADAPTÁVEL
-        content: data.conteudo || data.content || data.message || content,         // ✅ ADAPTÁVEL
-        timestamp: data.created_at || new Date().toISOString()                     // ✅ ADAPTÁVEL
+        id: Date.now().toString(), // ID temporário local
+        channelId,
+        authorId: usuario.id,
+        authorName: usuario.nome,
+        content,
+        timestamp: new Date().toISOString()
       };
 
       setMessages(prev => [...prev, newMessage]);
