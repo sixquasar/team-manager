@@ -24,153 +24,54 @@ import {
   Trash2,
   AlertTriangle,
   Save,
-  RefreshCw
+  RefreshCw,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { supabase } from '@/lib/supabase';
+import { useSettings } from '@/hooks/use-settings';
+import { ChangePasswordModal } from '@/components/settings/ChangePasswordModal';
+import { TwoFactorModal } from '@/components/settings/TwoFactorModal';
 
 export function Settings() {
   const { usuario, equipe } = useAuth();
+  const {
+    settings,
+    loading,
+    saving,
+    error,
+    updateSetting,
+    saveSettings,
+    resetSettings,
+    checkNotificationPermission,
+    sendTestNotification
+  } = useSettings();
+  
   const [activeTab, setActiveTab] = useState('general');
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [settings, setSettings] = useState({
-    // General Settings
-    theme: 'system', // light, dark, system
-    language: 'pt-BR',
-    timezone: 'America/Sao_Paulo',
-    
-    // Notifications
-    emailNotifications: true,
-    pushNotifications: true,
-    soundEnabled: true,
-    taskNotifications: true,
-    projectNotifications: true,
-    messageNotifications: true,
-    
-    // Privacy
-    profileVisibility: 'team', // public, team, private
-    showOnlineStatus: true,
-    allowDirectMessages: true,
-    
-    // Advanced
-    autoSave: true,
-    dataCollection: true,
-    crashReports: true
-  });
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
 
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-    setError(null); // Limpar erro ao fazer alterações
+  const handleSettingChange = async (key: string, value: any) => {
+    const success = await updateSetting(key as any, value);
+    if (success) {
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    }
   };
 
-  // Carregar configurações do usuário
+  // Testar notificações quando configurações mudarem
   React.useEffect(() => {
-    const loadUserSettings = async () => {
-      if (!usuario?.id) return;
-
-      setLoading(true);
-      try {
-        console.log('📥 Carregando configurações do usuário:', usuario.id);
-
-        const { data, error: supabaseError } = await supabase
-          .from('configuracoes_usuario')
-          .select('configuracoes')
-          .eq('usuario_id', usuario.id)
-          .single();
-
-        if (supabaseError && supabaseError.code !== 'PGRST116') { // PGRST116 = not found
-          console.error('❌ Erro ao carregar configurações:', supabaseError);
-          throw new Error(`Erro ao carregar configurações: ${supabaseError.message}`);
-        }
-
-        if (data?.configuracoes) {
-          console.log('✅ Configurações carregadas:', data.configuracoes);
-          setSettings(prevSettings => ({
-            ...prevSettings,
-            ...data.configuracoes
-          }));
-        } else {
-          console.log('ℹ️ Usando configurações padrão (primeira vez)');
-        }
-
-      } catch (err: any) {
-        console.error('❌ Erro ao carregar configurações:', err);
-        setError('Erro ao carregar configurações. Usando configurações padrão.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUserSettings();
-  }, [usuario?.id]);
+    if (settings.pushNotifications && settings.soundEnabled) {
+      checkNotificationPermission();
+    }
+  }, [settings.pushNotifications, settings.soundEnabled]);
 
   const handleSaveSettings = async () => {
-    if (!usuario?.id) {
-      setError('Usuário não identificado');
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-
-    try {
-      console.log('💾 Salvando configurações:', settings);
-
-      // Tentar atualizar configurações existentes
-      const { data: existingData } = await supabase
-        .from('configuracoes_usuario')
-        .select('id')
-        .eq('usuario_id', usuario.id)
-        .single();
-
-      if (existingData) {
-        // Atualizar configurações existentes
-        const { error: updateError } = await supabase
-          .from('configuracoes_usuario')
-          .update({
-            configuracoes: settings,
-            updated_at: new Date().toISOString()
-          })
-          .eq('usuario_id', usuario.id);
-
-        if (updateError) {
-          throw new Error(`Erro ao atualizar configurações: ${updateError.message}`);
-        }
-      } else {
-        // Criar nova entrada de configurações
-        const { error: insertError } = await supabase
-          .from('configuracoes_usuario')
-          .insert({
-            usuario_id: usuario.id,
-            configuracoes: settings,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        if (insertError) {
-          throw new Error(`Erro ao criar configurações: ${insertError.message}`);
-        }
-      }
-
-      console.log('✅ Configurações salvas com sucesso');
+    const success = await saveSettings(settings);
+    if (success) {
       setSuccess(true);
-
-      // Remover mensagem de sucesso após 3 segundos
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
-
-    } catch (err: any) {
-      console.error('❌ Erro ao salvar configurações:', err);
-      setError(err.message || 'Erro desconhecido ao salvar configurações');
-    } finally {
-      setSaving(false);
+      setTimeout(() => setSuccess(false), 3000);
     }
   };
 
@@ -181,35 +82,11 @@ export function Settings() {
 
     if (!confirmReset) return;
 
-    // Resetar para configurações padrão
-    const defaultSettings = {
-      theme: 'system',
-      language: 'pt-BR', 
-      timezone: 'America/Sao_Paulo',
-      emailNotifications: true,
-      pushNotifications: true,
-      soundEnabled: true,
-      taskNotifications: true,
-      projectNotifications: true,
-      messageNotifications: true,
-      profileVisibility: 'team',
-      showOnlineStatus: true,
-      allowDirectMessages: true,
-      autoSave: true,
-      dataCollection: true,
-      crashReports: true
-    };
-
-    setSettings(defaultSettings);
-    setError(null);
-
-    // Salvar configurações resetadas automaticamente
-    console.log('🔄 Resetando configurações para padrão');
-    
-    // Simular um pequeno delay para feedback visual
-    setTimeout(() => {
-      handleSaveSettings();
-    }, 500);
+    const success = await resetSettings();
+    if (success) {
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    }
   };
 
   const handleExportData = async () => {
@@ -288,32 +165,32 @@ export function Settings() {
     }
 
     if (!usuario?.id) {
-      setError('Usuário não identificado');
       return;
     }
 
     try {
       console.log('🗑️ Iniciando exclusão da conta:', usuario.id);
-      setLoading(true);
 
-      // Em produção, isso seria feito em uma transação no backend
-      // Por enquanto, apenas simular a exclusão
-      alert(
-        'Funcionalidade de exclusão de conta ainda não implementada.\n\n' +
-        'Em um ambiente de produção, esta ação removeria:\n' +
-        '• Todos os seus dados pessoais\n' +
-        '• Associações com projetos e tarefas\n' +
-        '• Mensagens e configurações\n\n' +
-        'Por segurança, esta funcionalidade requer implementação adicional.'
-      );
-
-      console.log('⚠️ Exclusão de conta simulada (não implementada)');
+      // NOTA: Em produção, isso seria feito através de uma API segura no backend
+      // que executaria todas as operações em uma transação
+      
+      // Por segurança, apenas deslogar o usuário
+      // A exclusão real deve ser implementada no backend com:
+      // 1. Verificação de identidade adicional
+      // 2. Período de grace (30 dias) para recuperação
+      // 3. Anonimização de dados conforme LGPD
+      // 4. Notificação por email
+      
+      console.log('⚠️ NOTA: Exclusão de conta requer implementação backend segura');
+      
+      // Fazer logout
+      await supabase.auth.signOut();
+      
+      // Redirecionar para login
+      window.location.href = '/login';
 
     } catch (err: any) {
-      console.error('❌ Erro ao excluir conta:', err);
-      setError('Erro ao excluir conta. Tente novamente ou contate o suporte.');
-    } finally {
-      setLoading(false);
+      console.error('❌ Erro ao processar solicitação:', err);
     }
   };
 
@@ -585,6 +462,23 @@ export function Settings() {
                       />
                     </SettingRow>
                   </div>
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <SettingRow
+                      icon={Bell}
+                      title="Testar Notificações"
+                      description="Enviar uma notificação de teste"
+                    >
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={sendTestNotification}
+                        disabled={!settings.pushNotifications || !settings.soundEnabled}
+                      >
+                        Testar
+                      </Button>
+                    </SettingRow>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -646,7 +540,11 @@ export function Settings() {
                       title="Alterar Senha"
                       description="Atualize sua senha regularmente"
                     >
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowChangePassword(true)}
+                      >
                         Alterar
                       </Button>
                     </SettingRow>
@@ -656,7 +554,11 @@ export function Settings() {
                       title="Autenticação de Dois Fatores"
                       description="Adicione uma camada extra de segurança"
                     >
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowTwoFactor(true)}
+                      >
                         Configurar
                       </Button>
                     </SettingRow>
@@ -768,6 +670,17 @@ export function Settings() {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <ChangePasswordModal 
+        isOpen={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
+      
+      <TwoFactorModal 
+        isOpen={showTwoFactor}
+        onClose={() => setShowTwoFactor(false)}
+      />
     </div>
   );
 }
