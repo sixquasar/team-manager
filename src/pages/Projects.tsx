@@ -33,6 +33,8 @@ import { useAuth } from '@/contexts/AuthContextTeam';
 import { useProjects } from '@/hooks/use-projects';
 import { NewProjectModal } from '@/components/projects/NewProjectModal';
 import { ProjectDetailsModal } from '@/components/projects/ProjectDetailsModal';
+import { useAI } from '@/contexts/AIContext';
+import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
 
 interface Project {
   id: string;
@@ -59,6 +61,7 @@ interface Project {
 export function Projects() {
   const { equipe, usuario } = useAuth();
   const { loading, projects, refetch } = useProjects();
+  const { isAIEnabled } = useAI();
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
@@ -258,6 +261,18 @@ export function Projects() {
           )}
         </CardContent>
       </Card>
+
+      {/* AI Insights Card */}
+      {isAIEnabled && filteredProjects.length > 0 && (
+        <div className="mb-6">
+          <AIInsightsCard 
+            title="Análise Inteligente de Projetos"
+            data={filteredProjects}
+            analysisType="projects"
+            className="shadow-lg border-purple-200"
+          />
+        </div>
+      )}
 
       {/* Loading State */}
       {loading ? (

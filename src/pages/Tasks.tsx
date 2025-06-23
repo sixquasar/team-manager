@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, Calendar, User, CheckCircle2, Clock, AlertTriangle, Edit, Eye, X } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, User, CheckCircle2, Clock, AlertTriangle, Edit, Eye, X, Brain, Sparkles } from 'lucide-react';
 import { useTasks, Task } from '@/hooks/use-tasks';
 import { NewTaskModal } from '@/components/tasks/NewTaskModal';
 import { TaskDetailsModal } from '@/components/tasks/TaskDetailsModal';
+import { useAI } from '@/contexts/AIContext';
+import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
+import { toast } from '@/hooks/use-toast';
 
 const statusColumns = [
   { id: 'pendente', title: 'Pendentes', color: 'bg-gray-100' },
@@ -23,6 +26,7 @@ const priorityColors = {
 
 export function Tasks() {
   const { tasks, loading, updateTask, getTasksByStatus, getTasksByPriority, refetch } = useTasks();
+  const { isAIEnabled, analyzeTasks, getSuggestions } = useAI();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -31,6 +35,7 @@ export function Tasks() {
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<Task['status']>('pendente');
   const [searchInput, setSearchInput] = useState('');
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,6 +43,45 @@ export function Tasks() {
     const matchesPriority = selectedPriority === 'all' || task.prioridade === selectedPriority;
     return matchesSearch && matchesPriority;
   });
+
+  // Obter sugestões da IA
+  const getTaskSuggestions = async () => {
+    if (!isAIEnabled || tasks.length === 0) return;
+    try {
+      const suggestions = await getSuggestions('tasks', {
+        totalTasks: tasks.length,
+        pendingTasks: tasks.filter(t => t.status === 'pendente').length,
+        overdueTasks: tasks.filter(t => new Date(t.data_vencimento) < new Date()).length
+      });
+      setAiSuggestions(suggestions);
+    } catch (error) {
+      console.error('Erro ao obter sugestões:', error);
+    }
+  };
+
+  useEffect(() => {
+    getTaskSuggestions();
+  }, [tasks, isAIEnabled]);
+
+  // Priorização automática com IA
+  const handleAIPrioritization = async () => {
+    if (!isAIEnabled) return;
+    
+    try {
+      const analysis = await analyzeTasks(tasks);
+      toast({
+        title: "Tarefas priorizadas",
+        description: "A IA reorganizou as tarefas por prioridade"
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erro na priorização",
+        description: "Não foi possível priorizar as tarefas",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleDragStart = (e: React.DragEvent, task: Task) => {
     setDraggedTask(task);
@@ -190,14 +234,59 @@ export function Tasks() {
           <p className="text-gray-600 mt-2">Gerencie as tarefas da equipe</p>
         </div>
         
-        <Button 
-          className="bg-team-primary hover:bg-team-primary/90"
-          onClick={() => handleNewTask()}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Tarefa
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAIEnabled && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAIPrioritization}
+              className="flex items-center gap-2"
+            >
+              <Brain className="h-4 w-4" />
+              Priorizar com IA
+            </Button>
+          )}
+          <Button 
+            className="bg-team-primary hover:bg-team-primary/90"
+            onClick={() => handleNewTask()}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Tarefa
+          </Button>
+        </div>
       </div>
+
+      {/* AI Insights and Suggestions */}
+      {isAIEnabled && tasks.length > 0 && (
+        <div className="mb-6 space-y-4">
+          <AIInsightsCard 
+            title="Análise Inteligente de Tarefas"
+            data={tasks}
+            analysisType="tasks"
+            className="shadow-lg"
+          />
+          
+          {aiSuggestions.length > 0 && (
+            <Card className="border-purple-200 bg-purple-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  Sugestões da IA
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {aiSuggestions.map((suggestion, idx) => (
+                    <Badge key={idx} variant="secondary">
+                      {suggestion}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex items-center space-x-4">

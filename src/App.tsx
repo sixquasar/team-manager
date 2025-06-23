@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContextTeam';
+import { AIProvider } from '@/contexts/AIContext';
 import { Layout } from '@/components/layout/Layout';
+import { AIAssistantButton } from '@/components/ai/AIAssistantButton';
 
 // Pages
 import { Dashboard } from '@/pages/Dashboard';
@@ -49,115 +51,118 @@ function ComingSoon({ title }: { title: string }) {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          
-          {/* Protected Routes */}
-          <Route 
-            path="/" 
-            element={
-              <ProtectedRoute>
-                <Navigate to="/dashboard" replace />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/dashboard-ai" 
-            element={
-              <ProtectedRoute>
-                <DashboardAI />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/projects" 
-            element={
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/tasks" 
-            element={
-              <ProtectedRoute>
-                <Tasks />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/timeline" 
-            element={
-              <ProtectedRoute>
-                <Timeline />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/messages" 
-            element={
-              <ProtectedRoute>
-                <Messages />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/reports" 
-            element={
-              <ProtectedRoute>
-                <Reports />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/team" 
-            element={
-              <ProtectedRoute>
-                <Team />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/settings" 
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } 
-          />
+      <AIProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/dashboard" replace />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/dashboard-ai" 
+              element={
+                <ProtectedRoute>
+                  <DashboardAI />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/projects" 
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/tasks" 
+              element={
+                <ProtectedRoute>
+                  <Tasks />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/timeline" 
+              element={
+                <ProtectedRoute>
+                  <Timeline />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/messages" 
+              element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/reports" 
+              element={
+                <ProtectedRoute>
+                  <Reports />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/team" 
+              element={
+                <ProtectedRoute>
+                  <Team />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
 
-          {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Router>
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+          <AIAssistantButton />
+        </Router>
+      </AIProvider>
     </AuthProvider>
   );
 }

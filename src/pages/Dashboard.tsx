@@ -28,11 +28,14 @@ import { useDashboardExtended } from '@/hooks/use-dashboard-extended';
 import { DocumentUpload } from '@/components/dashboard/DocumentUpload';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { useAI } from '@/contexts/AIContext';
+import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
 
 export function Dashboard() {
   const { equipe, usuario } = useAuth();
   const { metrics, recentActivity, loading, refetch } = useDashboard();
   const { projects, milestones, formatCurrency, formatDateRange, formatDate, formatDateBR } = useDashboardExtended();
+  const { isAIEnabled } = useAI();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -126,6 +129,25 @@ export function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* AI Insights Card */}
+      {isAIEnabled && (metrics || projects.length > 0) && (
+        <div className="mb-6">
+          <AIInsightsCard 
+            title="Análise Inteligente do Dashboard"
+            data={{
+              metrics,
+              projects,
+              milestones,
+              recentActivity,
+              totalBudget: projects.reduce((sum: number, p: any) => sum + (p.orcamento || 0), 0),
+              activeProjects: projects.filter((p: any) => p.status === 'em_andamento').length
+            }}
+            analysisType="dashboard"
+            className="shadow-lg"
+          />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
