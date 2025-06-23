@@ -18,6 +18,7 @@ import { Team } from '@/pages/Team';
 import { Profile } from '@/pages/Profile';
 import { Settings } from '@/pages/Settings';
 import { SprintWorkflow } from '@/pages/SprintWorkflow';
+import { CommunicationWorkflow } from '@/pages/CommunicationWorkflow';
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -163,6 +164,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SprintWorkflow />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/communication-workflow" 
+              element={
+                <ProtectedRoute>
+                  <CommunicationWorkflow />
                 </ProtectedRoute>
               } 
             />

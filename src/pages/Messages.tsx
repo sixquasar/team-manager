@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Send,
   Search,
@@ -12,15 +14,27 @@ import {
   Users,
   MessageSquare,
   Star,
-  Pin
+  Pin,
+  Brain,
+  Heart,
+  AlertTriangle,
+  Sparkles,
+  TrendingUp,
+  Info,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useMessages, Channel, Message } from '@/hooks/use-messages';
 import { NewChannelModal } from '@/components/messages/NewChannelModal';
 import { MessageActionsModal } from '@/components/messages/MessageActionsModal';
+import { useAI } from '@/contexts/AIContext';
+import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
+import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export function Messages() {
   const { equipe, usuario } = useAuth();
+  const navigate = useNavigate();
   const { 
     channels, 
     messages, 
@@ -34,12 +48,108 @@ export function Messages() {
     editMessage,
     refetch
   } = useMessages();
+  const { isAIEnabled, analyzeMessages, chatWithAI } = useAI();
   const [selectedChannel, setSelectedChannel] = useState<string>('general');
   const [messageText, setMessageText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewChannel, setShowNewChannel] = useState(false);
   const [showMessageActions, setShowMessageActions] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  
+  // Estados para IA
+  const [sentiment, setSentiment] = useState<'positive' | 'neutral' | 'negative'>('neutral');
+  const [topics, setTopics] = useState<string[]>([]);
+  const [urgentMessages, setUrgentMessages] = useState<number>(0);
+  const [suggestedResponses, setSuggestedResponses] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [conversationSummary, setConversationSummary] = useState('');
+
+  // Análise de sentimento e tópicos em tempo real
+  useEffect(() => {
+    const analyzeConversation = async () => {
+      if (!isAIEnabled || messages.length === 0) return;
+      
+      try {
+        const analysis = await analyzeMessages(messages);
+        setSentiment(analysis.sentiment || 'neutral');
+        setTopics(analysis.topics || []);
+        
+        // Detectar mensagens urgentes
+        const urgentKeywords = ['urgente', 'crítico', 'problema', 'erro', 'bug', 'asap', 'agora'];
+        const urgent = messages.filter(m => 
+          urgentKeywords.some(keyword => 
+            m.conteudo.toLowerCase().includes(keyword)
+          )
+        ).length;
+        setUrgentMessages(urgent);
+      } catch (error) {
+        console.error('Erro na análise:', error);
+      }
+    };
+    
+    analyzeConversation();
+  }, [messages, isAIEnabled]);
+
+  // Gerar sugestões de resposta
+  const generateResponseSuggestions = async () => {
+    if (!isAIEnabled || messages.length === 0) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const lastMessages = messages.slice(-5); // Últimas 5 mensagens
+      const context = lastMessages.map(m => `${m.autor}: ${m.conteudo}`).join('\n');
+      
+      const suggestions = await chatWithAI(
+        `Sugira 3 respostas curtas e profissionais para esta conversa:\n${context}`,
+        { type: 'response_suggestions' }
+      );
+      
+      // Parse das sugestões
+      const suggestionsList = suggestions.split('\n')
+        .filter(s => s.trim())
+        .slice(0, 3);
+      
+      setSuggestedResponses(suggestionsList);
+    } catch (error) {
+      console.error('Erro ao gerar sugestões:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Sumarizar conversa
+  const summarizeConversation = async () => {
+    if (!isAIEnabled || messages.length === 0) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const conversationText = messages
+        .map(m => `${m.autor}: ${m.conteudo}`)
+        .join('\n');
+      
+      const summary = await chatWithAI(
+        `Faça um resumo executivo desta conversa em 3-5 pontos principais:\n${conversationText}`,
+        { type: 'conversation_summary' }
+      );
+      
+      setConversationSummary(summary);
+      setShowSummary(true);
+      
+      toast({
+        title: "Resumo gerado",
+        description: "A conversa foi sumarizada com sucesso"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao sumarizar",
+        description: "Não foi possível gerar o resumo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,9 +240,119 @@ export function Messages() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-200px)] bg-white rounded-lg shadow">
-      {/* Sidebar - Channels */}
-      <div className="w-80 border-r border-gray-200 flex flex-col">
+    <div className="space-y-4">
+      {/* AI Insights e Análise de Sentimento */}
+      {isAIEnabled && messages.length > 0 && (
+        <div className="space-y-4">
+          <AIInsightsCard 
+            title="Análise de Comunicação da Equipe"
+            data={messages}
+            analysisType="messages"
+            className="shadow-lg border-purple-200"
+          />
+          
+          {/* Sentiment and Topics Bar */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Sentimento Geral:</span>
+                    <Badge className={
+                      sentiment === 'positive' ? 'bg-green-100 text-green-700' :
+                      sentiment === 'negative' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }>
+                      {sentiment === 'positive' ? <Heart className="h-3 w-3 mr-1" /> :
+                       sentiment === 'negative' ? <AlertTriangle className="h-3 w-3 mr-1" /> : null}
+                      {sentiment === 'positive' ? 'Positivo' : 
+                       sentiment === 'negative' ? 'Negativo' : 'Neutro'}
+                    </Badge>
+                  </div>
+                  
+                  {urgentMessages > 0 && (
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm">{urgentMessages} mensagens urgentes</span>
+                    </div>
+                  )}
+                  
+                  {topics.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Tópicos:</span>
+                      <div className="flex gap-1">
+                        {topics.slice(0, 3).map((topic, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {topic}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={summarizeConversation}
+                    disabled={isAnalyzing}
+                  >
+                    {isAnalyzing ? (
+                      <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+                    ) : (
+                      <Brain className="h-4 w-4 mr-2" />
+                    )}
+                    Sumarizar
+                  </Button>
+                  
+                  {isAIEnabled && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/communication-workflow')}
+                      className="flex items-center gap-2"
+                    >
+                      <Zap className="h-4 w-4" />
+                      Workflow IA
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Conversation Summary */}
+          {showSummary && conversationSummary && (
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-lg">
+                  <span className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-blue-600" />
+                    Resumo da Conversa
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setShowSummary(false)}
+                    className="h-8 w-8"
+                  >
+                    ×
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-blue-900 whitespace-pre-wrap">{conversationSummary}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Chat Interface */}
+      <div className="flex h-[calc(100vh-300px)] bg-white rounded-lg shadow">
+        {/* Sidebar - Channels */}
+        <div className="w-80 border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -315,7 +535,13 @@ export function Messages() {
               <div className="relative">
                 <textarea
                   value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
+                  onChange={(e) => {
+                    setMessageText(e.target.value);
+                    // Gerar sugestões quando usuário parar de digitar
+                    if (isAIEnabled && e.target.value.length > 10) {
+                      setTimeout(generateResponseSuggestions, 1000);
+                    }
+                  }}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -345,6 +571,32 @@ export function Messages() {
               <Send className="h-4 w-4" />
             </button>
           </div>
+          
+          {/* AI Response Suggestions */}
+          {isAIEnabled && suggestedResponses.length > 0 && (
+            <div className="mt-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+                <span className="text-xs text-gray-600">Sugestões de resposta:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {suggestedResponses.map((suggestion, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMessageText(suggestion);
+                      setSuggestedResponses([]);
+                    }}
+                    className="text-xs"
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
