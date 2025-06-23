@@ -12,7 +12,8 @@ import {
   Settings,
   User,
   Menu,
-  X
+  X,
+  Zap
 } from 'lucide-react';
 
 const navigation = [
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Dashboard IA', href: '/dashboard-ai', icon: Brain },
   { name: 'Projetos', href: '/projects', icon: Folder },
   { name: 'Tarefas', href: '/tasks', icon: CheckSquare },
+  { name: 'Sprint Workflow', href: '/sprint-workflow', icon: Zap },
   { name: 'Timeline', href: '/timeline', icon: Clock },
   { name: 'Mensagens', href: '/messages', icon: MessageSquare },
   { name: 'Relatórios', href: '/reports', icon: BarChart3 },

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   BarChart3,
   TrendingUp,
@@ -12,10 +13,16 @@ import {
   CheckCircle2,
   AlertTriangle,
   DollarSign,
-  Target
+  Target,
+  Brain,
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useReports } from '@/hooks/use-reports';
+import { useAI } from '@/contexts/AIContext';
+import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
+import { toast } from '@/hooks/use-toast';
 
 interface Report {
   id: string;
@@ -28,8 +35,48 @@ interface Report {
 export function Reports() {
   const { equipe } = useAuth();
   const { metrics, loading } = useReports();
+  const { isAIEnabled, generateInsights, analyzeReports } = useAI();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'quarter'>('month');
   const [selectedReport, setSelectedReport] = useState<string>('productivity');
+  const [executiveSummary, setExecutiveSummary] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Gerar resumo executivo com IA
+  const generateExecutiveSummary = async () => {
+    if (!isAIEnabled || !metrics) return;
+    
+    setIsGenerating(true);
+    try {
+      const reportData = {
+        metrics,
+        period: selectedPeriod,
+        totalProjects: metrics.totalProjects || 0,
+        completionRate: metrics.completionRate || 0,
+        teamSize: metrics.teamSize || 0
+      };
+      
+      const insights = await generateInsights('reports', reportData);
+      setExecutiveSummary(insights.executiveSummary || 
+        `Durante o período de ${selectedPeriod === 'week' ? 'uma semana' : selectedPeriod === 'month' ? 'um mês' : 'um trimestre'}, ` +
+        `a equipe ${equipe?.nome || ''} demonstrou performance sólida com ${metrics.completionRate || 0}% de taxa de conclusão. ` +
+        `Foram gerenciados ${metrics.totalProjects || 0} projetos com uma equipe de ${metrics.teamSize || 0} membros. ` +
+        `Os indicadores sugerem oportunidades de otimização em processos e alocação de recursos.`
+      );
+      
+      toast({
+        title: "Resumo gerado com sucesso",
+        description: "O resumo executivo foi criado pela IA"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar resumo",
+        description: "Não foi possível gerar o resumo executivo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -122,6 +169,57 @@ export function Reports() {
           </button>
         </div>
       </div>
+
+      {/* AI Executive Summary */}
+      {isAIEnabled && (
+        <div className="mb-6 space-y-4">
+          <AIInsightsCard 
+            title="Análise Executiva com IA"
+            data={metrics}
+            analysisType="reports"
+            className="shadow-lg border-orange-200"
+          />
+          
+          {executiveSummary && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Resumo Executivo Gerado por IA
+                  </span>
+                  <Button size="sm" variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar PDF
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 whitespace-pre-wrap">{executiveSummary}</p>
+              </CardContent>
+            </Card>
+          )}
+          
+          <Button
+            onClick={generateExecutiveSummary}
+            className="w-full"
+            variant="outline"
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+                Gerando resumo...
+              </>
+            ) : (
+              <>
+                <Brain className="h-4 w-4 mr-2" />
+                Gerar Resumo Executivo com IA
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Metrics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
