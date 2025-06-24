@@ -16,10 +16,14 @@ import {
   Target,
   Brain,
   FileText,
-  Sparkles
+  Sparkles,
+  FileCheck,
+  TrendingDown,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
 import { useReports } from '@/hooks/use-reports';
+import { useExecutiveReport } from '@/hooks/use-executive-report';
 import { useAI } from '@/contexts/AIContext';
 import { AIInsightsCard } from '@/components/ai/AIInsightsCard';
 import { toast } from '@/hooks/use-toast';
@@ -36,45 +40,59 @@ export function Reports() {
   const { equipe } = useAuth();
   const { metrics, loading } = useReports();
   const { isAIEnabled, generateInsights, analyzeReports } = useAI();
+  const { 
+    report: executiveReport, 
+    loading: loadingExecutive, 
+    generateExecutiveReport, 
+    exportToPDF 
+  } = useExecutiveReport();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'quarter'>('month');
   const [selectedReport, setSelectedReport] = useState<string>('productivity');
-  const [executiveSummary, setExecutiveSummary] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [showExecutiveReport, setShowExecutiveReport] = useState(false);
 
-  // Gerar resumo executivo com IA
-  const generateExecutiveSummary = async () => {
-    if (!isAIEnabled || !metrics) return;
-    
-    setIsGenerating(true);
+  // Gerar relatório executivo completo
+  const handleGenerateExecutiveReport = async () => {
     try {
-      const reportData = {
-        metrics,
-        period: selectedPeriod,
-        totalProjects: metrics.totalProjects || 0,
-        completionRate: metrics.completionRate || 0,
-        teamSize: metrics.teamSize || 0
-      };
-      
-      const insights = await generateInsights('reports', reportData);
-      setExecutiveSummary(insights.executiveSummary || 
-        `Durante o período de ${selectedPeriod === 'week' ? 'uma semana' : selectedPeriod === 'month' ? 'um mês' : 'um trimestre'}, ` +
-        `a equipe ${equipe?.nome || ''} demonstrou performance sólida com ${metrics.completionRate || 0}% de taxa de conclusão. ` +
-        `Foram gerenciados ${metrics.totalProjects || 0} projetos com uma equipe de ${metrics.teamSize || 0} membros. ` +
-        `Os indicadores sugerem oportunidades de otimização em processos e alocação de recursos.`
-      );
-      
-      toast({
-        title: "Resumo gerado com sucesso",
-        description: "O resumo executivo foi criado pela IA"
-      });
+      const report = await generateExecutiveReport(selectedPeriod);
+      if (report) {
+        setShowExecutiveReport(true);
+        toast({
+          title: "Relatório gerado com sucesso",
+          description: "O relatório executivo foi criado com análise de IA"
+        });
+      }
     } catch (error) {
       toast({
-        title: "Erro ao gerar resumo",
-        description: "Não foi possível gerar o resumo executivo",
+        title: "Erro ao gerar relatório",
+        description: "Não foi possível gerar o relatório executivo",
         variant: "destructive"
       });
-    } finally {
-      setIsGenerating(false);
+    }
+  };
+  
+  // Exportar relatório
+  const handleExportReport = async () => {
+    if (!executiveReport) {
+      toast({
+        title: "Nenhum relatório disponível",
+        description: "Gere um relatório executivo primeiro",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const result = await exportToPDF(executiveReport);
+    if (result.success) {
+      toast({
+        title: "Relatório exportado",
+        description: "O relatório foi preparado para impressão/PDF"
+      });
+    } else {
+      toast({
+        title: "Erro ao exportar",
+        description: result.error || "Não foi possível exportar o relatório",
+        variant: "destructive"
+      });
     }
   };
 
@@ -170,54 +188,261 @@ export function Reports() {
         </div>
       </div>
 
-      {/* AI Executive Summary */}
-      {isAIEnabled && (
-        <div className="mb-6 space-y-4">
+      {/* Botões de Ação Principais */}
+      <div className="mb-6 flex gap-3">
+        <Button
+          onClick={handleGenerateExecutiveReport}
+          className="flex-1"
+          variant="default"
+          disabled={loadingExecutive}
+        >
+          {loadingExecutive ? (
+            <>
+              <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+              Gerando relatório completo...
+            </>
+          ) : (
+            <>
+              <Brain className="h-4 w-4 mr-2" />
+              Gerar Relatório Executivo com IA
+            </>
+          )}
+        </Button>
+        
+        {executiveReport && (
+          <Button
+            onClick={handleExportReport}
+            variant="outline"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar PDF
+          </Button>
+        )}
+      </div>
+      
+      {/* Relatório Executivo Completo */}
+      {executiveReport && showExecutiveReport && (
+        <div className="mb-6 space-y-6">
+          {/* Cabeçalho do Relatório */}
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <FileCheck className="h-6 w-6 text-blue-600" />
+                  Relatório Executivo - {executiveReport.equipe}
+                </span>
+                <span className="text-sm font-normal text-gray-600">
+                  {executiveReport.dataGeracao}
+                </span>
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          
+          {/* Sumário Executivo */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Sumário Executivo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-gray-700">{executiveReport.sumarioExecutivo.visaoGeral}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-green-700">Pontos Positivos</h4>
+                  {executiveReport.sumarioExecutivo.pontosPositivos.map((ponto, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
+                      <p className="text-sm">{ponto}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-medium text-orange-700">Áreas de Atenção</h4>
+                  {executiveReport.sumarioExecutivo.areasAtencao.map((area, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5" />
+                      <p className="text-sm">{area}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-medium text-blue-700">Recomendações</h4>
+                  {executiveReport.sumarioExecutivo.recomendacoesPrincipais.map((rec, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                      <p className="text-sm">{rec}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Métricas de Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {executiveReport.performance.produtividade}%
+                  </div>
+                  <div className="text-sm text-gray-600">Produtividade</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-3xl font-bold text-green-600">
+                    {executiveReport.performance.taxaConclusao}%
+                  </div>
+                  <div className="text-sm text-gray-600">Taxa Conclusão</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {executiveReport.performance.tempoMedio.toFixed(1)}d
+                  </div>
+                  <div className="text-sm text-gray-600">Tempo Médio</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-3xl font-bold text-orange-600">
+                    {executiveReport.performance.eficiencia}%
+                  </div>
+                  <div className="text-sm text-gray-600">Eficiência</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center">
+                    {executiveReport.performance.trend === 'up' ? (
+                      <TrendingUp className="h-8 w-8 text-green-500" />
+                    ) : executiveReport.performance.trend === 'down' ? (
+                      <TrendingDown className="h-8 w-8 text-red-500" />
+                    ) : (
+                      <BarChart3 className="h-8 w-8 text-gray-500" />
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600">Tendência</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Análise Financeira */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Análise Financeira
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600">Orçamento Total</div>
+                  <div className="text-2xl font-bold">R$ {executiveReport.financeiro.orcamentoTotal.toLocaleString('pt-BR')}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">Gasto Total</div>
+                  <div className="text-2xl font-bold text-red-600">R$ {executiveReport.financeiro.gastoTotal.toLocaleString('pt-BR')}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">ROI</div>
+                  <div className="text-2xl font-bold text-green-600">{executiveReport.financeiro.roi.toFixed(1)}%</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Riscos e Mitigações */}
+          {executiveReport.projetos.principaisRiscos.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Principais Riscos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {executiveReport.projetos.principaisRiscos.map((risco, i) => (
+                    <div key={i} className="border-l-4 border-gray-200 pl-4 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{risco.projeto}</span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          risco.impacto === 'alto' ? 'bg-red-100 text-red-700' :
+                          risco.impacto === 'medio' ? 'bg-orange-100 text-orange-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {risco.impacto.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{risco.risco}</p>
+                      <p className="text-sm text-blue-600">Mitigação: {risco.mitigacao}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Insights de IA */}
+          <Card className="border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                Insights de IA
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Próximos Passos Recomendados</h4>
+                  <div className="space-y-2">
+                    {executiveReport.insightsIA.proximosPassos.map((passo, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <div className="h-6 w-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-medium">
+                          {i + 1}
+                        </div>
+                        <p className="text-sm">{passo}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Alertas</h4>
+                  <div className="space-y-2">
+                    {executiveReport.insightsIA.alertas.map((alerta, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2 bg-red-50 rounded">
+                        <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5" />
+                        <p className="text-sm text-red-700">{alerta}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {/* AI Insights Card (se disponível) */}
+      {isAIEnabled && !showExecutiveReport && (
+        <div className="mb-6">
           <AIInsightsCard 
             title="Análise Executiva com IA"
             data={metrics}
             analysisType="reports"
             className="shadow-lg border-orange-200"
           />
-          
-          {executiveSummary && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Resumo Executivo Gerado por IA
-                  </span>
-                  <Button size="sm" variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar PDF
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap">{executiveSummary}</p>
-              </CardContent>
-            </Card>
-          )}
-          
-          <Button
-            onClick={generateExecutiveSummary}
-            className="w-full"
-            variant="outline"
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
-                Gerando resumo...
-              </>
-            ) : (
-              <>
-                <Brain className="h-4 w-4 mr-2" />
-                Gerar Resumo Executivo com IA
-              </>
-            )}
-          </Button>
         </div>
       )}
 
