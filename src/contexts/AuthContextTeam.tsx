@@ -53,105 +53,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🔍 AUTH: Iniciando login...');
       console.log('📧 EMAIL:', email);
 
-      // Sistema de autenticação híbrido - prioriza Supabase mas tem fallback robusto
-      const usuarios = [
-        {
-          id: '550e8400-e29b-41d4-a716-446655440001',
-          email: 'ricardo@sixquasar.pro',
-          nome: 'Ricardo Landim',
-          cargo: 'Tech Lead',
-          tipo: 'owner',
-          avatar_url: null,
-          password: 'senha123'
-        },
-        {
-          id: '550e8400-e29b-41d4-a716-446655440002',
-          email: 'leonardo@sixquasar.pro',
-          nome: 'Leonardo Candiani',
-          cargo: 'Developer',
-          tipo: 'admin',
-          avatar_url: null,
-          password: 'senha123'
-        },
-        {
-          id: '550e8400-e29b-41d4-a716-446655440003',
-          email: 'rodrigo@sixquasar.pro',
-          nome: 'Rodrigo Marochi',
-          cargo: 'Developer',
-          tipo: 'member',
-          avatar_url: null,
-          password: 'senha123'
-        }
-      ];
+      // Sistema de autenticação via Supabase apenas
+      // REMOVIDO: Fallback com senhas hardcoded por questões de segurança
 
-      // Tentar Supabase primeiro, mas com fallback garantido
-      try {
-        console.log('🌐 Tentando conectar ao Supabase...');
-        const { data: userData, error: userError } = await supabase
-          .from('usuarios')
-          .select('*')
-          .eq('email', email.trim())
-          .single();
-
-        if (!userError && userData) {
-          console.log('✅ AUTH: Usuário encontrado no Supabase:', userData.nome);
-          
-          const usuarioData = {
-            id: userData.id,
-            email: userData.email,
-            nome: userData.nome,
-            cargo: userData.cargo,
-            tipo: userData.tipo,
-            avatar_url: userData.avatar_url
-          };
-
-          const equipeData = {
-            id: '650e8400-e29b-41d4-a716-446655440001',
-            nome: 'SixQuasar',
-            descricao: 'Equipe de desenvolvimento',
-            created_at: new Date().toISOString()
-          };
-
-          setUsuario(usuarioData);
-          setEquipe(equipeData);
-
-          localStorage.setItem('team_session', JSON.stringify({
-            usuario: usuarioData,
-            equipe: equipeData
-          }));
-
-          console.log('✅ AUTH: Login via Supabase realizado');
-          return { success: true };
-        }
-      } catch (supabaseError) {
-        console.log('⚠️ AUTH: Supabase indisponível, usando fallback local');
-      }
-
-      // Fallback local garantido
-      console.log('🔄 AUTH: Usando sistema de autenticação local');
-      const user = usuarios.find(u => u.email === email && u.password === password);
+      // Autenticação via Supabase com validação segura
+      console.log('🌐 Conectando ao Supabase...');
       
-      if (!user) {
+      // Primeiro verificar se o usuário existe
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', email.trim())
+        .single();
+
+      if (userError || !userData) {
+        console.error('❌ AUTH: Usuário não encontrado');
         return { success: false, error: 'Email ou senha incorretos' };
       }
 
-      const { password: _, ...usuarioData } = user;
-      const equipeData = {
-        id: '650e8400-e29b-41d4-a716-446655440001',
+      // Validar senha via função RPC segura no Supabase
+      const { data: isValid, error: validateError } = await supabase
+        .rpc('validate_user_password', {
+          user_email: email,
+          user_password: password
+        });
+
+      if (validateError || !isValid) {
+        console.error('❌ AUTH: Senha inválida');
+        return { success: false, error: 'Email ou senha incorretos' };
+      }
+
+      console.log('✅ AUTH: Usuário autenticado:', userData.nome);
+      
+      const usuarioData = {
+        id: userData.id,
+        email: userData.email,
+        nome: userData.nome,
+        cargo: userData.cargo,
+        tipo: userData.tipo,
+        avatar_url: userData.avatar_url
+      };
+
+      // Buscar equipe do usuário
+      const { data: equipeData } = await supabase
+        .from('equipes')
+        .select('*')
+        .eq('id', userData.equipe_id)
+        .single();
+
+      const equipe = equipeData || {
+        id: userData.equipe_id || '650e8400-e29b-41d4-a716-446655440001',
         nome: 'SixQuasar',
         descricao: 'Equipe de desenvolvimento',
         created_at: new Date().toISOString()
       };
 
       setUsuario(usuarioData);
-      setEquipe(equipeData);
+      setEquipe(equipe);
 
       localStorage.setItem('team_session', JSON.stringify({
         usuario: usuarioData,
-        equipe: equipeData
+        equipe: equipe
       }));
 
-      console.log('✅ AUTH: Login local realizado com sucesso');
+      console.log('✅ AUTH: Login realizado com sucesso');
       return { success: true };
     } catch (error) {
       console.error('❌ AUTH: ERRO GERAL:', error);

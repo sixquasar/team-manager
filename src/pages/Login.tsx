@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Users, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContextTeam';
+import { validateEmail, sanitizeText } from '@/utils/validation';
 
 export function Login() {
   const { usuario, login, loading } = useAuth();
@@ -25,17 +26,51 @@ export function Login() {
     e.preventDefault();
     setError('');
     
+    // Validação de email
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'Email inválido');
+      return;
+    }
+    
+    // Validação de senha (básica para login)
+    if (!formData.senha) {
+      setError('Senha é obrigatória');
+      return;
+    }
+    
+    if (formData.senha.length > 128) {
+      setError('Senha muito longa');
+      return;
+    }
+    
     try {
-      await login(formData.email, formData.senha);
+      const result = await login(emailValidation.sanitized, formData.senha);
+      if (!result.success) {
+        setError(result.error || 'Email ou senha incorretos');
+      }
     } catch (err) {
-      setError('Email ou senha incorretos');
+      setError('Erro ao fazer login. Tente novamente.');
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Sanitiza input conforme o campo
+    let sanitizedValue = value;
+    
+    if (name === 'email') {
+      // Remove espaços extras
+      sanitizedValue = value.trim();
+    } else if (name === 'senha') {
+      // Senha não deve ser trimmed (espaços podem ser parte da senha)
+      sanitizedValue = value;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: sanitizedValue
     }));
   };
 

@@ -99,17 +99,23 @@ export function NewProjectModal({ isOpen, onClose, onProjectCreated }: NewProjec
     setError(null);
 
     try {
+      // Sanitizar e validar dados antes de enviar
+      const nomeValidation = validateName(formData.nome, 'Nome');
+      const descricaoSanitizada = sanitizeText(formData.descricao, 5000);
+      const orcamentoValidation = validateCurrency(formData.orcamento);
+      const tagsValidation = validateTags(formData.tecnologias);
+      
       const projectData = {
-        nome: formData.nome.trim(),
-        descricao: formData.descricao.trim(),
+        nome: nomeValidation.sanitized,
+        descricao: descricaoSanitizada,
         data_inicio: formData.data_inicio,
         data_fim_prevista: formData.data_fim_prevista,
-        orcamento: parseFloat(formData.orcamento),
+        orcamento: orcamentoValidation.sanitized,
         responsavel_id: formData.responsavel_id,
         equipe_id: equipe?.id || '650e8400-e29b-41d4-a716-446655440001',
         status: 'planejamento',
         progresso: 0,
-        tecnologias: formData.tecnologias,
+        tecnologias: tagsValidation.sanitized,
         data_fim_real: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
