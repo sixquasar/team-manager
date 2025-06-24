@@ -183,8 +183,16 @@ export function Settings() {
       
       console.log('⚠️ NOTA: Exclusão de conta requer implementação backend segura');
       
-      // Fazer logout
-      await supabase.auth.signOut();
+      // Fazer logout via API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        }
+      });
+      
+      // Limpar token local
+      localStorage.removeItem('token');
       
       // Redirecionar para login
       window.location.href = '/login';

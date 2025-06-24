@@ -69,23 +69,40 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
     try {
       console.log('🔐 Alterando senha do usuário...');
 
-      // Verificar senha atual primeiro
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: usuario?.email || '',
-        password: currentPassword
+      // Verificar senha atual primeiro via API
+      const verifyResponse = await fetch('/api/auth/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+        body: JSON.stringify({
+          email: usuario?.email || '',
+          password: currentPassword
+        })
       });
 
-      if (authError || !authData.user) {
-        throw new Error('Senha atual incorreta');
+      if (!verifyResponse.ok) {
+        const errorData = await verifyResponse.json();
+        throw new Error(errorData.error || 'Senha atual incorreta');
       }
 
-      // Atualizar senha
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
+      // Atualizar senha via API
+      const updateResponse = await fetch('/api/users/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
       });
 
-      if (updateError) {
-        throw new Error(updateError.message);
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.error || 'Erro ao alterar senha');
       }
 
       console.log('✅ Senha alterada com sucesso');
