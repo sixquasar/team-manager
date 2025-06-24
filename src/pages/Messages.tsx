@@ -353,8 +353,8 @@ export function Messages() {
       <div className="flex h-[calc(100vh-300px)] bg-white rounded-lg shadow">
         {/* Sidebar - Channels */}
         <div className="w-80 border-r border-gray-200 flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
               {equipe?.nome || 'Mensagens'}
@@ -413,10 +413,9 @@ export function Messages() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
         {/* Chat Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -597,6 +596,7 @@ export function Messages() {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
@@ -618,6 +618,7 @@ export function Messages() {
         onDeleteMessage={handleDeleteMessage}
         currentUserId={usuario?.id || ''}
       />
+      </div>
     </div>
   );
 }
