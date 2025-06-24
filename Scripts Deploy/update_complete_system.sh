@@ -107,7 +107,10 @@ cd /var/www/team-manager-ai
 progress "2.2. Criando estrutura de diretórios..."
 mkdir -p src/{agents,workflows,memory,utils,routes,config} logs
 
-progress "2.3. Configurando package.json completo..."
+progress "2.3. Limpando instalação anterior..."
+rm -rf node_modules package-lock.json
+
+progress "2.4. Configurando package.json completo..."
 cat > package.json << 'EOF'
 {
   "name": "team-manager-ai",
@@ -120,10 +123,10 @@ cat > package.json << 'EOF'
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
-    "@langchain/community": "^0.2.0",
-    "@langchain/core": "^0.2.0",
-    "@langchain/langgraph": "^0.0.20",
-    "@langchain/openai": "^0.1.0",
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/langgraph": "^0.2.0",
+    "@langchain/openai": "^0.3.0",
     "@supabase/supabase-js": "^2.43.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -138,10 +141,10 @@ cat > package.json << 'EOF'
 }
 EOF
 
-progress "2.4. Instalando todas as dependências..."
-npm install
+progress "2.5. Instalando todas as dependências..."
+npm install --force
 
-progress "2.5. Criando servidor principal com rotas completas..."
+progress "2.6. Criando servidor principal com rotas completas..."
 cat > src/server.js << 'EOF'
 import express from 'express';
 import cors from 'cors';
@@ -211,7 +214,7 @@ httpServer.listen(PORT, () => {
 export { io };
 EOF
 
-progress "2.6. Criando sistema de logs..."
+progress "2.7. Criando sistema de logs..."
 cat > src/utils/logger.js << 'EOF'
 import fs from 'fs';
 import path from 'path';
@@ -261,7 +264,7 @@ class Logger {
 export const logger = new Logger();
 EOF
 
-progress "2.7. Criando rotas da API..."
+progress "2.8. Criando rotas da API..."
 cat > src/routes/ai.routes.js << 'EOF'
 import express from 'express';
 import { ProjectAnalystAgent } from '../agents/projectAnalyst.js';
@@ -357,7 +360,7 @@ router.post('/dashboard/analyze', async (req, res) => {
 export { router as aiRoutes };
 EOF
 
-progress "2.8. Criando agente ProjectAnalyst..."
+progress "2.9. Criando agente ProjectAnalyst..."
 mkdir -p src/agents
 cat > src/agents/projectAnalyst.js << 'EOF'
 import { ChatOpenAI } from '@langchain/openai';
@@ -492,7 +495,7 @@ export class ProjectAnalystAgent {
 EOF
 
 # Criar outros agentes essenciais
-progress "2.9. Criando outros agentes..."
+progress "2.10. Criando outros agentes..."
 
 cat > src/agents/teamAnalyst.js << 'EOF'
 export class TeamAnalystAgent {
@@ -584,7 +587,7 @@ export class ${agent^}Agent {
 EOF
 done
 
-progress "2.10. Configurando variáveis de ambiente..."
+progress "2.11. Configurando variáveis de ambiente..."
 cat > .env << 'EOF'
 # Supabase Configuration
 SUPABASE_URL=https://kfghzgpwewfaeoazmkdv.supabase.co
@@ -603,7 +606,7 @@ FRONTEND_URL=https://admin.sixquasar.pro
 # OPENAI_API_KEY=sk-proj-...
 EOF
 
-progress "2.11. Configurando serviço systemd..."
+progress "2.12. Configurando serviço systemd..."
 cat > /etc/systemd/system/team-manager-ai.service << 'EOF'
 [Unit]
 Description=Team Manager AI Service
@@ -626,12 +629,12 @@ Environment="PATH=/usr/bin:/usr/local/bin"
 WantedBy=multi-user.target
 EOF
 
-progress "2.12. Ajustando permissões..."
+progress "2.13. Ajustando permissões..."
 chown -R www-data:www-data /var/www/team-manager-ai
 chmod -R 755 /var/www/team-manager-ai
 chmod 600 /var/www/team-manager-ai/.env
 
-progress "2.13. Recarregando e iniciando serviço..."
+progress "2.14. Recarregando e iniciando serviço..."
 systemctl daemon-reload
 systemctl enable team-manager-ai
 systemctl restart team-manager-ai
