@@ -53,60 +53,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🔍 AUTH: Iniciando login...');
       console.log('📧 EMAIL:', email);
 
-      // Sistema de autenticação via Supabase apenas
-      // REMOVIDO: Fallback com senhas hardcoded por questões de segurança
-
-      // Autenticação via Supabase com validação segura
-      console.log('🌐 Conectando ao Supabase...');
+      // Sistema de autenticação via API customizada
+      console.log('🌐 Conectando à API...');
       
-      // Primeiro verificar se o usuário existe
-      const { data: userData, error: userError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('email', email.trim())
-        .single();
+      // Fazer login via API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
 
-      if (userError || !userData) {
-        console.error('❌ AUTH: Usuário não encontrado');
-        return { success: false, error: 'Email ou senha incorretos' };
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        console.error('❌ AUTH: Login falhou', data.error);
+        return { success: false, error: data.error || 'Email ou senha incorretos' };
       }
 
-      // Validar senha via função RPC segura no Supabase
-      const { data: isValid, error: validateError } = await supabase
-        .rpc('validate_user_password', {
-          user_email: email,
-          user_password: password
-        });
-
-      if (validateError || !isValid) {
-        console.error('❌ AUTH: Senha inválida');
-        return { success: false, error: 'Email ou senha incorretos' };
-      }
-
-      console.log('✅ AUTH: Usuário autenticado:', userData.nome);
+      console.log('✅ AUTH: Usuário autenticado:', data.data.user.user_metadata.nome);
       
+      // Extrair dados do formato da API
+      const userData = data.data.user;
       const usuarioData = {
         id: userData.id,
         email: userData.email,
-        nome: userData.nome,
-        cargo: userData.cargo,
-        tipo: userData.tipo,
-        avatar_url: userData.avatar_url
+        nome: userData.user_metadata.nome,
+        cargo: userData.user_metadata.cargo,
+        tipo: userData.user_metadata.tipo,
+        avatar_url: userData.user_metadata.avatar_url
       };
 
-      // Buscar equipe do usuário
-      const { data: equipeData } = await supabase
-        .from('equipes')
-        .select('*')
-        .eq('id', userData.equipe_id)
-        .single();
-
-      const equipe = equipeData || {
-        id: userData.equipe_id || '650e8400-e29b-41d4-a716-446655440001',
+      const equipe = data.data.equipe || {
+        id: userData.user_metadata.equipe_id || '650e8400-e29b-41d4-a716-446655440001',
         nome: 'SixQuasar',
         descricao: 'Equipe de desenvolvimento',
         created_at: new Date().toISOString()
       };
+
+      // Salvar token
+      if (data.data.session?.access_token) {
+        localStorage.setItem('token', data.data.session.access_token);
+      }
 
       setUsuario(usuarioData);
       setEquipe(equipe);
