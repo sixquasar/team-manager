@@ -115,13 +115,20 @@ else
     success ".env verificado!"
 fi
 
-progress "2.2. Verificando recharts..."
+progress "2.2. Verificando recharts e dependências..."
 if ! grep -q "recharts" package.json; then
-    progress "2.3. Instalando recharts..."
-    npm install recharts --save --legacy-peer-deps --no-fund --no-audit
-    success "Recharts instalado!"
+    progress "2.3. Instalando recharts e react-is..."
+    npm install recharts react-is --save --legacy-peer-deps --no-fund --no-audit
+    success "Recharts e dependências instaladas!"
 else
-    success "Recharts já está instalado!"
+    # Garantir que react-is está instalado
+    if ! grep -q "react-is" package.json; then
+        progress "2.3. Instalando react-is (dependência do recharts)..."
+        npm install react-is --save --legacy-peer-deps --no-fund --no-audit
+        success "React-is instalado!"
+    else
+        success "Recharts e dependências já instaladas!"
+    fi
 fi
 
 progress "2.4. Instalando todas as dependências..."
