@@ -741,14 +741,23 @@ echo -e "${AZUL}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${AZUL} FASE 5: REINICIALIZAÇÃO DOS SERVIÇOS${RESET}"
 echo -e "${AZUL}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-progress "5.1. Reiniciando microserviço..."
+progress "5.1. Verificando configuração do serviço systemd..."
+# Verificar se o arquivo de serviço está apontando para o caminho correto
+if grep -q "/var/www/team-manager/ai/server.js" /etc/systemd/system/team-manager-ai.service 2>/dev/null; then
+    progress "5.2. Corrigindo caminho do serviço systemd..."
+    sed -i 's|/var/www/team-manager/ai/server.js|/var/www/team-manager-ai/src/server.js|g' /etc/systemd/system/team-manager-ai.service
+    systemctl daemon-reload
+    success "Serviço corrigido!"
+fi
+
+progress "5.3. Reiniciando microserviço..."
 systemctl restart team-manager-ai
 sleep 3
 
-progress "5.2. Recarregando nginx..."
+progress "5.4. Recarregando nginx..."
 systemctl reload nginx
 
-progress "5.3. Verificando status dos serviços..."
+progress "5.5. Verificando status dos serviços..."
 if systemctl is-active --quiet team-manager-ai; then
     success "Microserviço rodando!"
 else
