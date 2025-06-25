@@ -81,9 +81,14 @@ cd /var/www/team-manager
 progress "1.1. Fazendo backup..."
 cp -r dist dist.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
 
-progress "1.2. Atualizando código do repositório..."
-git stash
-git pull origin main
+progress "1.2. Limpando arquivos conflitantes..."
+# Remover arquivos que podem causar conflito no merge
+rm -f package-lock.json
+rm -f yarn.lock
+
+progress "1.3. Atualizando código do repositório..."
+git stash --include-untracked
+git pull origin main --force
 success "Código atualizado!"
 
 echo -e "${AZUL}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
@@ -110,14 +115,23 @@ else
     success ".env verificado!"
 fi
 
-progress "2.2. Instalando dependências..."
+progress "2.2. Verificando recharts..."
+if ! grep -q "recharts" package.json; then
+    progress "2.3. Instalando recharts..."
+    npm install recharts --save --legacy-peer-deps --no-fund --no-audit
+    success "Recharts instalado!"
+else
+    success "Recharts já está instalado!"
+fi
+
+progress "2.4. Instalando todas as dependências..."
 npm install --legacy-peer-deps --no-fund --no-audit
 
-progress "2.3. Limpando build anterior..."
+progress "2.5. Limpando build anterior..."
 rm -rf dist
 rm -rf node_modules/.vite
 
-progress "2.4. Fazendo build..."
+progress "2.6. Fazendo build..."
 npm run build
 
 if [ -d "dist" ]; then
