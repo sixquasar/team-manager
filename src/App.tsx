@@ -6,7 +6,6 @@ import { Layout } from '@/components/layout/Layout';
 import { AIAssistantButton } from '@/components/ai/AIAssistantButton';
 
 // Pages
-import { Dashboard } from '@/pages/Dashboard';
 import DashboardAI from '@/pages/DashboardAI';
 import { Login } from '@/pages/Login';
 import { Projects } from '@/pages/Projects';
@@ -69,17 +68,9 @@ function App() {
               } 
             />
             
+            {/* Dashboard IA é o único dashboard agora */}
             <Route 
               path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route 
-              path="/dashboard-ai" 
               element={
                 <ProtectedRoute>
                   <DashboardAI />
