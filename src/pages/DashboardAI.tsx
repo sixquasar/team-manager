@@ -290,7 +290,7 @@ export default function DashboardAI() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {insights.opportunitiesFound?.map((opportunity: string, index: number) => (
+              {insights?.opportunitiesFound && Array.isArray(insights.opportunitiesFound) && insights.opportunitiesFound.map((opportunity: string, index: number) => (
                 <div
                   key={index}
                   className={cn(
@@ -308,7 +308,7 @@ export default function DashboardAI() {
                 </div>
               ))}
               
-              {insights.risksIdentified?.map((risk: string, index: number) => (
+              {insights?.risksIdentified && Array.isArray(insights.risksIdentified) && insights.risksIdentified.map((risk: string, index: number) => (
                 <div
                   key={`risk-${index}`}
                   className="p-3 rounded-lg border hover:bg-red-50 cursor-pointer transition-all"
@@ -334,7 +334,7 @@ export default function DashboardAI() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {insights.recommendations?.map((recommendation: string, index: number) => (
+              {insights?.recommendations && Array.isArray(insights.recommendations) && insights.recommendations.map((recommendation: string, index: number) => (
                 <div
                   key={index}
                   className="p-3 rounded-lg bg-purple-50 border border-purple-200"
@@ -370,7 +370,7 @@ export default function DashboardAI() {
 
       {/* AI Visualizations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {visualizations.trendChart && visualizations.trendChart.length > 0 && (
+        {visualizations?.trendChart && Array.isArray(visualizations.trendChart) && visualizations.trendChart.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -421,7 +421,7 @@ export default function DashboardAI() {
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-orange-500" />
               Detecção de Anomalias
-              {anomalies.length > 0 && (
+              {anomalies && Array.isArray(anomalies) && anomalies.length > 0 && (
                 <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
                   {anomalies.length} detectadas
                 </span>
@@ -430,7 +430,7 @@ export default function DashboardAI() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {anomalies.length > 0 ? (
+              {anomalies && Array.isArray(anomalies) && anomalies.length > 0 ? (
                 anomalies.map((anomaly: any, index: number) => (
                   <div
                     key={index}
