@@ -741,17 +741,72 @@ echo -e "${AZUL}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${AZUL} FASE 5: REINICIALIZAÇÃO DOS SERVIÇOS${RESET}"
 echo -e "${AZUL}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-progress "5.1. Verificando configuração do serviço systemd..."
-# Verificar se o arquivo de serviço está apontando para o caminho correto
-if grep -q "/var/www/team-manager/ai/server.js" /etc/systemd/system/team-manager-ai.service 2>/dev/null; then
-    progress "5.2. Corrigindo caminho do serviço systemd..."
-    sed -i 's|/var/www/team-manager/ai/server.js|/var/www/team-manager-ai/src/server.js|g' /etc/systemd/system/team-manager-ai.service
-    systemctl daemon-reload
-    success "Serviço corrigido!"
+progress "5.1. Limpando serviços systemd antigos e conflitantes..."
+# Parar todos os serviços relacionados
+systemctl stop team-manager-ai 2>/dev/null || true
+systemctl stop team-manager-ai-service 2>/dev/null || true
+systemctl stop team-manager-microservice 2>/dev/null || true
+
+# Desabilitar serviços antigos
+systemctl disable team-manager-ai 2>/dev/null || true
+systemctl disable team-manager-ai-service 2>/dev/null || true
+systemctl disable team-manager-microservice 2>/dev/null || true
+
+# Remover arquivos de serviço antigos
+rm -f /etc/systemd/system/team-manager-ai.service
+rm -f /etc/systemd/system/team-manager-ai-service.service
+rm -f /etc/systemd/system/team-manager-microservice.service
+
+# Recarregar daemon para limpar cache
+systemctl daemon-reload
+
+progress "5.2. Criando serviço systemd único e correto..."
+cat > /etc/systemd/system/team-manager-ai.service << 'EOF'
+[Unit]
+Description=Team Manager AI Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/team-manager-ai
+Environment=NODE_ENV=production
+Environment=PATH=/usr/bin:/bin:/usr/local/bin
+ExecStart=/usr/bin/node /var/www/team-manager-ai/src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Definir permissões corretas
+chmod 644 /etc/systemd/system/team-manager-ai.service
+
+# Recarregar daemon com novo serviço
+systemctl daemon-reload
+
+# Habilitar novo serviço
+systemctl enable team-manager-ai
+
+success "Serviço systemd criado e configurado!"
+
+progress "5.3. Verificando estrutura de diretórios..."
+# Garantir que o arquivo existe no local correto
+if [ ! -f "/var/www/team-manager-ai/src/server.js" ]; then
+    error "Arquivo server.js não encontrado em /var/www/team-manager-ai/src/"
+    echo "Conteúdo do diretório /var/www/team-manager-ai:"
+    ls -la /var/www/team-manager-ai/
+    echo "Conteúdo do diretório /var/www/team-manager-ai/src:"
+    ls -la /var/www/team-manager-ai/src/ 2>/dev/null || echo "Diretório src não existe"
+else
+    success "Arquivo server.js encontrado no local correto!"
 fi
 
-progress "5.3. Reiniciando microserviço..."
-systemctl restart team-manager-ai
+progress "5.4. Iniciando microserviço..."
+systemctl start team-manager-ai
 sleep 3
 
 progress "5.4. Recarregando nginx..."
